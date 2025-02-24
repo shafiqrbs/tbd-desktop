@@ -1,13 +1,9 @@
-import { Outlet } from "react-router";
-import { Button } from "@mantine/core";
+import { NavLink, Outlet } from "react-router";
 
 export default function Layout() {
 	return (
 		<div>
-			<Button variant="filled" color="violet" radius="xl">
-				Button change
-			</Button>
-			<Button variant="outline">I am another button</Button>
+			<NavLink to="/login">Login</NavLink>
 			<Outlet />
 		</div>
 	);

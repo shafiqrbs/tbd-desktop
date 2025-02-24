@@ -4,13 +4,15 @@
 	"version": "0.0.1",
 	"type": "module",
 	"main": "./electron.cjs",
+	"license": "MIT",
+	"description": "Desktop based RMS App",
 	"author": {
 		"name": "Sharif Md. Minhaz",
 		"email": "minhaz.rbs@gmail.com"
 	},
 	"homepage": "./",
 	"scripts": {
-		"dev": "cross-env MODE=web vite",
+		"dev": "cross-env MODE=development vite",
 		"build": "vite build --base=./",
 		"lint": "eslint .",
 		"preview": "vite preview",
@@ -64,6 +66,7 @@
 	"devDependencies": {
 		"@electron-forge/cli": "^7.7.0",
 		"@electron-forge/maker-deb": "^7.7.0",
+		"@electron-forge/maker-rpm": "^7.7.0",
 		"@electron-forge/maker-squirrel": "^7.7.0",
 		"@electron-forge/maker-zip": "^7.7.0",
 		"@electron-forge/plugin-auto-unpack-natives": "^7.7.0",

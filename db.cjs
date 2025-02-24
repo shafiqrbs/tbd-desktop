@@ -7,6 +7,15 @@ const dbPath = path.join(app.getPath("userData"), "electro.db");
 console.log(`Local database path: ${dbPath}`);
 const db = new Database(dbPath);
 
+db.prepare(
+	`
+	CREATE TABLE IF NOT EXISTS tests (
+		email TEXT PRIMARY KEY,
+		created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+	)
+	`
+);
+
 // Create a table if it doesn't exist
 db.prepare(
 	`
@@ -22,14 +31,20 @@ db.prepare(
 ).run();
 
 // Create deleted_users table
-db.prepare(`
+db.prepare(
+	`
     CREATE TABLE IF NOT EXISTS deleted_users (
         _id TEXT PRIMARY KEY,
         deleted_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )
-`).run();
+`
+).run();
 
 module.exports = {
+	getTestUsers: () => {
+		const stmt = db.prepare("SELECT * FROM tests");
+		return stmt.all();
+	},
 	getUsers: () => {
 		const stmt = db.prepare("SELECT * FROM users");
 		return stmt.all();
@@ -56,29 +71,29 @@ module.exports = {
                 age = @age
             WHERE _id = @oldId
         `);
-		
+
 		return stmt.run({
 			oldId,
 			newId: updatedUser.newId,
 			username: updatedUser.username,
 			email: updatedUser.email,
 			address: updatedUser.address,
-			age: updatedUser.age
+			age: updatedUser.age,
 		});
 	},
 	// Add deleted user to tracking table
 	trackDeletedUser: (_id) => {
-		const stmt = db.prepare('INSERT INTO deleted_users (_id) VALUES (?)');
+		const stmt = db.prepare("INSERT INTO deleted_users (_id) VALUES (?)");
 		return stmt.run(_id);
 	},
 	// Get all deleted user IDs
 	getDeletedUsers: () => {
-		const stmt = db.prepare('SELECT _id FROM deleted_users');
+		const stmt = db.prepare("SELECT _id FROM deleted_users");
 		return stmt.all();
 	},
 	// Clear deleted user tracking after successful sync
 	clearDeletedUsers: () => {
-		const stmt = db.prepare('DELETE FROM deleted_users');
+		const stmt = db.prepare("DELETE FROM deleted_users");
 		return stmt.run();
-	}
+	},
 };

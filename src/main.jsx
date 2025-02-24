@@ -15,15 +15,17 @@ const theme = createTheme({
 	fontFamily: "Open Sans, sans-serif",
 });
 
-const Router = import.meta.env.MODE === "web" ? BrowserRouter : HashRouter;
+console.log("Web: ", import.meta.env.MODE);
+
+const Router = import.meta.env.MODE === "development" ? BrowserRouter : HashRouter;
 
 createRoot(document.getElementById("root")).render(
 	<StrictMode>
-		<MantineProvider theme={theme}>
-			<Notifications />
-			<Router>
+		<Router>
+			<MantineProvider theme={theme} withNormalizeCSS withGlobalStyles>
+				<Notifications />
 				<App />
-			</Router>
-		</MantineProvider>
+			</MantineProvider>
+		</Router>
 	</StrictMode>
 );

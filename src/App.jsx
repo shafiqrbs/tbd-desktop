@@ -1,4 +1,3 @@
-import { MantineProvider } from "@mantine/core";
 import { ModalsProvider } from "@mantine/modals";
 import "./lang/i18next";
 
@@ -11,11 +10,9 @@ function App() {
 	return (
 		<Provider store={store}>
 			<PersistGate loading={null} persistor={persistor}>
-				<MantineProvider withNormalizeCSS withGlobalStyles>
-					<ModalsProvider>
-						<AppRoute />
-					</ModalsProvider>
-				</MantineProvider>
+				<ModalsProvider>
+					<AppRoute />
+				</ModalsProvider>
 			</PersistGate>
 		</Provider>
 	);
