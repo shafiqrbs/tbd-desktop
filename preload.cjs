@@ -5,14 +5,17 @@ console.log("Preload script starting...");
 
 try {
 	contextBridge.exposeInMainWorld("dbAPI", {
-		getUsers: () => {
-			console.log("Calling getUsers...");
-			return ipcRenderer.invoke("db-get-users");
+		// test starts -------------
+		getTestUsers: () => {
+			console.log("Calling getTestUsers...");
+			return ipcRenderer.invoke("db-get-test-users");
 		},
-		createUser: (user) => {
-			console.log("Calling createUser...", user);
-			return ipcRenderer.invoke("db-create-user", user);
+		setTestUser: (email) => {
+			console.log("Calling setTestUsers...");
+			return ipcRenderer.invoke("db-set-test-users", email);
 		},
+		// test ends ---------------
+
 		deleteUser: (id) => {
 			console.log("Calling deleteUser...", id);
 			return ipcRenderer.invoke("db-delete-user", id);
@@ -21,18 +24,6 @@ try {
 			console.log("Calling updateUser...", { oldId, updatedUser });
 			return ipcRenderer.invoke("db-update-user", oldId, updatedUser);
 		},
-		trackDeletedUser: (id) => {
-			console.log("Tracking deleted user:", id);
-			return ipcRenderer.invoke("db-track-deleted", id);
-		},
-		getDeletedUsers: () => {
-			console.log("Getting deleted users");
-			return ipcRenderer.invoke("db-get-deleted");
-		},
-		clearDeletedUsers: () => {
-			console.log("Clearing deleted users tracking");
-			return ipcRenderer.invoke("db-clear-deleted");
-		}
 	});
 	console.log("dbAPI exposed successfully");
 } catch (error) {

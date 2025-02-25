@@ -7,7 +7,7 @@ export default function AppRoute() {
 		<Routes>
 			<Route path="/login" element={<Login />} />
 			<Route path="/" element={<Layout />}>
-				<Route index element={<h1>hello</h1>} />
+				<Route index element={<h1>Test</h1>} />
 			</Route>
 		</Routes>
 	);

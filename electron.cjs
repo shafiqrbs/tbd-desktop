@@ -2,26 +2,26 @@ const { app, BrowserWindow, ipcMain } = require("electron");
 const path = require("path");
 const dbModule = require("./db.cjs");
 
-// IPC handler to fetch users
-ipcMain.handle("db-get-users", async () => {
+// tests starts------------------
+ipcMain.handle("db-get-test-users", async () => {
 	try {
-		return dbModule.getUsers();
+		return dbModule.getTestUsers();
 	} catch (error) {
-		console.error("Error fetching users:", error);
-		con;
+		console.error("Error fetching test users:", error);
 		throw error;
 	}
 });
 
-// IPC handler to create a user
-ipcMain.handle("db-create-user", async (event, user) => {
+ipcMain.handle("db-set-test-users", async (event, email) => {
 	try {
-		return dbModule.createUser(user);
+		return dbModule.setTestUser(email);
 	} catch (error) {
-		console.error("Error creating user:", error);
+		console.error("Error setting test users:", error);
 		throw error;
 	}
 });
+
+// tests ends -------------------
 
 // IPC handler to delete a user
 ipcMain.handle("db-delete-user", async (event, id) => {
@@ -39,33 +39,6 @@ ipcMain.handle("db-update-user", async (event, oldId, updatedUser) => {
 		return dbModule.updateUserId(oldId, updatedUser);
 	} catch (error) {
 		console.error("Error updating user:", error);
-		throw error;
-	}
-});
-
-ipcMain.handle("db-track-deleted", async (event, id) => {
-	try {
-		return dbModule.trackDeletedUser(id);
-	} catch (error) {
-		console.error("Error tracking deleted user:", error);
-		throw error;
-	}
-});
-
-ipcMain.handle("db-get-deleted", async () => {
-	try {
-		return dbModule.getDeletedUsers();
-	} catch (error) {
-		console.error("Error getting deleted users:", error);
-		throw error;
-	}
-});
-
-ipcMain.handle("db-clear-deleted", async () => {
-	try {
-		return dbModule.clearDeletedUsers();
-	} catch (error) {
-		console.error("Error clearing deleted users:", error);
 		throw error;
 	}
 });
@@ -107,8 +80,9 @@ app.whenReady().then(() => {
 	});
 
 	// Load Main App after splash screen
-	const startURL = process.env.ELECTRON_START_URL || `file://${path.join(__dirname, "dist", "index.html")}`;
-	if (startURL.startsWith('http')) {
+	const startURL =
+		process.env.ELECTRON_START_URL || `file://${path.join(__dirname, "dist", "index.html")}`;
+	if (startURL.startsWith("http")) {
 		mainWindow.loadURL(startURL);
 	} else {
 		mainWindow.loadFile(path.join(__dirname, "dist", "index.html"));

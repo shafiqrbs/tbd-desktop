@@ -14,48 +14,20 @@ db.prepare(
 		created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 	)
 	`
-);
-
-// Create a table if it doesn't exist
-db.prepare(
-	`
-  CREATE TABLE IF NOT EXISTS users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-	_id TEXT UNIQUE,
-    username TEXT NOT NULL,
-    email TEXT NOT NULL,
-    address TEXT,
-    age INTEGER
-  )
-`
-).run();
-
-// Create deleted_users table
-db.prepare(
-	`
-    CREATE TABLE IF NOT EXISTS deleted_users (
-        _id TEXT PRIMARY KEY,
-        deleted_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-`
 ).run();
 
 module.exports = {
+	// test --------------
 	getTestUsers: () => {
 		const stmt = db.prepare("SELECT * FROM tests");
 		return stmt.all();
 	},
-	getUsers: () => {
-		const stmt = db.prepare("SELECT * FROM users");
-		return stmt.all();
+	setTestUser: (email) => {
+		const stmt = db.prepare("INSERT INTO tests (email) VALUES (?)");
+		return stmt.run(email);
 	},
-	createUser: (user) => {
-		const stmt = db.prepare(`
-      INSERT INTO users (_id, username, email, address, age) VALUES (@_id, @username, @email, @address, @age)
-    `);
-		const info = stmt.run(user);
-		return db.prepare("SELECT * FROM users WHERE id = ?").get(info.lastInsertRowid);
-	},
+	// test --------------
+
 	deleteUser: (_id) => {
 		const stmt = db.prepare("DELETE FROM users WHERE _id = ?");
 		stmt.run(_id);
@@ -80,20 +52,5 @@ module.exports = {
 			address: updatedUser.address,
 			age: updatedUser.age,
 		});
-	},
-	// Add deleted user to tracking table
-	trackDeletedUser: (_id) => {
-		const stmt = db.prepare("INSERT INTO deleted_users (_id) VALUES (?)");
-		return stmt.run(_id);
-	},
-	// Get all deleted user IDs
-	getDeletedUsers: () => {
-		const stmt = db.prepare("SELECT _id FROM deleted_users");
-		return stmt.all();
-	},
-	// Clear deleted user tracking after successful sync
-	clearDeletedUsers: () => {
-		const stmt = db.prepare("DELETE FROM deleted_users");
-		return stmt.run();
 	},
 };
