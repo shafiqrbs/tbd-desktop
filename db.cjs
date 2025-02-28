@@ -17,17 +17,6 @@ db.prepare(
 ).run();
 
 module.exports = {
-	// test --------------
-	getTestUsers: () => {
-		const stmt = db.prepare("SELECT * FROM tests");
-		return stmt.all();
-	},
-	setTestUser: (email) => {
-		const stmt = db.prepare("INSERT INTO tests (email) VALUES (?)");
-		return stmt.run(email);
-	},
-	// test --------------
-
 	deleteUser: (_id) => {
 		const stmt = db.prepare("DELETE FROM users WHERE _id = ?");
 		stmt.run(_id);

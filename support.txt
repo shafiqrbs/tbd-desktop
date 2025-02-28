@@ -1,0 +1,11 @@
+const session = {
+    "id": 6115,
+    "name": null,
+    "mobile": null,
+    "email": "zerinakter1610@gmail.com",
+    "username": "sandra",
+    "user_group": null,
+    "domain_id": 384,
+    "access_control_role": [],
+    "android_control_role": []
+}
