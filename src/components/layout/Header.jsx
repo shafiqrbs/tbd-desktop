@@ -44,9 +44,8 @@ import flagGB from "../../assets/images/flags/gb.svg";
 import { useTranslation } from "react-i18next";
 import SpotLightSearchModal from "../modules/modals/SpotLightSearchModal.jsx";
 import { useDispatch } from "react-redux";
-import { setInventoryShowDataEmpty } from "../../store/inventory/crudSlice.js";
 import shortcutDropdownData from "../global-hook/shortcut-dropdown/shortcutDropdownData.js";
-import Sandra_Logo from "./../../assets/images/sandra_logo.jpeg";
+import Sandra_Logo from "../../assets/images/sandra_logo.jpeg";
 
 const languages = [
 	{ label: "EN", value: "en", flag: flagGB },
@@ -98,7 +97,12 @@ export default function Header({ isOnline, configData }) {
 		}));
 	};
 	function logout() {
-		dispatch(setInventoryShowDataEmpty());
+		dispatch({
+			type: "crud/resetState",
+			payload: {
+				modules: ["inventory", "production", "core", "sales"], // add all modules you want to reset
+			},
+		});
 		localStorage.clear();
 		navigate("/login");
 	}
@@ -224,6 +228,7 @@ export default function Header({ isOnline, configData }) {
 				))}
 		</Stack>
 	);
+
 	return (
 		<>
 			<Modal.Root opened={opened} onClose={close} size="64%">

@@ -1,27 +1,37 @@
-import { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import {getSettingTypeDropdown} from "../../../store/production/utilitySlice.js";
+import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { getDropdownData } from "../../../store/core/utilitySlice.js";
 
 const getProSettingTypeDropdownData = () => {
-    const dispatch = useDispatch();
-    const [settingTypeDropdown, setSettingTypeDropdown] = useState([]);
+	const dispatch = useDispatch();
+	const [settingTypeDropdown, setSettingTypeDropdown] = useState([]);
 
-    useEffect(() => {
-        dispatch(getSettingTypeDropdown('production/select/setting-type'))
-    }, [dispatch]);
+	// Get dropdown data from core slice
+	const settingTypeDropdownData = useSelector(
+		(state) => state.utility?.dropdowns?.production?.settingTypes || []
+	);
 
-    const settingTypeDropdownData = useSelector((state) => state.productionUtilitySlice.settingTypeDropdownData);
+	useEffect(() => {
+		dispatch(
+			getDropdownData({
+				url: "production/select/setting-type",
+				module: "production",
+				dropdownType: "settingTypes",
+			})
+		);
+	}, [dispatch]);
 
-    useEffect(() => {
-        if (settingTypeDropdownData && settingTypeDropdownData.length > 0) {
-            const transformedData = settingTypeDropdownData.map(type => {
-                return { 'label': type.name, 'value': String(type.id) }
-            });
-            setSettingTypeDropdown(transformedData);
-        }
-    }, [settingTypeDropdownData]);
+	useEffect(() => {
+		if (settingTypeDropdownData && settingTypeDropdownData.length > 0) {
+			const transformedData = settingTypeDropdownData.map((type) => ({
+				label: type.name,
+				value: String(type.id),
+			}));
+			setSettingTypeDropdown(transformedData);
+		}
+	}, [settingTypeDropdownData]);
 
-    return settingTypeDropdown;
+	return settingTypeDropdown;
 };
 
 export default getProSettingTypeDropdownData;

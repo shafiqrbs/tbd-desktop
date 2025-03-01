@@ -1,11 +1,18 @@
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { getShowEntityData } from "../../../store/inventory/crudSlice.js";
+import { getIndexData } from "../../../store/core/crudSlice.js";
+
 const getInventoryConfigData = () => {
 	const dispatch = useDispatch();
-	const inventoryConfigData = useSelector((state) => state.inventoryCrudSlice?.showEntityData);
+	const inventoryConfigData = useSelector((state) => state.crud.data.inventory.list);
+
 	useEffect(() => {
-		dispatch(getShowEntityData("inventory/product-config"));
+		dispatch(
+			getIndexData({
+				url: "inventory/product-config",
+				module: "inventory",
+			})
+		);
 	}, []);
 
 	return inventoryConfigData;

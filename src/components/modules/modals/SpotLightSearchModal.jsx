@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useRef, useState } from "react";
+import { Fragment, useCallback, useEffect, useRef, useState } from "react";
 import {
 	Box,
 	CloseButton,
@@ -18,7 +18,7 @@ import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router";
 import { useHotkeys } from "@mantine/hooks";
 import getSpotlightDropdownData from "../../global-hook/spotlight-dropdown/getSpotlightDropdownData.js";
-import getConfigData from "../../global-hook/config-data/getConfigData.js";
+import { useSelector } from "react-redux";
 
 function SpotLightSearchModal({ onClose }) {
 	const [filteredItems, setFilteredItems] = useState([]);
@@ -28,31 +28,27 @@ function SpotLightSearchModal({ onClose }) {
 	const ref = useRef(null);
 	const scrollRef = useRef(null);
 	const [selectedIndex, setSelectedIndex] = useState(-1);
-
-	// Initialize the loading state as true
 	const [visible, setVisible] = useState(true);
 
-	const { configData } = getConfigData();
+	// Get config data from core slice instead of local hook
+	const configData = useSelector((state) => state.crud?.data?.core.list);
+	const [configDataSpot, setConfigData] = useState(null);
 
-	localStorage.setItem("config-data", JSON.stringify(configData));
-
-	const [configDataSpot, setConfigData] = useState(configData);
-
-	// Fetch the configData from local storage and set loading
+	// Update the config data fetch logic
 	useEffect(() => {
-		const checkConfigData = () => {
+		if (configData) {
+			setConfigData(configData);
+			setVisible(false);
+		} else {
 			const storedConfigData = localStorage.getItem("config-data");
 			if (storedConfigData) {
 				setConfigData(JSON.parse(storedConfigData));
+				setVisible(false);
 			} else {
 				navigate("/login");
 			}
-		};
-
-		const timeoutId = setTimeout(checkConfigData, 500);
-
-		return () => clearTimeout(timeoutId);
-	}, [navigate]);
+		}
+	}, [configData, navigate]);
 
 	useHotkeys([
 		[
@@ -65,11 +61,12 @@ function SpotLightSearchModal({ onClose }) {
 		],
 	]);
 
-	const getActions = () => {
+	const getActions = useCallback(() => {
+		if (!configDataSpot) return [];
+
 		const actions = getSpotlightDropdownData(t, configDataSpot);
 		let index = 0;
 
-		// Assign an index to each action
 		return actions.map((group) => ({
 			...group,
 			actions: group.actions.map((action) => ({
@@ -78,33 +75,34 @@ function SpotLightSearchModal({ onClose }) {
 				group: group.group,
 			})),
 		}));
-	};
+	}, [configDataSpot, t]);
 
 	// Filter the actions based on searchValue
-	const filterList = (searchValue) => {
-		const updatedList = getActions().reduce((acc, group) => {
-			const filteredActions = group.actions.filter((action) =>
-				action.label.toLowerCase().includes(searchValue.toLowerCase())
-			);
-			return [...acc, ...filteredActions];
-		}, []);
+	const filterList = useCallback(
+		(searchValue) => {
+			if (!configDataSpot) return;
 
-		setFilteredItems(updatedList);
-		setSelectedIndex(-1);
-	};
+			const updatedList = getActions().reduce((acc, group) => {
+				const filteredActions = group.actions.filter((action) =>
+					action.label.toLowerCase().includes(searchValue.toLowerCase())
+				);
+				return [...acc, ...filteredActions];
+			}, []);
+
+			setFilteredItems(updatedList);
+			setSelectedIndex(-1);
+		},
+		[configDataSpot, getActions]
+	);
 
 	// Initialize the filtered list when component mounts
 	useEffect(() => {
 		if (configDataSpot) {
 			const allActions = getActions().reduce((acc, group) => [...acc, ...group.actions], []);
 			setFilteredItems(allActions);
-			setTimeout(() => {
-				if (allActions) {
-					setVisible(false); // Hide the loader when data has been fetched
-				}
-			}, 1000);
+			setVisible(false);
 		}
-	}, [configDataSpot]);
+	}, [configDataSpot, getActions]);
 
 	useEffect(() => {
 		if (selectedIndex >= 0 && filteredItems.length > 0) {
@@ -162,7 +160,7 @@ function SpotLightSearchModal({ onClose }) {
 
 	return (
 		<>
-			{filteredItems && (
+			{configDataSpot && (
 				<>
 					<TextInput
 						w={`100%`}
@@ -229,8 +227,9 @@ function SpotLightSearchModal({ onClose }) {
 							</div>
 						}
 						onChange={(event) => {
-							setValue(event.target.value);
-							filterList(event.target.value);
+							const newValue = event.currentTarget.value;
+							setValue(newValue);
+							filterList(newValue);
 						}}
 						onKeyDown={handleKeyDown}
 						className="no-focus-outline"
@@ -249,7 +248,7 @@ function SpotLightSearchModal({ onClose }) {
 							loaderProps={{ color: "red" }}
 						/>
 						<Box p={"xs"}>
-							{filteredItems.length > 0 ? (
+							{filteredItems?.length > 0 ? (
 								filteredItems
 									.reduce((groups, item) => {
 										if (
@@ -282,53 +281,53 @@ function SpotLightSearchModal({ onClose }) {
 																	: action.group ===
 																			"Production" ||
 																	  action.group === "প্রোডাকশন"
-																	? `production/${action.id}`
+																	? `/production/${action.id}`
 																	: action.group === "Core" ||
 																	  action.group === "কেন্দ্র"
-																	? `core/${action.id}`
+																	? `/core/${action.id}`
 																	: action.group ===
 																			"Inventory" ||
 																	  action.group === "ইনভেন্টরি"
-																	? `inventory/${action.id}`
+																	? `/inventory/${action.id}`
 																	: action.group === "Domain" ||
 																	  action.group === "ডোমেইন"
-																	? `domain/${action.id}`
+																	? `/domain/${action.id}`
 																	: action.group ===
 																			"Accounting" ||
 																	  action.group === "একাউন্টিং"
-																	? `accounting/${action.id}`
+																	? `/accounting/${action.id}`
 																	: action.group === "Procurement"
-																	? `procurement/${action.id}`
+																	? `/procurement/${action.id}`
 																	: action.group ===
 																	  "Sales & Purchase"
-																	? `inventory/${action.id}`
+																	? `/inventory/${action.id}`
 																	: `/sitemap`
 															}
 															onClick={() => {
 																navigate(
 																	action.group === "Production" ||
 																		action.group === "প্রোডাকশন"
-																		? `production/${action.id}`
+																		? `/production/${action.id}`
 																		: action.group === "Core" ||
 																		  action.group === "কেন্দ্র"
-																		? `core/${action.id}`
+																		? `/core/${action.id}`
 																		: action.group ===
 																				"Inventory" ||
 																		  action.group ===
 																				"ইনভেন্টরি"
-																		? `inventory/${action.id}`
+																		? `/inventory/${action.id}`
 																		: action.group ===
 																				"Domain" ||
 																		  action.group === "ডোমেইন"
-																		? `domain/${action.id}`
+																		? `/domain/${action.id}`
 																		: action.group ===
 																				"Accounting" ||
 																		  action.group ===
 																				"একাউন্টিং"
-																		? `accounting/${action.id}`
+																		? `/accounting/${action.id}`
 																		: action.group ===
 																		  "Sales & Purchase"
-																		? `inventory/${action.id}`
+																		? `/inventory/${action.id}`
 																		: `/sitemap`
 																);
 																onClose();

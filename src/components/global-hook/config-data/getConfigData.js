@@ -1,16 +1,20 @@
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { getShowEntityData } from "../../../store/inventory/crudSlice.js";
+import { getIndexEntityData } from "../../../store/core/crudSlice.js";
 
 const getConfigData = () => {
 	const dispatch = useDispatch();
-	const configData = useSelector((state) => state?.inventoryCrudSlice?.showEntityData) || [];
+	const configData = useSelector((state) => state.crud?.data?.core?.list) || [];
 
 	const fetchData = () => {
-		// Only fetch if we don't have the data in localStorage
 		const storedConfigData = localStorage.getItem("config-data");
 		if (!storedConfigData) {
-			dispatch(getShowEntityData("inventory/config"));
+			dispatch(
+				getIndexEntityData({
+					url: "inventory/config",
+					module: "core",
+				})
+			);
 		} else {
 			return JSON.parse(storedConfigData);
 		}

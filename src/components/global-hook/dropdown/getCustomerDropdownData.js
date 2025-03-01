@@ -1,27 +1,40 @@
-import { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import {getCustomerDropdown} from "../../../store/core/utilitySlice.js";
+import { useEffect, useState, useMemo } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { getDropdownData } from "../../../store/core/utilitySlice.js";
 
-const getCustomerDropdownData = () => {
-    const dispatch = useDispatch();
-    const [customerDropdown, setCustomerDropdown] = useState([]);
+// Rename to follow React hook naming convention
+export function useCustomerDropdownData() {
+	const dispatch = useDispatch();
 
-    useEffect(() => {
-        dispatch(getCustomerDropdown('core/select/customer'))
-    }, [dispatch]);
+	// Get dropdown data from core slice with memoized selector
+	const customerDropdownData = useSelector(
+		(state) => state.utility?.dropdowns?.core?.customers || []
+	);
 
-    const customerDropdownData = useSelector((state) => state.utilitySlice.customerDropdownData)
+	// Fetch data only once on mount
+	useEffect(() => {
+		dispatch(
+			getDropdownData({
+				url: "core/select/customer",
+				module: "core",
+				dropdownType: "customers",
+			})
+		);
+	}, [dispatch]);
 
-    useEffect(() => {
-        if (customerDropdownData && customerDropdownData.length > 0) {
-            const transformedData = customerDropdownData.map(type => {
-                return ({'label': type.name, 'value': String(type.id)})
-            });
-            setCustomerDropdown(transformedData);
-        }
-    }, [customerDropdownData]);
+	// Memoize the transformation to prevent unnecessary rerenders
+	const customerDropdown = useMemo(() => {
+		if (customerDropdownData && customerDropdownData.length > 0) {
+			return customerDropdownData.map((type) => ({
+				label: type.name,
+				value: String(type.id),
+			}));
+		}
+		return [];
+	}, [customerDropdownData]);
 
-    return customerDropdown;
-};
+	return customerDropdown;
+}
 
-export default getCustomerDropdownData;
+// For backward compatibility
+export default useCustomerDropdownData;
