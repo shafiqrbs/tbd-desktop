@@ -1,30 +1,22 @@
 import { useEffect, useState } from "react";
-import { Navigate, Outlet } from "react-router";
+import { Navigate, Outlet, useLocation } from "react-router";
 import { useViewportSize } from "@mantine/hooks";
 import { AppShell } from "@mantine/core";
 import Header from "./Header";
 import Footer from "./Footer";
 import MainDashboard from "../modules/dashboard/MainDashboard";
 import commonDataStoreIntoLocalStorage from "../global-hook/local-storage/commonDataStoreIntoLocalStorage";
+import { useNetwork } from "@mantine/hooks";
 
 const Layout = () => {
-	const [isOnline, setNetworkStatus] = useState(navigator.onLine);
+	const networkStatus = useNetwork();
 	const { height } = useViewportSize();
-	const paramPath = window.location.pathname;
+	const location = useLocation();
+	const paramPath = location.pathname;
 	const [configData, setConfigData] = useState(null);
 	const [isLoading, setIsLoading] = useState(false);
 
 	const user = JSON.parse(localStorage.getItem("user") || "{}");
-
-	useEffect(() => {
-		const handleNetworkStatus = () => setNetworkStatus(window.navigator.onLine);
-		window.addEventListener("offline", handleNetworkStatus);
-		window.addEventListener("online", handleNetworkStatus);
-		return () => {
-			window.removeEventListener("online", handleNetworkStatus);
-			window.removeEventListener("offline", handleNetworkStatus);
-		};
-	}, []);
 
 	useEffect(() => {
 		const initializeData = async () => {
@@ -60,11 +52,11 @@ const Layout = () => {
 	return (
 		<AppShell padding="0">
 			<AppShell.Header height={headerHeight} bg="gray.0">
-				<Header isOnline={isOnline} configData={configData} />
+				<Header isOnline={networkStatus.online} configData={configData} />
 			</AppShell.Header>
 			<AppShell.Main>
 				{paramPath !== "/" ? (
-					<Outlet context={{ isOnline, mainAreaHeight }} />
+					<Outlet context={{ isOnline: networkStatus.online, mainAreaHeight }} />
 				) : (
 					<MainDashboard height={mainAreaHeight} />
 				)}

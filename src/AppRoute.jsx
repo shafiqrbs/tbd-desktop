@@ -9,8 +9,8 @@ export default function AppRoute() {
 		<Routes>
 			<Route path="/login" element={<Login />} />
 			<Route path="/" element={<Layout />}>
-				<Route path="core/">
-					<Route path="vendor" element={<VendorIndex />} />
+				<Route path="core">
+					<Route index path="vendor" element={<VendorIndex />} />
 					<Route path="vendor/:id" element={<VendorIndex />} />
 				</Route>
 			</Route>

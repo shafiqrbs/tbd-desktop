@@ -182,7 +182,7 @@ function VendorForm(props) {
 										</Grid.Col>
 									</Grid>
 								</Box>
-								<Box pl={`xs`} pr={"xs"} className={"borderRadiusAll"}>
+								<Box px="xs" className={"borderRadiusAll"}>
 									<ScrollArea
 										h={height}
 										scrollbarSize={2}
