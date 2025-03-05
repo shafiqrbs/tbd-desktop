@@ -227,6 +227,7 @@ const crudSlice = createSlice({
 			})
 			.addCase(getIndexEntityData.fulfilled, (state, action) => {
 				const { data, module } = action.payload;
+				console.log("Action payload:", action.payload);
 				state.data[module].list = data?.data || data;
 				state.isLoading = false;
 			})

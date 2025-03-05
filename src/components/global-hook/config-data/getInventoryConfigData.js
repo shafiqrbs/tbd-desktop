@@ -4,7 +4,7 @@ import { getIndexData } from "../../../store/core/crudSlice.js";
 
 const getInventoryConfigData = () => {
 	const dispatch = useDispatch();
-	const inventoryConfigData = useSelector((state) => state.crud.data.inventory.list);
+	const inventoryConfigData = useSelector((state) => state.crud?.data?.inventory?.list);
 
 	useEffect(() => {
 		dispatch(

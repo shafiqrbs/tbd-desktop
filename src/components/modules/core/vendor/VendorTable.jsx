@@ -65,9 +65,12 @@ function VendorTable() {
 
 	useEffect(() => {
 		const fetchData = async () => {
-			if (!fetching) {
-				setFetching(true);
-			}
+			setFetching((prev) => {
+				if (!prev) {
+					return true;
+				}
+				return prev;
+			});
 
 			const value = {
 				url: "core/vendor",
@@ -82,7 +85,9 @@ function VendorTable() {
 			};
 
 			try {
+				console.log("value", value);
 				const resultAction = await dispatch(getIndexEntityData(value));
+				console.log("resultAction", resultAction);
 				if (getIndexEntityData.rejected.match(resultAction)) {
 					console.error("Error:", resultAction);
 				} else if (getIndexEntityData.fulfilled.match(resultAction)) {
