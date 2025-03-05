@@ -1,4 +1,5 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import { createSelector } from "@reduxjs/toolkit";
 import {
 	createData,
 	createDataWithFile,
@@ -226,7 +227,7 @@ const crudSlice = createSlice({
 				state.isLoading = true;
 			})
 			.addCase(getIndexEntityData.fulfilled, (state, action) => {
-				const { data, module } = action.payload;
+				const { data, module = "core" } = action.payload;
 				console.log("Action payload:", action.payload);
 				state.data[module].list = data?.data || data;
 				state.isLoading = false;
@@ -295,5 +296,20 @@ export const {
 	setInsertType,
 	setEditEntityData,
 } = crudSlice.actions;
+
+export const selectVendorFilters = createSelector(
+	[(state) => state?.crud?.data?.core?.filters?.vendor],
+	(filters) => filters ?? {}
+);
+
+export const selectCustomerDropdownData = createSelector(
+	[(state) => state.utility?.dropdowns?.core?.customers],
+	(customers) => customers || []
+);
+
+export const selectEntityData = createSelector(
+	[(state) => state.crud?.data?.core?.current],
+	(data) => data ?? {}
+);
 
 export default crudSlice.reducer;

@@ -22,9 +22,9 @@ import { notifications } from "@mantine/notifications";
 import { modals } from "@mantine/modals";
 
 import {
+	selectEntityData,
 	setEditEntityData,
 	setFetching,
-	setFormLoading,
 	setInsertType,
 	updateEntityData,
 } from "../../../../store/core/crudSlice.js";
@@ -37,18 +37,16 @@ import vendorDataStoreIntoLocalStorage from "../../../global-hook/local-storage/
 
 function VendorUpdateForm(props) {
 	const { customerDropDownData } = props;
-	const { t, i18n } = useTranslation();
+	const { t } = useTranslation();
 	const dispatch = useDispatch();
 	const { isOnline, mainAreaHeight } = useOutletContext();
 	const height = mainAreaHeight - 100; //TabList height 104
 
 	const [saveCreateLoading, setSaveCreateLoading] = useState(false);
-	const [setFormData, setFormDataForUpdate] = useState(false);
-	const [formLoad, setFormLoad] = useState(true);
 	const [customerData, setCustomerData] = useState(null);
 
 	// Get entity data with safe default
-	const entityEditData = useSelector((state) => state.crud?.data?.core?.current || {});
+	const entityEditData = useSelector(selectEntityData);
 	const formLoading = useSelector((state) => state.crud?.data?.core?.formLoading || false);
 	const navigate = useNavigate();
 
@@ -78,11 +76,6 @@ function VendorUpdateForm(props) {
 	});
 
 	useEffect(() => {
-		setFormLoad(true);
-		setFormDataForUpdate(true);
-	}, [dispatch, formLoading]);
-
-	useEffect(() => {
 		if (entityEditData && Object.keys(entityEditData).length > 0) {
 			form.setValues({
 				company_name: entityEditData.company_name || "",
@@ -97,7 +90,7 @@ function VendorUpdateForm(props) {
 				setCustomerData(String(entityEditData.customer_id));
 			}
 		}
-	}, [entityEditData]);
+	}, [entityEditData, form]);
 
 	const handleFormReset = () => {
 		if (entityEditData) {
@@ -261,7 +254,7 @@ function VendorUpdateForm(props) {
 									>
 										<Box>
 											<LoadingOverlay
-												visible={formLoad}
+												visible={formLoading}
 												zIndex={1000}
 												overlayProps={{ radius: "sm", blur: 2 }}
 											/>

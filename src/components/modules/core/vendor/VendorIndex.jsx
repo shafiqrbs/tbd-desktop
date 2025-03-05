@@ -26,7 +26,6 @@ function VendorIndex() {
 
 	// Memoize selectors
 	const insertType = useSelector((state) => state.crud?.data?.core?.insertType);
-	const filters = useSelector((state) => state.crud?.data?.core?.filters.vendor || {});
 
 	// Use a custom hook instead of calling a function that uses hooks
 	const customerDropDownData = useCustomerDropdownData();

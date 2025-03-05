@@ -1,15 +1,13 @@
 import { useEffect, useState, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { getDropdownData } from "../../../store/core/utilitySlice.js";
+import { selectCustomerDropdownData } from "../../../store/core/crudSlice.js";
 
 // Rename to follow React hook naming convention
 export function useCustomerDropdownData() {
 	const dispatch = useDispatch();
 
-	// Get dropdown data from core slice with memoized selector
-	const customerDropdownData = useSelector(
-		(state) => state.utility?.dropdowns?.core?.customers || []
-	);
+	const customerDropdownData = useSelector(selectCustomerDropdownData);
 
 	// Fetch data only once on mount
 	useEffect(() => {

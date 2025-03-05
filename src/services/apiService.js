@@ -23,52 +23,6 @@ const createAxiosRequest = (method, url, headers, data = null, params = null) =>
 	return axios(config);
 };
 
-// Add retry logic with exponential backoff
-const createAxiosRequestWithRetry = async (
-	method,
-	url,
-	headers,
-	data = null,
-	params = null,
-	retries = 3,
-	delay = 1000
-) => {
-	const config = {
-		method,
-		url: `${import.meta.env.VITE_API_GATEWAY_URL}${url}`,
-		headers: headers || getCommonHeaders(),
-	};
-
-	if (data) config.data = data;
-	if (params) config.params = params;
-
-	try {
-		return await axios(config);
-	} catch (error) {
-		// If we have retries left and it's a rate limit error (429)
-		if (retries > 0 && error.response?.status === 429) {
-			console.log(`Rate limited. Retrying in ${delay}ms...`);
-
-			// Wait for the specified delay
-			await new Promise((resolve) => setTimeout(resolve, delay));
-
-			// Retry with exponential backoff (double the delay)
-			return createAxiosRequestWithRetry(
-				method,
-				url,
-				headers,
-				data,
-				params,
-				retries - 1,
-				delay * 2
-			);
-		}
-
-		// If we're out of retries or it's not a rate limit error, throw
-		throw error;
-	}
-};
-
 // main API functions
 export const getSelectDataWithParam = async (value) => {
 	try {
@@ -82,13 +36,7 @@ export const getSelectDataWithParam = async (value) => {
 
 export const getDataWithParam = async (value) => {
 	try {
-		const response = await createAxiosRequestWithRetry(
-			"get",
-			value.url,
-			null,
-			null,
-			value.param
-		);
+		const response = await createAxiosRequest("get", value.url, null, null, value.param);
 		return response.data;
 	} catch (error) {
 		console.error("Error in getDataWithParam:", error);
@@ -99,7 +47,7 @@ export const getDataWithParam = async (value) => {
 export const getDataWithoutParam = async (value) => {
 	try {
 		const url = typeof value === "object" && value.url ? value.url : value;
-		const response = await createAxiosRequestWithRetry("get", url);
+		const response = await createAxiosRequest("get", url);
 		return response.data.data;
 	} catch (error) {
 		console.error("Error in getDataWithoutParam:", error);

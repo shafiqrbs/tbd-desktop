@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useOutletContext } from "react-router";
 import { Group, Box, ActionIcon, Text, Menu, rem } from "@mantine/core";
 import { useTranslation } from "react-i18next";
@@ -8,6 +8,7 @@ import { useDispatch, useSelector } from "react-redux";
 import {
 	editEntityData,
 	getIndexEntityData,
+	selectVendorFilters,
 	setDeleteMessage,
 	setFormLoading,
 	setInsertType,
@@ -30,7 +31,8 @@ function VendorTable() {
 
 	const [fetching, setFetching] = useState(true);
 	const searchKeyword = useSelector((state) => state?.crud?.data?.core?.searchKeyword || "");
-	const filters = useSelector((state) => state?.crud?.data?.core?.filters?.vendor || {});
+	const filters = useSelector(selectVendorFilters);
+	console.log("Filters:", filters);
 	const entityDataDelete = useSelector((state) => state?.crud?.data?.core?.deleteMessage || "");
 	const coreVendors = JSON.parse(localStorage.getItem("core-vendors") || "[]");
 
@@ -61,7 +63,7 @@ function VendorTable() {
 				dispatch(setFetching(true));
 			}, 700);
 		}
-	}, [entityDataDelete]);
+	}, [entityDataDelete, dispatch, t]);
 
 	useEffect(() => {
 		const fetchData = async () => {
@@ -165,7 +167,6 @@ function VendorTable() {
 										</Menu.Target>
 										<Menu.Dropdown>
 											<Menu.Item
-												// href={`/inventory/sales/edit/${data.id}`}
 												onClick={() => {
 													dispatch(
 														setInsertType({
@@ -221,7 +222,6 @@ function VendorTable() {
 															style: { backgroundColor: "lightgray" },
 														});
 													}
-													// dispatch(showEntityData('core/vendor/' + data.id))
 												}}
 												target="_blank"
 												component="a"

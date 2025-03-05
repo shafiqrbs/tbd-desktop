@@ -1,5 +1,4 @@
-import { useState, useMemo } from "react";
-import { useOutletContext } from "react-router";
+import { useState } from "react";
 import { rem, Grid, Tooltip, TextInput, ActionIcon } from "@mantine/core";
 import { useTranslation } from "react-i18next";
 import {
@@ -19,7 +18,6 @@ import FilterModel from "./FilterModel.jsx";
 function KeywordSearch(props) {
 	const { t } = useTranslation();
 	const dispatch = useDispatch();
-	const { isOnline } = useOutletContext();
 
 	const [searchKeywordTooltip, setSearchKeywordTooltip] = useState(false);
 	const [filterModel, setFilterModel] = useState(false);
@@ -54,12 +52,6 @@ function KeywordSearch(props) {
 				return module;
 		}
 	};
-
-	// Fix: Use useSelector instead of useMemo with state
-	const filters = useSelector((state) => {
-		const moduleGroup = getModuleGroup(props.module);
-		return state?.crud?.data?.[moduleGroup]?.filters || {};
-	});
 
 	const searchKeyword = useSelector((state) => {
 		const moduleGroup = getModuleGroup(props.module);
@@ -208,7 +200,7 @@ function KeywordSearch(props) {
 							size="lg"
 							c="gray.6"
 							aria-label="Settings"
-							onClick={(e) => {
+							onClick={() => {
 								setFilterModel(true);
 							}}
 						>
