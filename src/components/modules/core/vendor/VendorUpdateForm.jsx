@@ -47,7 +47,7 @@ function VendorUpdateForm(props) {
 
 	// Get entity data with safe default
 	const entityEditData = useSelector(selectEntityData);
-	const formLoading = useSelector((state) => state.crud?.data?.core?.formLoading || false);
+	const formLoading = useSelector((state) => state.crudSlice?.data?.core?.formLoading || false);
 	const navigate = useNavigate();
 
 	const form = useForm({

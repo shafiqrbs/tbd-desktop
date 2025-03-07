@@ -1,9 +1,8 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { getDropdownData } from "../../../store/core/utilitySlice.js";
 import { selectCustomerDropdownData } from "../../../store/core/crudSlice.js";
 
-// Rename to follow React hook naming convention
 export function useCustomerDropdownData() {
 	const dispatch = useDispatch();
 

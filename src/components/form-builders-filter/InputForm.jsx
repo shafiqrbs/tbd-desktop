@@ -3,29 +3,21 @@ import { useTranslation } from "react-i18next";
 import { IconInfoCircle, IconSearch, IconX } from "@tabler/icons-react";
 import { getHotkeyHandler } from "@mantine/hooks";
 import { useDispatch, useSelector } from "react-redux";
+import { setFilter } from "../../store/core/crudSlice";
 
 function InputForm(props) {
-	const { label, placeholder, nextField, id, name, module } = props;
+	const { label, placeholder, nextField, id, name, module, filterKey } = props;
+	console.log("🚀 ~ InputForm ~ props:", props);
 	const { t } = useTranslation();
 	const dispatch = useDispatch();
-
-	// Get filter data from core slice
-	const filters = useSelector((state) => state.crud.data[getModuleGroup(module)].filters);
 
 	// Helper function to determine module group
 	const getModuleGroup = (module) => {
 		switch (module) {
-			case "category-group":
-			case "customer":
-			case "vendor":
-			case "user":
 			case "warehouse":
 				return "core";
-			case "product":
 			case "category":
 				return "inventory";
-			case "production-setting":
-			case "production-batch":
 			case "recipe-item":
 				return "production";
 			default:
@@ -33,35 +25,19 @@ function InputForm(props) {
 		}
 	};
 
-	// Helper function to get filter key
-	const getFilterKey = (module) => {
-		switch (module) {
-			case "category-group":
-				return "categoryGroup";
-			case "production-setting":
-				return "setting";
-			case "production-batch":
-				return "batch";
-			case "recipe-item":
-				return "recipeItem";
-			default:
-				return module;
-		}
-	};
+	// Get filter data from core slice
+	const filters = useSelector((state) => state.crudSlice?.data[getModuleGroup(module)]?.filters);
 
 	const handleChange = (value) => {
 		const moduleGroup = getModuleGroup(module);
-		const filterKey = getFilterKey(module);
-
-		dispatch({
-			type: "crud/setFilter",
-			payload: {
-				moduleGroup,
+		dispatch(
+			setFilter({
+				module: moduleGroup,
 				filterKey,
-				name,
+				name: name,
 				value,
-			},
-		});
+			})
+		);
 	};
 
 	return (
@@ -77,10 +53,10 @@ function InputForm(props) {
 					: ["Enter", () => document.getElementById(nextField).focus()],
 			])}
 			onChange={(e) => handleChange(e.currentTarget.value)}
-			value={filters[getFilterKey(module)]?.[name] || ""}
+			value={filters?.[filterKey]?.[name] || ""}
 			id={id}
 			rightSection={
-				filters[getFilterKey(module)]?.[name] ? (
+				filters?.[filterKey]?.[name] ? (
 					<Tooltip label={t("Close")} withArrow bg="red.5">
 						<IconX
 							color="red"

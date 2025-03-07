@@ -1,22 +1,22 @@
-import { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import {getSettingDropdown,} from "../../../store/utility/utilitySlice.js";
+import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { getSettingDropdown } from "../../../store/utility/utilitySlice.js";
 
 const getSettingModulesDropdownData = () => {
-    const dispatch = useDispatch();
-    // const [settingDropdown, setSettingDropdown] = useState([]);
+	const dispatch = useDispatch();
+	// const [settingDropdown, setSettingDropdown] = useState([]);
 
-    useEffect(() => {
-        const value = {
-            url: 'utility/select/setting',
-            param: { 'dropdown-type': 'module' }
-        }
-        dispatch(getSettingDropdown(value))
-    }, [dispatch]);
+	useEffect(() => {
+		const value = {
+			url: "utility/select/setting",
+			param: { "dropdown-type": "module" },
+		};
+		dispatch(getSettingDropdown(value));
+	}, [dispatch]);
 
-    const moduleDropdownData = useSelector((state) => state.utilityUtilitySlice.moduleDropdownData);
+	const moduleDropdownData = useSelector((state) => state.utilitySlice.moduleDropdownData);
 
-    /*console.log(moduleDropdownData)
+	/*console.log(moduleDropdownData)
 
     useEffect(() => {
         if (moduleDropdownData && moduleDropdownData.length > 0) {
@@ -27,7 +27,7 @@ const getSettingModulesDropdownData = () => {
         }
     }, [moduleDropdownData]);*/
 
-    return moduleDropdownData;
+	return moduleDropdownData;
 };
 
 export default getSettingModulesDropdownData;

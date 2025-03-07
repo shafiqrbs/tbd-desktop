@@ -18,9 +18,11 @@ import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router";
 import { useHotkeys } from "@mantine/hooks";
 import getSpotlightDropdownData from "../../global-hook/spotlight-dropdown/getSpotlightDropdownData.js";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { setMenu } from "../../../store/core/crudSlice.js";
 
 function SpotLightSearchModal({ onClose }) {
+	const dispatch = useDispatch();
 	const [filteredItems, setFilteredItems] = useState([]);
 	const { t } = useTranslation();
 	const navigate = useNavigate();
@@ -31,24 +33,29 @@ function SpotLightSearchModal({ onClose }) {
 	const [visible, setVisible] = useState(true);
 
 	// Get config data from core slice instead of local hook
-	const configData = useSelector((state) => state.crud?.data?.core.list);
+	const configData = useSelector((state) => state.crudSlice?.data?.core.menu);
 	const [configDataSpot, setConfigData] = useState(null);
 
-	// Update the config data fetch logic
 	useEffect(() => {
-		if (configData) {
+		// Fetch from local storage only on mount
+		const storedConfigData = localStorage.getItem("config-data");
+		if (storedConfigData) {
+			const items = JSON.parse(storedConfigData);
+			setConfigData(items);
+			setVisible(false);
+			dispatch(setMenu({ module: "core", value: items }));
+		} else {
+			navigate("/login");
+		}
+	}, [navigate, dispatch]); // Only runs once on mount
+
+	useEffect(() => {
+		// Only update state when configData changes
+		if (configData.length) {
 			setConfigData(configData);
 			setVisible(false);
-		} else {
-			const storedConfigData = localStorage.getItem("config-data");
-			if (storedConfigData) {
-				setConfigData(JSON.parse(storedConfigData));
-				setVisible(false);
-			} else {
-				navigate("/login");
-			}
 		}
-	}, [configData, navigate]);
+	}, [configData]);
 
 	useHotkeys([
 		[

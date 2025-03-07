@@ -25,13 +25,8 @@ function KeywordSearch(props) {
 	// Helper function to determine module group
 	const getModuleGroup = (module) => {
 		switch (module) {
-			case "customer":
-			case "vendor":
-			case "user":
-			case "warehouse":
 			case "category-group":
 				return "core";
-			case "product":
 			case "category":
 				return "inventory";
 			case "production-setting":
@@ -55,7 +50,7 @@ function KeywordSearch(props) {
 
 	const searchKeyword = useSelector((state) => {
 		const moduleGroup = getModuleGroup(props.module);
-		return state?.crud?.data?.[moduleGroup]?.searchKeyword || "";
+		return state.crudSlice?.data?.[moduleGroup]?.searchKeyword || "";
 	});
 
 	useHotkeys([["alt+F", () => document.getElementById("SearchKeyword").focus()]], []);
@@ -116,13 +111,12 @@ function KeywordSearch(props) {
 							onKeyDown={handleKeyDown}
 							onChange={(e) => {
 								const value = e.currentTarget.value;
-								dispatch({
-									type: "crud/setSearchKeyword",
-									payload: {
+								dispatch(
+									setSearchKeyword({
 										module: getModuleGroup(props.module),
 										value,
-									},
-								});
+									})
+								);
 
 								if (!value) {
 									setSearchKeywordTooltip(true);
@@ -295,7 +289,7 @@ function KeywordSearch(props) {
 				<FilterModel
 					filterModel={filterModel}
 					setFilterModel={setFilterModel}
-					module={props.module}
+					module={props?.module}
 				/>
 			)}
 		</>

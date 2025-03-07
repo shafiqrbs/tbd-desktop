@@ -3,6 +3,7 @@ import InputForm from "../../../form-builders-filter/InputForm.jsx";
 import { useHotkeys } from "@mantine/hooks";
 
 function VendorFilterForm(props) {
+	console.log("🚀 ~ VendorFilterForm ~ props:", props);
 	const { t } = useTranslation();
 
 	useHotkeys(
@@ -26,6 +27,7 @@ function VendorFilterForm(props) {
 				id={"Name"}
 				name={"name"}
 				module={props.module}
+				filterKey={"vendor"}
 			/>
 
 			<InputForm
@@ -35,6 +37,7 @@ function VendorFilterForm(props) {
 				id={"Mobile"}
 				name={"mobile"}
 				module={props.module}
+				filterKey={"vendor"}
 			/>
 
 			<InputForm
@@ -44,6 +47,7 @@ function VendorFilterForm(props) {
 				id={"CompanyNameFilter"}
 				name={"company_name"}
 				module={props.module}
+				filterKey={"vendor"}
 			/>
 		</>
 	);

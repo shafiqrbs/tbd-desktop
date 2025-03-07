@@ -23,20 +23,9 @@ const createAxiosRequest = (method, url, headers, data = null, params = null) =>
 	return axios(config);
 };
 
-// main API functions
-export const getSelectDataWithParam = async (value) => {
-	try {
-		const response = await createAxiosRequest("get", value.url, null, null, value.param);
-		return response.data.data;
-	} catch (error) {
-		console.error("Error in getSelectDataWithParam:", error);
-		throw error;
-	}
-};
-
 export const getDataWithParam = async (value) => {
 	try {
-		const response = await createAxiosRequest("get", value.url, null, null, value.param);
+		const response = await createAxiosRequest("get", value.url, null, null, value.params);
 		return response.data;
 	} catch (error) {
 		console.error("Error in getDataWithParam:", error);

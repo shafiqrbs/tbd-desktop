@@ -9,6 +9,7 @@ import { BrowserRouter, HashRouter } from "react-router";
 import "./i18n.js";
 import "@mantine/core/styles.css";
 import "@mantine/notifications/styles.css";
+import "mantine-datatable/styles.layer.css";
 
 const theme = createTheme({
 	primaryColor: "indigo",

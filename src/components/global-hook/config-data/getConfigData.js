@@ -4,7 +4,7 @@ import { getIndexEntityData } from "../../../store/core/crudSlice.js";
 
 const getConfigData = () => {
 	const dispatch = useDispatch();
-	const configData = useSelector((state) => state.crud?.data?.core?.list) || [];
+	const configData = useSelector((state) => state.crudSlice?.data?.core?.list) || [];
 
 	const fetchData = () => {
 		const storedConfigData = localStorage.getItem("config-data");

@@ -14,8 +14,9 @@ import __ProductionSettingFilterForm from "../production/settings/__ProductionSe
 import WarehouseFilterForm from "../core/warehouse/WarehouseFilterForm.jsx";
 
 function FilterModel(props) {
-	const { t, i18n } = useTranslation();
-	const { isOnline, mainAreaHeight } = useOutletContext();
+	console.log("🚀 ~ FilterModel ~ props:", props);
+	const { t } = useTranslation();
+	const { mainAreaHeight } = useOutletContext();
 	const height = mainAreaHeight; //TabList height 104
 
 	const dispatch = useDispatch();
@@ -57,7 +58,7 @@ function FilterModel(props) {
 							{props.module === "category-group" && (
 								<CategoryGroupFilterForm module={props.module} />
 							)}
-							{props.module === "vendor" && (
+							{(props.module === "vendor" || props.module === "core") && (
 								<VendorFilterForm module={props.module} />
 							)}
 							{props.module === "user" && <UserFilterForm module={props.module} />}

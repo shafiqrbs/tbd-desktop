@@ -1,5 +1,4 @@
-import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { createSelector } from "@reduxjs/toolkit";
+import { createAsyncThunk, createSlice, createSelector } from "@reduxjs/toolkit";
 import {
 	createData,
 	createDataWithFile,
@@ -130,13 +129,18 @@ const initialState = {
 		},
 		core: {
 			list: [],
+			menu: [],
 			current: null,
 			validation: false,
 			validationMessage: [],
 			deleteMessage: "",
 			filters: {
 				customer: {},
-				vendor: {},
+				vendor: {
+					name: "",
+					mobile: "",
+					company_name: "",
+				},
 				user: {},
 				warehouse: {},
 				categoryGroup: {},
@@ -156,6 +160,27 @@ const crudSlice = createSlice({
 	name: "crud",
 	initialState,
 	reducers: {
+		setFilter: (state, action) => {
+			const { module, filterKey, name, value } = action.payload;
+
+			if (!state.data[module].filters) {
+				console.warn(
+					`Warning: Filters object missing in module "${module}". Initializing...`
+				);
+				state.data[module].filters = {};
+			}
+
+			if (!state.data[module].filters[filterKey]) {
+				console.warn(`Warning: Filter key "${filterKey}" missing. Initializing...`);
+				state.data[module].filters[filterKey] = {};
+			}
+
+			state.data[module].filters[filterKey][name] = value;
+		},
+		setMenu: (state, action) => {
+			const { module, value } = action.payload;
+			state.data[module].menu = value;
+		},
 		setValidation: (state, action) => {
 			const { module, value } = action.payload;
 			state.data[module].validation = value;
@@ -227,8 +252,7 @@ const crudSlice = createSlice({
 				state.isLoading = true;
 			})
 			.addCase(getIndexEntityData.fulfilled, (state, action) => {
-				const { data, module = "core" } = action.payload;
-				console.log("Action payload:", action.payload);
+				const { data, module } = action.payload;
 				state.data[module].list = data?.data || data;
 				state.isLoading = false;
 			})
@@ -265,6 +289,7 @@ const crudSlice = createSlice({
 		builder.addCase(deleteEntityData.fulfilled, (state, action) => {
 			const { data, module } = action.payload;
 			// Handle delete success/failure as needed
+			console.info("Delete response:", data, module);
 		});
 
 		// Add edit case
@@ -295,20 +320,22 @@ export const {
 	setFormLoading,
 	setInsertType,
 	setEditEntityData,
+	setMenu,
+	setFilter,
 } = crudSlice.actions;
 
 export const selectVendorFilters = createSelector(
-	[(state) => state?.crud?.data?.core?.filters?.vendor],
+	[(state) => state.crudSlice?.data?.core?.filters?.vendor],
 	(filters) => filters ?? {}
 );
 
 export const selectCustomerDropdownData = createSelector(
-	[(state) => state.utility?.dropdowns?.core?.customers],
+	[(state) => state.utilitySlice?.dropdowns?.core?.customers],
 	(customers) => customers || []
 );
 
 export const selectEntityData = createSelector(
-	[(state) => state.crud?.data?.core?.current],
+	[(state) => state.crudSlice?.data?.core?.current],
 	(data) => data ?? {}
 );
 

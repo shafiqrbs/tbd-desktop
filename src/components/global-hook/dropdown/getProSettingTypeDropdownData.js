@@ -8,7 +8,7 @@ const getProSettingTypeDropdownData = () => {
 
 	// Get dropdown data from core slice
 	const settingTypeDropdownData = useSelector(
-		(state) => state.utility?.dropdowns?.production?.settingTypes || []
+		(state) => state.utilitySlice?.dropdowns?.production?.settingTypes || []
 	);
 
 	useEffect(() => {

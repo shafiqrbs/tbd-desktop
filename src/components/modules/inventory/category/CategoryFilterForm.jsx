@@ -16,10 +16,10 @@ function CategoryFilterForm(props) {
 	// Get filter data from core slice
 	const filters = useSelector((state) => {
 		const moduleGroup = getModuleGroup(props.module);
-		return state.crud?.data?.[moduleGroup]?.filters || {};
+		return state.crudSlice?.data?.[moduleGroup]?.filters || {};
 	});
 
-	const searchKeyword = useSelector((state) => state.crud?.data?.core?.searchKeyword || "");
+	const searchKeyword = useSelector((state) => state.crudSlice?.data?.core?.searchKeyword || "");
 
 	// Helper function to determine module group
 	const getModuleGroup = (module) => {

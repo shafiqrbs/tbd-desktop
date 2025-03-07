@@ -30,16 +30,17 @@ function VendorTable() {
 	const [page, setPage] = useState(1);
 
 	const [fetching, setFetching] = useState(true);
-	const searchKeyword = useSelector((state) => state?.crud?.data?.core?.searchKeyword || "");
+	const searchKeyword = useSelector((state) => state.crudSlice?.data?.core?.searchKeyword || "");
 	const filters = useSelector(selectVendorFilters);
-	console.log("Filters:", filters);
-	const entityDataDelete = useSelector((state) => state?.crud?.data?.core?.deleteMessage || "");
+	const entityDataDelete = useSelector(
+		(state) => state.crudSlice?.data?.core?.deleteMessage || ""
+	);
 	const coreVendors = JSON.parse(localStorage.getItem("core-vendors") || "[]");
 
 	const [vendorObject, setVendorObject] = useState({});
 	const navigate = useNavigate();
 	const [viewDrawer, setViewDrawer] = useState(false);
-	const [indexData, setIndexData] = useState([]);
+	const [indexData, setIndexData] = useState({});
 
 	useEffect(() => {
 		dispatch(
@@ -76,25 +77,20 @@ function VendorTable() {
 
 			const value = {
 				url: "core/vendor",
-				param: {
-					term: searchKeyword,
-					name: filters.name,
-					mobile: filters.mobile,
-					company_name: filters.company_name,
+				params: {
+					term: searchKeyword || "",
+					name: filters?.name || "",
+					mobile: filters?.mobile || "",
+					company_name: filters?.company_name || "",
 					page: page,
 					offset: perPage,
 				},
+				module: "core",
 			};
-
 			try {
-				console.log("value", value);
 				const resultAction = await dispatch(getIndexEntityData(value));
-				console.log("resultAction", resultAction);
-				if (getIndexEntityData.rejected.match(resultAction)) {
-					console.error("Error:", resultAction);
-				} else if (getIndexEntityData.fulfilled.match(resultAction)) {
-					setIndexData(resultAction.payload);
-				}
+
+				setIndexData(resultAction.payload);
 			} catch (err) {
 				console.error("Unexpected error:", err);
 			} finally {
@@ -114,7 +110,7 @@ function VendorTable() {
 				pb={"4"}
 				className={"boxBackground borderRadiusAll border-bottom-none"}
 			>
-				<KeywordSearch module={"vendor"} />
+				<KeywordSearch module="core" />
 			</Box>
 			<Box className={"borderRadiusAll border-top-none"}>
 				<DataTable
@@ -125,13 +121,25 @@ function VendorTable() {
 						footer: tableCss.footer,
 						pagination: tableCss.pagination,
 					}}
-					records={indexData.data}
+					records={indexData.data?.data || []}
+					fetching={fetching}
+					totalRecords={indexData.data?.total || 0}
+					recordsPerPage={perPage}
+					page={page}
+					onPageChange={(p) => {
+						setPage(p);
+						dispatch(setFetching(true));
+					}}
+					loaderSize="xs"
+					loaderColor="grape"
+					height={height}
+					scrollAreaProps={{ type: "never" }}
 					columns={[
 						{
 							accessor: "index",
 							title: t("S/N"),
 							textAlignment: "right",
-							render: (item) => indexData.data.indexOf(item) + 1,
+							render: (item) => indexData.data?.data?.indexOf(item) + 1,
 						},
 						{ accessor: "name", title: t("Name") },
 						{ accessor: "company_name", title: t("CompanyName") },
@@ -279,18 +287,6 @@ function VendorTable() {
 							),
 						},
 					]}
-					fetching={fetching}
-					totalRecords={indexData.total}
-					recordsPerPage={perPage}
-					page={page}
-					onPageChange={(p) => {
-						setPage(p);
-						dispatch(setFetching(true));
-					}}
-					loaderSize="xs"
-					loaderColor="grape"
-					height={height}
-					scrollAreaProps={{ type: "never" }}
 				/>
 			</Box>
 			{viewDrawer && (
