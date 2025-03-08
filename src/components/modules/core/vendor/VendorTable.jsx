@@ -10,6 +10,7 @@ import {
 	getIndexEntityData,
 	selectVendorFilters,
 	setDeleteMessage,
+	setFetching,
 	setFormLoading,
 	setInsertType,
 } from "../../../../store/core/crudSlice.js";
@@ -29,7 +30,9 @@ function VendorTable() {
 	const perPage = 50;
 	const [page, setPage] = useState(1);
 
-	const [fetching, setFetching] = useState(true);
+	const [loading, setLoading] = useState(false);
+	const fetchingReload = useSelector((state) => state.crudSlice?.data?.core?.fetching);
+	console.log("🚀 ~ VendorTable ~ fetchingReload:", fetchingReload);
 	const searchKeyword = useSelector((state) => state.crudSlice?.data?.core?.searchKeyword || "");
 	const filters = useSelector(selectVendorFilters);
 	const entityDataDelete = useSelector(
@@ -42,64 +45,87 @@ function VendorTable() {
 	const [viewDrawer, setViewDrawer] = useState(false);
 	const [indexData, setIndexData] = useState({});
 
-	useEffect(() => {
-		dispatch(
-			setDeleteMessage({
-				module: "core",
-				message: "",
-			})
-		);
-
-		if (entityDataDelete.message === "delete") {
-			notifications.show({
-				color: "red",
-				title: t("DeleteSuccessfully"),
-				icon: <IconCheck style={{ width: rem(18), height: rem(18) }} />,
-				loading: false,
-				autoClose: 700,
-				style: { backgroundColor: "lightgray" },
-			});
-
-			setTimeout(() => {
-				dispatch(setFetching(true));
-			}, 700);
-		}
-	}, [entityDataDelete, dispatch, t]);
-
-	useEffect(() => {
-		const fetchData = async () => {
-			setFetching((prev) => {
-				if (!prev) {
-					return true;
-				}
-				return prev;
-			});
-
-			const value = {
-				url: "core/vendor",
-				params: {
-					term: searchKeyword || "",
-					name: filters?.name || "",
-					mobile: filters?.mobile || "",
-					company_name: filters?.company_name || "",
-					page: page,
-					offset: perPage,
-				},
-				module: "core",
-			};
-			try {
-				const resultAction = await dispatch(getIndexEntityData(value));
-
-				setIndexData(resultAction.payload);
-			} catch (err) {
-				console.error("Unexpected error:", err);
-			} finally {
-				setFetching(false);
-			}
+	const fetchData = async () => {
+		setLoading(true);
+		const value = {
+			url: "core/vendor",
+			params: {
+				term: searchKeyword || "",
+				name: filters?.name || "",
+				mobile: filters?.mobile || "",
+				company_name: filters?.company_name || "",
+				page: page,
+				offset: perPage,
+			},
+			module: "core",
 		};
 
+		try {
+			const resultAction = await dispatch(getIndexEntityData(value));
+			console.log("🚀 ~ fetchData ~ resultAction:", resultAction);
+			setIndexData(resultAction.payload);
+		} catch (err) {
+			console.error("Unexpected error:", err);
+		} finally {
+			setLoading(false);
+		}
+	};
+
+	useEffect(() => {
 		fetchData();
 	}, [dispatch, searchKeyword, filters, page]);
+
+	useEffect(() => {
+		if (fetchingReload) {
+			const reloadData = async () => {
+				await fetchData(); // Reuse the same function
+				dispatch(
+					setFetching({
+						module: "core",
+						value: false,
+					})
+				);
+			};
+
+			reloadData();
+		}
+	}, [fetchingReload]);
+
+	useEffect(() => {
+		if (fetchingReload) {
+			const reloadData = async () => {
+				const value = {
+					url: "core/vendor",
+					params: {
+						term: searchKeyword || "",
+						name: filters?.name || "",
+						mobile: filters?.mobile || "",
+						company_name: filters?.company_name || "",
+						page: page,
+						offset: perPage,
+					},
+					module: "core",
+				};
+
+				try {
+					const resultAction = await dispatch(getIndexEntityData(value));
+					console.log("🚀 ~ reloadData ~ resultAction:", resultAction);
+					setIndexData(resultAction.payload);
+				} catch (err) {
+					console.error("Unexpected error:", err);
+				} finally {
+					dispatch(
+						setFetching({
+							module: "core",
+							value: false,
+						})
+					);
+				}
+			};
+
+			reloadData();
+		}
+	}, [fetchingReload, dispatch, searchKeyword, filters, page]);
 
 	return (
 		<>
@@ -122,13 +148,18 @@ function VendorTable() {
 						pagination: tableCss.pagination,
 					}}
 					records={indexData.data?.data || []}
-					fetching={fetching}
+					fetching={loading}
 					totalRecords={indexData.data?.total || 0}
 					recordsPerPage={perPage}
 					page={page}
 					onPageChange={(p) => {
 						setPage(p);
-						dispatch(setFetching(true));
+						dispatch(
+							setFetching({
+								module: "core",
+								value: true,
+							})
+						);
 					}}
 					loaderSize="xs"
 					loaderColor="grape"

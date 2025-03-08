@@ -199,6 +199,7 @@ function VendorUpdateForm(props) {
 											value: true,
 										})
 									);
+
 									setSaveCreateLoading(false);
 									navigate("/core/vendor", { replace: true });
 								}, 700);

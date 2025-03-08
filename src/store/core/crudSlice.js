@@ -135,6 +135,7 @@ const initialState = {
 			validation: false,
 			validationMessage: [],
 			deleteMessage: "",
+			fetching: false,
 			filters: {
 				customer: {},
 				vendor: {
@@ -230,7 +231,8 @@ const crudSlice = createSlice({
 			state.data[module].searchKeyword = value;
 		},
 		setFetching: (state, action) => {
-			state.isLoading = action.payload;
+			const { module, value } = action.payload;
+			state.data[module].fetching = value;
 		},
 		setDeleteMessage: (state, action) => {
 			const { module, message } = action.payload;
