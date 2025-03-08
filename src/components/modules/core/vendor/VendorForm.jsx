@@ -96,7 +96,7 @@ function VendorForm(props) {
 						children: <Text size="sm"> {t("FormConfirmationMessage")}</Text>,
 						labels: { confirm: t("Submit"), cancel: t("Cancel") },
 						confirmProps: { color: "red" },
-						onCancel: () => console.log("Cancel"),
+						onCancel: () => console.warn("Cancel"),
 						onConfirm: async () => {
 							const value = {
 								url: "core/vendor",
@@ -132,7 +132,12 @@ function VendorForm(props) {
 									vendorDataStoreIntoLocalStorage();
 									form.reset();
 									setCustomerData(null);
-									dispatch(setFetching(true));
+									dispatch(
+										setFetching({
+											module: "core",
+											value: true,
+										})
+									);
 								}, 700);
 							}
 						},

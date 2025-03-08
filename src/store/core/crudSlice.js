@@ -1,4 +1,4 @@
-import { createAsyncThunk, createSlice, createSelector } from "@reduxjs/toolkit";
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import {
 	createData,
 	createDataWithFile,
@@ -231,7 +231,7 @@ const crudSlice = createSlice({
 			state.data[module].searchKeyword = value;
 		},
 		setFetching: (state, action) => {
-			const { module, value } = action.payload;
+			const { module = "core", value } = action.payload;
 			state.data[module].fetching = value;
 		},
 		setDeleteMessage: (state, action) => {
@@ -283,7 +283,6 @@ const crudSlice = createSlice({
 		// handle update case
 		builder.addCase(updateEntityData.fulfilled, (state, action) => {
 			const { data, module } = action.payload;
-			console.log("🚀 ~ builder.addCase ~ action.payload:", action.payload);
 			if (data.success) {
 				state.data[module].validation = false;
 				state.data[module].validationMessage = [];
@@ -295,9 +294,9 @@ const crudSlice = createSlice({
 
 		// handle delete case
 		builder.addCase(deleteEntityData.fulfilled, (state, action) => {
-			const { data, module } = action.payload;
-			// Handle delete success/failure as needed
-			console.info("Delete response:", data, module);
+			const { module = "core", data } = action.payload;
+			state.data[module].deleteMessage = data?.data;
+			state.data[module].fetching = true;
 		});
 
 		// Add edit case

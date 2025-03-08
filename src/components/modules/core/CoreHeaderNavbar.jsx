@@ -67,7 +67,7 @@ function CoreHeaderNavbar(props) {
 							<Menu.Dropdown>
 								<Menu.Item
 									component="button"
-									onClick={(e) => {
+									onClick={() => {
 										navigate("/core/setting");
 									}}
 									leftSection={
@@ -80,7 +80,7 @@ function CoreHeaderNavbar(props) {
 								</Menu.Item>
 								<Menu.Item
 									component="button"
-									onClick={(e) => {
+									onClick={() => {
 										navigate("/core/warehouse");
 									}}
 									leftSection={
@@ -91,7 +91,7 @@ function CoreHeaderNavbar(props) {
 								</Menu.Item>
 								<Menu.Item
 									component="button"
-									onClick={(e) => {
+									onClick={() => {
 										navigate("/core/marketing-executive");
 									}}
 									leftSection={
@@ -105,7 +105,7 @@ function CoreHeaderNavbar(props) {
 								<Menu.Item
 									href="/inventory/config"
 									component="button"
-									onClick={(e) => {
+									onClick={() => {
 										navigate("/inventory/config");
 									}}
 									leftSection={

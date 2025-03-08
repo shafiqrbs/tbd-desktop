@@ -32,7 +32,6 @@ function VendorTable() {
 
 	const [loading, setLoading] = useState(false);
 	const fetchingReload = useSelector((state) => state.crudSlice?.data?.core?.fetching);
-	console.log("🚀 ~ VendorTable ~ fetchingReload:", fetchingReload);
 	const searchKeyword = useSelector((state) => state.crudSlice?.data?.core?.searchKeyword || "");
 	const filters = useSelector(selectVendorFilters);
 	const entityDataDelete = useSelector(
@@ -62,7 +61,6 @@ function VendorTable() {
 
 		try {
 			const resultAction = await dispatch(getIndexEntityData(value));
-			console.log("🚀 ~ fetchData ~ resultAction:", resultAction);
 			setIndexData(resultAction.payload);
 		} catch (err) {
 			console.error("Unexpected error:", err);
@@ -70,6 +68,28 @@ function VendorTable() {
 			setLoading(false);
 		}
 	};
+
+	useEffect(() => {
+		if (entityDataDelete.message === "delete") {
+			notifications.show({
+				color: "red",
+				title: t("DeleteSuccessfully"),
+				icon: <IconCheck style={{ width: rem(18), height: rem(18) }} />,
+				loading: false,
+				autoClose: 700,
+				style: { backgroundColor: "lightgray" },
+			});
+
+			setTimeout(() => {
+				dispatch(
+					setFetching({
+						module: "core",
+						value: true,
+					})
+				);
+			}, 700);
+		}
+	}, [entityDataDelete]);
 
 	useEffect(() => {
 		fetchData();
@@ -109,7 +129,6 @@ function VendorTable() {
 
 				try {
 					const resultAction = await dispatch(getIndexEntityData(value));
-					console.log("🚀 ~ reloadData ~ resultAction:", resultAction);
 					setIndexData(resultAction.payload);
 				} catch (err) {
 					console.error("Unexpected error:", err);
@@ -294,11 +313,11 @@ function VendorTable() {
 															cancel: "Cancel",
 														},
 														confirmProps: { color: "red.6" },
-														onCancel: () => console.log("Cancel"),
+														onCancel: () => console.warn("Cancel"),
 														onConfirm: () => {
 															dispatch(
 																deleteEntityData(
-																	"core/vendor/" + data.id
+																	`core/vendor/${data.id}`
 																)
 															);
 														},

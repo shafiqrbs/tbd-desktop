@@ -35,7 +35,12 @@ function CategoryFilterForm(props) {
 
 	const handleKeyDown = (event) => {
 		if (event.key === "Enter" && searchKeyword.length > 0) {
-			dispatch(setFetching(true));
+			dispatch(
+				setFetching({
+					module: getModuleGroup(props.module),
+					value: true,
+				})
+			);
 			setSearchKeywordTooltip(false);
 		} else {
 			setSearchKeywordTooltip(true);
@@ -46,7 +51,12 @@ function CategoryFilterForm(props) {
 	const handleReset = () => {
 		const moduleGroup = getModuleGroup(props.module);
 
-		dispatch(setFetching(true));
+		dispatch(
+			setFetching({
+				module: moduleGroup,
+				value: true,
+			})
+		);
 
 		// Reset search keyword
 		dispatch(
@@ -148,7 +158,12 @@ function CategoryFilterForm(props) {
 							aria-label="Filter"
 							onClick={() => {
 								if (searchKeyword.length > 0) {
-									dispatch(setFetching(true));
+									dispatch(
+										setFetching({
+											module: getModuleGroup(props.module),
+											value: true,
+										})
+									);
 									setSearchKeywordTooltip(false);
 								} else {
 									setSearchKeywordTooltip(true);

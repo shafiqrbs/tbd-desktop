@@ -57,7 +57,12 @@ function KeywordSearch(props) {
 
 	const handleKeyDown = (event) => {
 		if (event.key === "Enter" && searchKeyword.length > 0) {
-			dispatch(setFetching(true));
+			dispatch(
+				setFetching({
+					module: getModuleGroup(props.module),
+					value: true,
+				})
+			);
 			setSearchKeywordTooltip(false);
 		} else {
 			setSearchKeywordTooltip(true);
@@ -69,7 +74,12 @@ function KeywordSearch(props) {
 		const moduleGroup = getModuleGroup(props.module);
 		const filterKey = getFilterKey(props.module);
 
-		dispatch(setFetching(true));
+		dispatch(
+			setFetching({
+				module: moduleGroup,
+				value: true,
+			})
+		);
 
 		// Reset search keyword
 		dispatch(
@@ -169,7 +179,13 @@ function KeywordSearch(props) {
 							aria-label="Filter"
 							onClick={() => {
 								searchKeyword.length > 0
-									? (dispatch(setFetching(true)), setSearchKeywordTooltip(false))
+									? (dispatch(
+											setFetching({
+												module: getModuleGroup(props.module),
+												value: true,
+											})
+									  ),
+									  setSearchKeywordTooltip(false))
 									: (setSearchKeywordTooltip(true),
 									  setTimeout(() => {
 											setSearchKeywordTooltip(false);
@@ -236,7 +252,13 @@ function KeywordSearch(props) {
 							aria-label="Filter"
 							onClick={() => {
 								searchKeyword.length > 0
-									? (dispatch(setFetching(true)), setSearchKeywordTooltip(false))
+									? (dispatch(
+											setFetching({
+												module: getModuleGroup(props.module),
+												value: true,
+											})
+									  ),
+									  setSearchKeywordTooltip(false))
 									: (setSearchKeywordTooltip(true),
 									  setTimeout(() => {
 											setSearchKeywordTooltip(false);

@@ -30,7 +30,7 @@ function Shortcut(props) {
 								variant={"light"}
 								color={`red.5`}
 								radius="xl"
-								onClick={(e) => {
+								onClick={() => {
 									console.log(inputType);
 									console.log(Name);
 									inputType === "select"
