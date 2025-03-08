@@ -1,7 +1,7 @@
 import { useEffect, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { getDropdownData } from "../../../store/core/utilitySlice.js";
-import { selectCustomerDropdownData } from "../../../store/core/crudSlice.js";
+import { selectCustomerDropdownData } from "../../../store/core/utilitySlice.js";
 
 export function useCustomerDropdownData() {
 	const dispatch = useDispatch();

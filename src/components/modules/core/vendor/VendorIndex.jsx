@@ -2,7 +2,6 @@ import { useEffect } from "react";
 import { Box, Grid, Progress } from "@mantine/core";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
-
 import VendorTable from "./VendorTable.jsx";
 import VendorForm from "./VendorForm";
 import VendorUpdateForm from "./VendorUpdateForm.jsx";
@@ -24,64 +23,39 @@ function VendorIndex() {
 	const { id } = useParams();
 	const navigate = useNavigate();
 
-	// Memoize selectors
 	const insertType = useSelector((state) => state.crudSlice?.data?.core?.insertType);
-
-	// Use a custom hook instead of calling a function that uses hooks
 	const customerDropDownData = useCustomerDropdownData();
-
 	const progress = getLoadingProgress();
 
 	useEffect(() => {
-		if (id) {
-			dispatch(
-				setInsertType({
-					module: "core",
-					value: "update",
-				})
-			);
-			dispatch(
-				editEntityData({
-					url: `core/vendor/${id}`,
-					module: "core",
-				})
-			);
-			dispatch(
-				setFormLoading({
-					module: "core",
-					value: true,
-				})
-			);
-		} else {
-			dispatch(
-				setInsertType({
-					module: "core",
-					value: "create",
-				})
-			);
-			dispatch(
-				setSearchKeyword({
-					module: "core",
-					value: "",
-				})
-			);
-			dispatch(
-				setEditEntityData({
-					module: "core",
-					data: [],
-				})
-			);
+		const initializeVendor = async () => {
+			if (id) {
+				dispatch(setInsertType({ module: "core", value: "update" }));
+				dispatch(setFormLoading({ module: "core", value: true }));
 
-			dispatch({
-				type: "crud/resetFilters",
-				payload: {
-					module: "core",
-					filterKey: "vendor",
-				},
-			});
+				try {
+					await dispatch(
+						editEntityData({
+							url: `core/vendor/${id}`,
+							module: "core",
+						})
+					).unwrap();
+				} finally {
+					dispatch(setFormLoading({ module: "core", value: false }));
+				}
+			} else {
+				dispatch(setInsertType({ module: "core", value: "create" }));
+				dispatch(setSearchKeyword({ module: "core", value: "" }));
+				dispatch(setEditEntityData({ module: "core", data: [] }));
+				dispatch({
+					type: "crud/resetFilters",
+					payload: { module: "core", filterKey: "vendor" },
+				});
+				navigate("/core/vendor", { replace: true });
+			}
+		};
 
-			navigate("/core/vendor", { replace: true });
-		}
+		initializeVendor();
 	}, [id, dispatch, navigate]);
 
 	return (
@@ -89,7 +63,7 @@ function VendorIndex() {
 			{progress !== 100 && (
 				<Progress
 					color="red"
-					size={"sm"}
+					size="sm"
 					striped
 					animated
 					value={progress}
@@ -104,10 +78,10 @@ function VendorIndex() {
 						allowZeroPercentage=""
 						currencySymbol=""
 					/>
-					<Box p={"8"}>
+					<Box p="8">
 						<Grid columns={24} gutter={{ base: 8 }}>
 							<Grid.Col span={15}>
-								<Box bg={"white"} p={"xs"} className={"borderRadiusAll"}>
+								<Box bg="white" p="xs" className="borderRadiusAll">
 									<VendorTable />
 								</Box>
 							</Grid.Col>

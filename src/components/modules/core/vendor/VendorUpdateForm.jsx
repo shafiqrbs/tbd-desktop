@@ -47,7 +47,7 @@ function VendorUpdateForm(props) {
 
 	// Get entity data with safe default
 	const entityEditData = useSelector(selectEntityData);
-	const formLoading = useSelector((state) => state.crudSlice?.data?.core?.formLoading || false);
+	const formLoading = useSelector((state) => state.crudSlice?.data?.core?.formLoading);
 	const navigate = useNavigate();
 
 	const form = useForm({
@@ -76,7 +76,7 @@ function VendorUpdateForm(props) {
 	});
 
 	useEffect(() => {
-		if (entityEditData && Object.keys(entityEditData).length > 0) {
+		if (entityEditData && !formLoading) {
 			form.setValues({
 				company_name: entityEditData.company_name || "",
 				name: entityEditData.name || "",
@@ -90,7 +90,7 @@ function VendorUpdateForm(props) {
 				setCustomerData(String(entityEditData.customer_id));
 			}
 		}
-	}, [entityEditData, form]);
+	}, [entityEditData, formLoading]);
 
 	const handleFormReset = () => {
 		if (entityEditData) {
@@ -153,10 +153,10 @@ function VendorUpdateForm(props) {
 						confirmProps: { color: "red" },
 						onCancel: () => console.log("Cancel"),
 						onConfirm: async () => {
-							// setSaveCreateLoading(true)
 							const value = {
-								url: "core/vendor/" + entityEditData.id,
+								url: `core/vendor/${entityEditData.id}`,
 								data: values,
+								module: "core",
 							};
 
 							const resultAction = await dispatch(updateEntityData(value));
@@ -186,14 +186,19 @@ function VendorUpdateForm(props) {
 								setTimeout(() => {
 									vendorDataStoreIntoLocalStorage();
 									form.reset();
-									dispatch(setInsertType("create"));
+									dispatch(setInsertType({ module: "core", value: "create" }));
 									dispatch(
 										setEditEntityData({
 											module: "core",
 											data: [],
 										})
 									);
-									dispatch(setFetching(true));
+									dispatch(
+										setFetching({
+											module: "core",
+											value: true,
+										})
+									);
 									setSaveCreateLoading(false);
 									navigate("/core/vendor", { replace: true });
 								}, 700);
@@ -330,8 +335,8 @@ function VendorUpdateForm(props) {
 													value={
 														customerData
 															? String(customerData)
-															: entityEditData.customer_id
-															? String(entityEditData.customer_id)
+															: entityEditData?.customer_id
+															? String(entityEditData?.customer_id)
 															: null
 													}
 													changeValue={setCustomerData}

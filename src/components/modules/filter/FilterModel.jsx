@@ -14,7 +14,6 @@ import __ProductionSettingFilterForm from "../production/settings/__ProductionSe
 import WarehouseFilterForm from "../core/warehouse/WarehouseFilterForm.jsx";
 
 function FilterModel(props) {
-	console.log("🚀 ~ FilterModel ~ props:", props);
 	const { t } = useTranslation();
 	const { mainAreaHeight } = useOutletContext();
 	const height = mainAreaHeight; //TabList height 104

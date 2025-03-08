@@ -3,7 +3,6 @@ import InputForm from "../../../form-builders-filter/InputForm.jsx";
 import { useHotkeys } from "@mantine/hooks";
 
 function VendorFilterForm(props) {
-	console.log("🚀 ~ VendorFilterForm ~ props:", props);
 	const { t } = useTranslation();
 
 	useHotkeys(

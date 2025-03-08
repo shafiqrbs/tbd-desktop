@@ -7,7 +7,6 @@ import { setFilter } from "../../store/core/crudSlice";
 
 function InputForm(props) {
 	const { label, placeholder, nextField, id, name, module, filterKey } = props;
-	console.log("🚀 ~ InputForm ~ props:", props);
 	const { t } = useTranslation();
 	const dispatch = useDispatch();
 

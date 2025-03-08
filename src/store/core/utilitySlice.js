@@ -1,4 +1,4 @@
-import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import { createAsyncThunk, createSelector, createSlice } from "@reduxjs/toolkit";
 import { getDataWithoutParam, getDataWithParam } from "../../services/apiService";
 
 export const getDropdownData = createAsyncThunk(
@@ -75,5 +75,10 @@ const utilitySlice = createSlice({
 	},
 });
 
-export const { clearDropdowns } = utilitySlice.actions;
+export const selectCustomerDropdownData = createSelector(
+	[(state) => state.utilitySlice?.dropdowns?.core?.customers],
+	(customers) => (customers ? [...customers] : [])
+);
+
+export const { clearDropdowns, setCustomersDropdown } = utilitySlice.actions;
 export default utilitySlice.reducer;

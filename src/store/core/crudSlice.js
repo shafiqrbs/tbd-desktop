@@ -67,7 +67,7 @@ export const deleteEntityData = createAsyncThunk(
 
 export const editEntityData = createAsyncThunk("core/edit", async (value, { rejectWithValue }) => {
 	try {
-		const response = await editData(value);
+		const response = await editData(value.url);
 		return { ...response, module: value.module };
 	} catch (error) {
 		return rejectWithValue(error.response?.data || "Failed to edit data");
@@ -130,6 +130,7 @@ const initialState = {
 		core: {
 			list: [],
 			menu: [],
+			customers: [],
 			current: null,
 			validation: false,
 			validationMessage: [],
@@ -160,6 +161,10 @@ const crudSlice = createSlice({
 	name: "crud",
 	initialState,
 	reducers: {
+		setCurrent: (state, action) => {
+			const { module, value } = action.payload;
+			state.data[module].current = value;
+		},
 		setFilter: (state, action) => {
 			const { module, filterKey, name, value } = action.payload;
 
@@ -276,6 +281,7 @@ const crudSlice = createSlice({
 		// handle update case
 		builder.addCase(updateEntityData.fulfilled, (state, action) => {
 			const { data, module } = action.payload;
+			console.log("🚀 ~ builder.addCase ~ action.payload:", action.payload);
 			if (data.success) {
 				state.data[module].validation = false;
 				state.data[module].validationMessage = [];
@@ -299,7 +305,7 @@ const crudSlice = createSlice({
 			})
 			.addCase(editEntityData.fulfilled, (state, action) => {
 				const { data, module } = action.payload;
-				state.data[module].current = data?.data || data;
+				state.data[module].editData = data?.data || data;
 				state.isLoading = false;
 			})
 			.addCase(editEntityData.rejected, (state, action) => {
@@ -310,6 +316,7 @@ const crudSlice = createSlice({
 });
 
 export const {
+	setCurrent,
 	setValidation,
 	clearValidationMessage,
 	resetState,
@@ -324,19 +331,8 @@ export const {
 	setFilter,
 } = crudSlice.actions;
 
-export const selectVendorFilters = createSelector(
-	[(state) => state.crudSlice?.data?.core?.filters?.vendor],
-	(filters) => filters ?? {}
-);
+export const selectVendorFilters = (state) => state.crudSlice?.data?.core?.filters?.vendor;
 
-export const selectCustomerDropdownData = createSelector(
-	[(state) => state.utilitySlice?.dropdowns?.core?.customers],
-	(customers) => customers || []
-);
-
-export const selectEntityData = createSelector(
-	[(state) => state.crudSlice?.data?.core?.current],
-	(data) => data ?? {}
-);
+export const selectEntityData = (state) => state.crudSlice?.data?.core?.editData;
 
 export default crudSlice.reducer;
