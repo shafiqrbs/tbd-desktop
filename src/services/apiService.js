@@ -2,27 +2,28 @@ import axios from "axios";
 
 const getUserData = async () => {
 	const user = await window.dbAPI.getData("user");
-	return JSON.parse(user || "{}")?.id;
+	return JSON.parse(user || "{}");
 };
 
 // a helper function to get common headers
 const getCommonHeaders = async (contentType = "application/json") => {
-	const userId = await getUserData();
+	const user = await getUserData();
+
 	return {
 		Accept: "application/json",
 		"Content-Type": contentType,
 		"Access-Control-Allow-Origin": "*",
 		"X-Api-Key": import.meta.env.VITE_API_KEY,
-		"X-Api-User": userId,
+		"X-Api-User": user?.id,
 	};
 };
 
 // a helper function to create axios instance with common config
-const createAxiosRequest = (method, url, headers, data = null, params = null) => {
+const createAxiosRequest = async (method, url, headers, data = null, params = null) => {
 	const config = {
 		method,
 		url: `${import.meta.env.VITE_API_GATEWAY_URL}${url}`,
-		headers: headers || getCommonHeaders(),
+		headers: headers || (await getCommonHeaders()),
 	};
 
 	if (data) config.data = data;

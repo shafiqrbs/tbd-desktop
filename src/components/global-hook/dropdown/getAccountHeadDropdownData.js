@@ -11,7 +11,12 @@ const getAccountHeadDropdownData = () => {
 			url: "accounting/select/head",
 			param: { "dropdown-type": "account-head" },
 		};
-		dispatch(getSettingDropdown(value));
+		dispatch(
+			getSettingDropdown({
+				value: value,
+				module: "core",
+			})
+		);
 	}, [dispatch]);
 
 	const accountDropdownData = useSelector((state) => state.utilitySlice.accountHeadDropdownData);

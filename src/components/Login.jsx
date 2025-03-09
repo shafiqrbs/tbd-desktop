@@ -23,6 +23,8 @@ import { useNavigate } from "react-router";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import axios from "axios";
+import commonDataStoreIntoLocalStorage from "./global-hook/local-storage/commonDataStoreIntoLocalStorage.js";
+import orderProcessDropdownLocalDataStore from "./global-hook/local-storage/orderProcessDropdownLocalDataStore.js";
 
 export default function Login() {
 	const [user, setUser] = useState(null);
@@ -70,7 +72,7 @@ export default function Login() {
 		);
 	}
 
-	// If already authenticated, don't render the login form
+	// if already authenticated, don't render the login form
 	if (user?.id) {
 		return null;
 	}
@@ -93,8 +95,12 @@ export default function Login() {
 			});
 
 			if (response.data.status === 200) {
-				await window.dbAPI.upsertData("user", JSON.stringify(response.data.data));
-				navigate("/", { replace: true });
+				setTimeout(async () => {
+					await window.dbAPI.upsertData("user", JSON.stringify(response.data.data));
+					commonDataStoreIntoLocalStorage(response.data?.data?.id);
+					orderProcessDropdownLocalDataStore(response.data?.data?.id);
+					navigate("/", { replace: true });
+				}, 700);
 			} else {
 				setErrorMessage(response.data.message);
 			}

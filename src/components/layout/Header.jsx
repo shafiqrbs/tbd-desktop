@@ -251,54 +251,45 @@ export default function Header({ isOnline, configData }) {
 			<Box bg={"white"} mb={"2"} pos={`relative`}>
 				<Grid columns={24} gutter={{ base: 2 }} justify="space-between">
 					<Grid.Col span={3}>
-						{configData?.domain ? (
-							configData?.domain?.company_name === "Sandra" ? (
-								<div
-									style={{
-										display: "flex",
-										height: "100%",
-										alignItems: "center",
-										paddingLeft: 16,
-									}}
-								>
-									<Anchor
-										target="_blank"
-										underline="never"
-										onClick={() => {
-											navigate("/");
-										}}
-										onAuxClick={(e) => {
-											if (e.button === 1) {
-												window.open("/", "_blank");
-											}
-										}}
-									>
-										<Image
-											mah={40}
-											radius="md"
-											src={Sandra_Logo}
-											pl={6}
-										></Image>
-									</Anchor>
-								</div>
-							) : (
-								<NavLink
-									href="/"
-									c={"red"}
-									fw={"800"}
-									component="button"
-									label={
-										configData && configData?.domain
-											? configData.domain?.company_name
-											: ""
-									}
+						{configData?.domain?.company_name === "Sandra" ? (
+							<div
+								style={{
+									display: "flex",
+									height: "100%",
+									alignItems: "center",
+									paddingLeft: 16,
+								}}
+							>
+								<Anchor
+									target="_blank"
+									underline="never"
 									onClick={() => {
 										navigate("/");
 									}}
-								/>
-							)
+									onAuxClick={(e) => {
+										if (e.button === 1) {
+											window.open("/", "_blank");
+										}
+									}}
+								>
+									<Image mah={40} radius="md" src={Sandra_Logo} pl={6}></Image>
+								</Anchor>
+							</div>
 						) : (
-							<></>
+							<NavLink
+								href="/"
+								c={"red"}
+								fw={"800"}
+								component="button"
+								label={
+									configData && configData?.domain
+										? configData.domain?.company_name
+										: ""
+								}
+								onClick={() => {
+									navigate("/");
+								}}
+							/>
 						)}
 					</Grid.Col>
 					<Grid.Col span={3} justify="flex-end" align={"center"} mt={"xs"}>

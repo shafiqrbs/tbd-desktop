@@ -20,7 +20,6 @@ db.prepare(
 		core_customers TEXT,
 		core_vendors TEXT,
 		core_users TEXT,
-		i18next_lng TEXT,
 		order_process TEXT,
 		temp_requistion_invoice TEXT,
 		created_at DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -30,7 +29,6 @@ db.prepare(
 
 const upsertData = (key, value) => {
 	key = convertKey(key);
-	console.log("DB: Calling upsertData in db.cjs...", key, value);
 	const stmt = db.prepare(
 		`INSERT INTO local_store (id, ${key}) 
      VALUES (1, ?) 
@@ -42,9 +40,7 @@ const upsertData = (key, value) => {
 
 const getData = (key) => {
 	key = convertKey(key);
-	console.log("DB: Calling getData in db.cjs...", key);
 	const stmt = db.prepare(`SELECT ${key} FROM local_store WHERE id = 1`);
-	console.log("GetData: ", stmt.get()?.[key]);
 	return stmt.get()?.[key];
 };
 

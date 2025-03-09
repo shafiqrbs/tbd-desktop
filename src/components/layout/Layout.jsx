@@ -6,15 +6,19 @@ import Header from "./Header";
 import Footer from "./Footer";
 import MainDashboard from "../modules/dashboard/MainDashboard";
 import { useNetwork } from "@mantine/hooks";
+import getConfigData from "../global-hook/config-data/getConfigData";
+import { useDispatch } from "react-redux";
+import { setMenu } from "../../store/core/crudSlice";
 
 const Layout = () => {
 	const networkStatus = useNetwork();
 	const { height } = useViewportSize();
 	const location = useLocation();
 	const paramPath = location.pathname;
-	const [configData, setConfigData] = useState(null);
 	const [isLoading, setIsLoading] = useState(true);
 	const [user, setUser] = useState(null);
+	const { configData } = getConfigData();
+	const dispatch = useDispatch();
 
 	useEffect(() => {
 		const initializeData = async () => {
@@ -24,9 +28,11 @@ const Layout = () => {
 				setUser(userData);
 
 				if (userData?.id) {
-					const configRes = await window.dbAPI.getData("config-data");
-					if (configRes) {
-						setConfigData(JSON.parse(configRes));
+					if (!configData.length) {
+						const configRes = await window.dbAPI.getData("config-data");
+						if (configRes) {
+							dispatch(setMenu({ module: "core", value: JSON.parse(configRes) }));
+						}
 					}
 				}
 			} catch (error) {

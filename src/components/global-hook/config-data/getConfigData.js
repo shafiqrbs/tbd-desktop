@@ -4,11 +4,10 @@ import { getIndexEntityData } from "../../../store/core/crudSlice.js";
 
 const getConfigData = () => {
 	const dispatch = useDispatch();
-	const configData = useSelector((state) => state.crudSlice?.data?.core?.list) || [];
+	const configData = useSelector((state) => state.crudSlice?.data?.core?.menu) || [];
 
 	const fetchData = async () => {
 		const storedConfigData = await window.dbAPI.getData("config-data");
-		console.log(JSON.parse(storedConfigData));
 
 		if (!storedConfigData) {
 			dispatch(

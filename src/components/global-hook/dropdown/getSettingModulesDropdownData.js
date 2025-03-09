@@ -16,7 +16,7 @@ const getSettingModulesDropdownData = () => {
 
 	const moduleDropdownData = useSelector((state) => state.utilitySlice.moduleDropdownData);
 
-	/*console.log(moduleDropdownData)
+	/*
 
     useEffect(() => {
         if (moduleDropdownData && moduleDropdownData.length > 0) {

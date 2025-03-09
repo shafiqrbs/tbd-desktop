@@ -10,12 +10,10 @@ try {
 		// production startup start
 		getData: (key) => {
 			key = convertKey(key);
-			console.log(`Calling getData for ${key}...`);
 			return ipcRenderer.invoke("get-data", key);
 		},
 		upsertData: (key, value) => {
 			key = convertKey(key);
-			console.log(`Calling upsertData for ${key}...`);
 			return ipcRenderer.invoke("store-data", key, value);
 		},
 		destroyTableData: () => {
