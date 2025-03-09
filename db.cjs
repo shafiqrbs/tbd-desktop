@@ -64,7 +64,8 @@ db.prepare(
 ).run();
 
 // config_data table
-db.prepare(`
+db.prepare(
+	`
 	CREATE TABLE IF NOT EXISTS config_data (
 		id INTEGER PRIMARY KEY,
 		domain_id INTEGER,
@@ -179,12 +180,13 @@ db.prepare(`
 		currency TEXT,
 		business_model TEXT
 	);
-`);
+	`
+).run();
 
 // core_products table
 db.prepare(
 	`
-	CREATE TABLE core_products (
+	CREATE TABLE IF NOT EXISTS core_products (
 		ID INTEGER PRIMARY KEY,
 		ProductName TEXT NOT NULL,
 		Name TEXT NOT NULL,
@@ -206,7 +208,7 @@ db.prepare(
 // core_customers table
 db.prepare(
 	`
-	CREATE TABLE core_customers (
+	CREATE TABLE IF NOT EXISTS core_customers (
 		id INTEGER PRIMARY KEY,
 		name TEXT NOT NULL,
 		mobile TEXT NOT NULL,
@@ -237,7 +239,7 @@ db.prepare(
 // core_vendors table
 db.prepare(
 	`
-	CREATE TABLE core_vendors (
+	CREATE TABLE IF NOT EXISTS core_vendors (
 		id INT PRIMARY KEY,
 		name VARCHAR(255) NOT NULL,
 		vendor_code VARCHAR(255) NOT NULL,
@@ -259,7 +261,7 @@ db.prepare(
 // core_users table
 db.prepare(
 	`
-	CREATE TABLE core_users (
+	CREATE TABLE IF NOT EXISTS core_users (
 		id INT PRIMARY KEY,
 		name VARCHAR(255),
 		username VARCHAR(255) NOT NULL,
@@ -276,7 +278,7 @@ db.prepare(
 // order_process table
 db.prepare(
 	`
-	CREATE TABLE order_process (
+	CREATE TABLE IF NOT EXISTS order_process (
 		id INT PRIMARY KEY,
 		label VARCHAR(255) NOT NULL,
 		value INT NOT NULL

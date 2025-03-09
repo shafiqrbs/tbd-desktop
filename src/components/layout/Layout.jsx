@@ -71,7 +71,7 @@ const Layout = () => {
 				{paramPath !== "/" ? (
 					<Outlet context={{ isOnline: networkStatus.online, mainAreaHeight }} />
 				) : (
-					<MainDashboard height={mainAreaHeight} />
+					<MainDashboard height={mainAreaHeight} configData={configData} />
 				)}
 			</AppShell.Main>
 			<AppShell.Footer height={footerHeight}>

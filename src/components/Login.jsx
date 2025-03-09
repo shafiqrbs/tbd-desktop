@@ -95,12 +95,12 @@ export default function Login() {
 			});
 
 			if (response.data.status === 200) {
-				setTimeout(async () => {
-					await window.dbAPI.upsertData("user", JSON.stringify(response.data.data));
-					commonDataStoreIntoLocalStorage(response.data?.data?.id);
-					orderProcessDropdownLocalDataStore(response.data?.data?.id);
+				window.dbAPI.upsertData("user", JSON.stringify(response.data.data));
+				orderProcessDropdownLocalDataStore(response.data?.data?.id);
+				(async () => {
+					await commonDataStoreIntoLocalStorage(response.data?.data?.id);
 					navigate("/", { replace: true });
-				}, 700);
+				})();
 			} else {
 				setErrorMessage(response.data.message);
 			}

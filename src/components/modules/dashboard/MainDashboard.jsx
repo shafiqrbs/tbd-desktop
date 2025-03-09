@@ -32,11 +32,9 @@ import {
 } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 import classes from "../../../assets/css/FeaturesCards.module.css";
-import getConfigData from "../../global-hook/config-data/getConfigData.js";
 
 function MainDashboard(props) {
-	const { configData } = getConfigData();
-
+	const { configData } = props;
 	const { t } = useTranslation();
 	const height = props.height - 105;
 	const navigate = useNavigate();

@@ -18,11 +18,11 @@ const commonDataStoreIntoLocalStorage = async (user_id) => {
 		"accounting_transaction_mode",
 	];
 
-	for (let i = 0; i < apiBackendRoutes.length; i++) {
+	const requests = apiBackendRoutes.map(async (route, i) => {
 		try {
 			const response = await axios({
 				method: "get",
-				url: `${import.meta.env.VITE_API_GATEWAY_URL + apiBackendRoutes[i]}`,
+				url: `${import.meta.env.VITE_API_GATEWAY_URL + route}`,
 				headers: {
 					Accept: `application/json`,
 					"Content-Type": `application/json`,
@@ -39,9 +39,11 @@ const commonDataStoreIntoLocalStorage = async (user_id) => {
 				);
 			}
 		} catch (error) {
-			console.error(`Failed to fetch ${apiBackendRoutes[i]}:`, error);
+			console.error(`Failed to fetch ${route}:`, error);
 		}
-	}
+	});
+
+	await Promise.all(requests);
 };
 
 export default commonDataStoreIntoLocalStorage;
