@@ -19,12 +19,14 @@ import classes from "./../assets/css/AuthenticationImage.module.css";
 import { getHotkeyHandler, useHotkeys } from "@mantine/hooks";
 import { IconInfoCircle, IconLogin, IconArrowLeft } from "@tabler/icons-react";
 import { isNotEmpty, useForm } from "@mantine/form";
-import { Navigate, useNavigate } from "react-router";
-import { useState } from "react";
+import { useNavigate } from "react-router";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import axios from "axios";
 
 export default function Login() {
+	const [user, setUser] = useState(null);
+	const [loading, setLoading] = useState(true);
 	const { t } = useTranslation();
 	const navigate = useNavigate();
 	const icon = <IconInfoCircle />;
@@ -32,70 +34,81 @@ export default function Login() {
 	const [spinner, setSpinner] = useState(false);
 	const [errorMessage, setErrorMessage] = useState("");
 
-	const user = localStorage.getItem("user");
+	useEffect(() => {
+		const checkAuth = async () => {
+			try {
+				const res = await window.dbAPI.getData("user");
+				const userData = res ? JSON.parse(res) : null;
+				setUser(userData);
+				if (userData?.id) {
+					navigate("/", { replace: true });
+				}
+			} catch (error) {
+				console.error("Auth check error:", error);
+			} finally {
+				setLoading(false);
+			}
+		};
+		checkAuth();
+	}, [navigate]);
 
-	useHotkeys(
-		[
-			[
-				"alt+n",
-				() => {
-					document.getElementById("Username").focus();
-				},
-			],
-		],
-		[]
-	);
+	useHotkeys([["alt+n", () => document.getElementById("Username")?.focus()]], []);
 
 	const form = useForm({
 		initialValues: { username: "", password: "" },
-
 		validate: {
 			username: isNotEmpty(),
 			password: isNotEmpty(),
 		},
 	});
 
-	if (user) {
-		return <Navigate replace to="/" />;
+	if (loading) {
+		return (
+			<Center h="100vh">
+				<Loader size="lg" />
+			</Center>
+		);
 	}
 
-	function login(data) {
-		setSpinner(true);
-		axios({
-			method: "POST",
-			url: `${import.meta.env.VITE_API_GATEWAY_URL}user-login`,
-			headers: {
-				Accept: `application/json`,
-				"Content-Type": `application/json`,
-				"Access-Control-Allow-Origin": "*",
-				"X-Api-Key": import.meta.env.VITE_API_KEY,
-			},
-			data: data,
-		})
-			.then((res) => {
-				setTimeout(() => {
-					if (res.data.status === 200) {
-						localStorage.setItem("user", JSON.stringify(res.data.data));
+	// If already authenticated, don't render the login form
+	if (user?.id) {
+		return null;
+	}
 
-						setErrorMessage("");
-						setSpinner(false);
-						return navigate("/");
-					}
-					setErrorMessage(res.data.message);
-				}, 500);
-			})
-			.catch((error) => {
-				setErrorMessage(error?.message);
-				console.error(error);
-			})
-			.finally(() => {
-				setSpinner(false);
+	async function login(data) {
+		setSpinner(true);
+		setErrorMessage("");
+
+		try {
+			const response = await axios({
+				method: "POST",
+				url: `${import.meta.env.VITE_API_GATEWAY_URL}user-login`,
+				headers: {
+					Accept: "application/json",
+					"Content-Type": "application/json",
+					"Access-Control-Allow-Origin": "*",
+					"X-Api-Key": import.meta.env.VITE_API_KEY,
+				},
+				data: data,
 			});
+
+			if (response.data.status === 200) {
+				await window.dbAPI.upsertData("user", JSON.stringify(response.data.data));
+				navigate("/", { replace: true });
+			} else {
+				setErrorMessage(response.data.message);
+			}
+		} catch (error) {
+			setErrorMessage(error?.message || "Login failed");
+			console.error(error);
+		} finally {
+			setSpinner(false);
+		}
 	}
 
 	return (
 		<div className={classes.wrapper}>
-			<Box component="form" onSubmit={form.onSubmit((values) => login(values))}>
+			<Box component="form" onSubmit={form.onSubmit(login)}>
 				<Paper className={classes.form} radius={0} p={30}>
 					<Title order={2} className={classes.title} ta="center" mt="md" mb={80}>
 						{t("WelcomeBackToPOSH")}
@@ -107,7 +120,8 @@ export default function Login() {
 							radius="md"
 							title={errorMessage}
 							icon={icon}
-						></Alert>
+							mb="md"
+						/>
 					)}
 					<Tooltip
 						label={t("UserNameRequired")}
@@ -125,15 +139,10 @@ export default function Login() {
 							label={t("UserName")}
 							placeholder={t("UserName")}
 							size="md"
-							id={"Username"}
+							id="Username"
 							{...form.getInputProps("username")}
 							onKeyDown={getHotkeyHandler([
-								[
-									"Enter",
-									() => {
-										document.getElementById("Password").focus();
-									},
-								],
+								["Enter", () => document.getElementById("Password")?.focus()],
 							])}
 						/>
 					</Tooltip>
@@ -156,14 +165,9 @@ export default function Login() {
 							mt="md"
 							size="md"
 							{...form.getInputProps("password")}
-							id={"Password"}
+							id="Password"
 							onKeyDown={getHotkeyHandler([
-								[
-									"Enter",
-									() => {
-										document.getElementById("LoginSubmit").click();
-									},
-								],
+								["Enter", () => document.getElementById("LoginSubmit")?.click()],
 							])}
 						/>
 					</Tooltip>
@@ -179,16 +183,17 @@ export default function Login() {
 							</Center>
 						</Anchor>
 						<Button
-							fullWidth={true}
+							fullWidth
 							mt="xl"
-							bg={"red.5"}
+							bg="red.5"
 							size="md"
 							type="submit"
-							id={"LoginSubmit"}
+							id="LoginSubmit"
 							className={LoginPage.control}
 							rightSection={<IconLogin />}
+							disabled={spinner}
 						>
-							{spinner ? <Loader color="red" type="dots" size={30} /> : "Login"}
+							{spinner ? <Loader color="white" type="dots" size={30} /> : "Login"}
 						</Button>
 					</Group>
 				</Paper>

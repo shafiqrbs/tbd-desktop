@@ -3,26 +3,24 @@ const { contextBridge, ipcRenderer } = require("electron");
 // Add more verbose logging
 console.log("Preload script starting...");
 
+const convertKey = (key) => key.replace(/-/g, "_");
+
 try {
 	contextBridge.exposeInMainWorld("dbAPI", {
-		// test starts -------------
-		getTestUsers: () => {
-			console.log("Calling getTestUsers...");
-			return ipcRenderer.invoke("db-get-test-users");
+		// production startup start
+		getData: (key) => {
+			key = convertKey(key);
+			console.log(`Calling getData for ${key}...`);
+			return ipcRenderer.invoke("get-data", key);
 		},
-		setTestUser: (email) => {
-			console.log("Calling setTestUsers...");
-			return ipcRenderer.invoke("db-set-test-users", email);
+		upsertData: (key, value) => {
+			key = convertKey(key);
+			console.log(`Calling upsertData for ${key}...`);
+			return ipcRenderer.invoke("store-data", key, value);
 		},
-		// test ends ---------------
-
-		deleteUser: (id) => {
-			console.log("Calling deleteUser...", id);
-			return ipcRenderer.invoke("db-delete-user", id);
-		},
-		updateUserId: (oldId, updatedUser) => {
-			console.log("Calling updateUser...", { oldId, updatedUser });
-			return ipcRenderer.invoke("db-update-user", oldId, updatedUser);
+		destroyTableData: () => {
+			console.log("Calling destroyTableData...");
+			return ipcRenderer.invoke("destroy-table-data");
 		},
 	});
 	console.log("dbAPI exposed successfully");

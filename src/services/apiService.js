@@ -1,13 +1,21 @@
 import axios from "axios";
 
+const getUserData = async () => {
+	const user = await window.dbAPI.getData("user");
+	return JSON.parse(user || "{}")?.id;
+};
+
 // a helper function to get common headers
-const getCommonHeaders = (contentType = "application/json") => ({
-	Accept: "application/json",
-	"Content-Type": contentType,
-	"Access-Control-Allow-Origin": "*",
-	"X-Api-Key": import.meta.env.VITE_API_KEY,
-	"X-Api-User": JSON.parse(localStorage.getItem("user"))?.id,
-});
+const getCommonHeaders = async (contentType = "application/json") => {
+	const userId = await getUserData();
+	return {
+		Accept: "application/json",
+		"Content-Type": contentType,
+		"Access-Control-Allow-Origin": "*",
+		"X-Api-Key": import.meta.env.VITE_API_KEY,
+		"X-Api-User": userId,
+	};
+};
 
 // a helper function to create axios instance with common config
 const createAxiosRequest = (method, url, headers, data = null, params = null) => {

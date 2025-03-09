@@ -20,7 +20,8 @@ const orderProcessDropdownLocalDataStore = async (user_id) => {
 					const transformedData = response.data.data.map((type) => {
 						return { label: type.name, value: String(type.id) };
 					});
-					localStorage.setItem("order-process", JSON.stringify(transformedData));
+					// localStorage.setItem("order-process", JSON.stringify(transformedData));
+					await window.dbAPI.upsertData("order-process", JSON.stringify(transformedData));
 				}
 			}
 		}

@@ -6,8 +6,10 @@ const getConfigData = () => {
 	const dispatch = useDispatch();
 	const configData = useSelector((state) => state.crudSlice?.data?.core?.list) || [];
 
-	const fetchData = () => {
-		const storedConfigData = localStorage.getItem("config-data");
+	const fetchData = async () => {
+		const storedConfigData = await window.dbAPI.getData("config-data");
+		console.log(JSON.parse(storedConfigData));
+
 		if (!storedConfigData) {
 			dispatch(
 				getIndexEntityData({

@@ -1,11 +1,10 @@
 import { useEffect, useState } from "react";
 import { Navigate, Outlet, useLocation } from "react-router";
 import { useViewportSize } from "@mantine/hooks";
-import { AppShell } from "@mantine/core";
+import { AppShell, Center, Loader } from "@mantine/core";
 import Header from "./Header";
 import Footer from "./Footer";
 import MainDashboard from "../modules/dashboard/MainDashboard";
-import commonDataStoreIntoLocalStorage from "../global-hook/local-storage/commonDataStoreIntoLocalStorage";
 import { useNetwork } from "@mantine/hooks";
 
 const Layout = () => {
@@ -14,31 +13,39 @@ const Layout = () => {
 	const location = useLocation();
 	const paramPath = location.pathname;
 	const [configData, setConfigData] = useState(null);
-	const [isLoading, setIsLoading] = useState(false);
-
-	const user = JSON.parse(localStorage.getItem("user") || "{}");
+	const [isLoading, setIsLoading] = useState(true);
+	const [user, setUser] = useState(null);
 
 	useEffect(() => {
 		const initializeData = async () => {
-			if (user?.id && !isLoading) {
-				setIsLoading(true);
-				try {
-					await commonDataStoreIntoLocalStorage(user.id);
-					const storedConfigData = localStorage.getItem("config-data");
-					if (storedConfigData) {
-						setConfigData(JSON.parse(storedConfigData));
+			try {
+				const userRes = await window.dbAPI.getData("user");
+				const userData = userRes ? JSON.parse(userRes) : null;
+				setUser(userData);
+
+				if (userData?.id) {
+					const configRes = await window.dbAPI.getData("config-data");
+					if (configRes) {
+						setConfigData(JSON.parse(configRes));
 					}
-				} catch (error) {
-					console.error("Error initializing data:", error);
-					// Don't clear localStorage here, just log the error
-				} finally {
-					setIsLoading(false);
 				}
+			} catch (error) {
+				console.error("Error initializing data:", error);
+			} finally {
+				setIsLoading(false);
 			}
 		};
 
 		initializeData();
-	}, [user?.id]);
+	}, []);
+
+	if (isLoading) {
+		return (
+			<Center h="100vh">
+				<Loader size="lg" />
+			</Center>
+		);
+	}
 
 	if (!user?.id) {
 		return <Navigate replace to="/login" />;

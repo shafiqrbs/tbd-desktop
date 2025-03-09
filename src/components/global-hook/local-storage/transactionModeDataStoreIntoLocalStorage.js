@@ -18,7 +18,11 @@ const transactionModeDataStoreIntoLocalStorage = async (user_id) => {
 				},
 			});
 			if (response.data.data) {
-				localStorage.setItem(localStorageKeys[i], JSON.stringify(response.data.data));
+				// localStorage.setItem(localStorageKeys[i], JSON.stringify(response.data.data));
+				await window.dbAPI.upsertData(
+					localStorageKeys[i],
+					JSON.stringify(response.data.data)
+				);
 			}
 		} catch (error) {
 			console.error(error);

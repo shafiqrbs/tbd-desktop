@@ -10,12 +10,12 @@ const commonDataStoreIntoLocalStorage = async (user_id) => {
 		"accounting/transaction-mode/local-storage",
 	];
 	const localStorageKeys = [
-		"config-data",
-		"core-products",
-		"core-customers",
-		"core-vendors",
-		"core-users",
-		"accounting-transaction-mode",
+		"config_data",
+		"core_products",
+		"core_customers",
+		"core_vendors",
+		"core_users",
+		"accounting_transaction_mode",
 	];
 
 	for (let i = 0; i < apiBackendRoutes.length; i++) {
@@ -31,17 +31,15 @@ const commonDataStoreIntoLocalStorage = async (user_id) => {
 					"X-Api-User": user_id,
 				},
 			});
+
 			if (response.data.data) {
-				if ("inventory/config" == apiBackendRoutes[i]) {
-					localStorage.setItem(
-						localStorageKeys[i],
-						JSON.stringify(response.data.data.configData)
-					);
-				}
-				localStorage.setItem(localStorageKeys[i], JSON.stringify(response.data.data));
+				await window.dbAPI.upsertData(
+					localStorageKeys[i],
+					JSON.stringify(response?.data?.data || [])
+				);
 			}
 		} catch (error) {
-			console.error(error);
+			console.error(`Failed to fetch ${apiBackendRoutes[i]}:`, error);
 		}
 	}
 };

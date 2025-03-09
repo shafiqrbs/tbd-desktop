@@ -9,7 +9,6 @@ import {
 	editEntityData,
 	getIndexEntityData,
 	selectVendorFilters,
-	setDeleteMessage,
 	setFetching,
 	setFormLoading,
 	setInsertType,
@@ -37,12 +36,21 @@ function VendorTable() {
 	const entityDataDelete = useSelector(
 		(state) => state.crudSlice?.data?.core?.deleteMessage || ""
 	);
-	const coreVendors = JSON.parse(localStorage.getItem("core-vendors") || "[]");
+	const [coreVendors, setCoreVendors] = useState([]);
 
 	const [vendorObject, setVendorObject] = useState({});
 	const navigate = useNavigate();
 	const [viewDrawer, setViewDrawer] = useState(false);
 	const [indexData, setIndexData] = useState({});
+
+	useEffect(() => {
+		window.dbAPI
+			.getData("core-vendors")
+			.then((res) => {
+				setCoreVendors(JSON.parse(res));
+			})
+			.catch(console.error);
+	}, []);
 
 	const fetchData = async () => {
 		setLoading(true);

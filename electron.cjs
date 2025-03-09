@@ -2,43 +2,29 @@ const { app, BrowserWindow, ipcMain } = require("electron");
 const path = require("path");
 const dbModule = require("./db.cjs");
 
-// tests starts------------------
-ipcMain.handle("db-get-test-users", async () => {
+ipcMain.handle("store-data", async (event, key, value) => {
 	try {
-		return dbModule.getTestUsers();
+		return dbModule.upsertData(key, value);
 	} catch (error) {
-		console.error("Error fetching test users:", error);
+		console.error("Error fetching users:", error);
 		throw error;
 	}
 });
 
-ipcMain.handle("db-set-test-users", async (event, email) => {
+ipcMain.handle("get-data", async (event, key) => {
 	try {
-		return dbModule.setTestUser(email);
+		return dbModule.getData(key);
 	} catch (error) {
-		console.error("Error setting test users:", error);
-		throw error;
+		console.error(`Failed to get ${key}:`, error);
+		return null;
 	}
 });
 
-// tests ends -------------------
-
-// IPC handler to delete a user
-ipcMain.handle("db-delete-user", async (event, id) => {
+ipcMain.handle("destroy-table-data", async () => {
 	try {
-		return dbModule.deleteUser(id);
+		return dbModule.destroyTableData();
 	} catch (error) {
-		console.error("Error deleting user:", error);
-		throw error;
-	}
-});
-
-// IPC handler to update a user
-ipcMain.handle("db-update-user", async (event, oldId, updatedUser) => {
-	try {
-		return dbModule.updateUserId(oldId, updatedUser);
-	} catch (error) {
-		console.error("Error updating user:", error);
+		console.error("Error fetching users:", error);
 		throw error;
 	}
 });

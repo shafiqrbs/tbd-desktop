@@ -7,39 +7,54 @@ const dbPath = path.join(app.getPath("userData"), "electro.db");
 console.log(`Local database path: ${dbPath}`);
 const db = new Database(dbPath);
 
+const convertKey = (key) => key.replace(/-/g, "_");
+
 db.prepare(
 	`
-	CREATE TABLE IF NOT EXISTS tests (
-		email TEXT PRIMARY KEY,
+	CREATE TABLE IF NOT EXISTS local_store (
+		id INTEGER PRIMARY KEY,
+		user TEXT,
+		accounting_transaction_mode TEXT,
+		config_data TEXT,
+		core_products TEXT,
+		core_customers TEXT,
+		core_vendors TEXT,
+		core_users TEXT,
+		i18next_lng TEXT,
+		order_process TEXT,
+		temp_requistion_invoice TEXT,
 		created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 	)
 	`
 ).run();
 
-module.exports = {
-	deleteUser: (_id) => {
-		const stmt = db.prepare("DELETE FROM users WHERE _id = ?");
-		stmt.run(_id);
-		return db.prepare("SELECT * FROM users").all();
-	},
-	updateUserId: (oldId, updatedUser) => {
-		const stmt = db.prepare(`
-            UPDATE users 
-            SET _id = @newId,
-                username = @username,
-                email = @email,
-                address = @address,
-                age = @age
-            WHERE _id = @oldId
-        `);
+const upsertData = (key, value) => {
+	key = convertKey(key);
+	console.log("DB: Calling upsertData in db.cjs...", key, value);
+	const stmt = db.prepare(
+		`INSERT INTO local_store (id, ${key}) 
+     VALUES (1, ?) 
+     ON CONFLICT(id) DO UPDATE SET ${key} = excluded.${key}`
+	);
 
-		return stmt.run({
-			oldId,
-			newId: updatedUser.newId,
-			username: updatedUser.username,
-			email: updatedUser.email,
-			address: updatedUser.address,
-			age: updatedUser.age,
-		});
-	},
+	stmt.run(value);
+};
+
+const getData = (key) => {
+	key = convertKey(key);
+	console.log("DB: Calling getData in db.cjs...", key);
+	const stmt = db.prepare(`SELECT ${key} FROM local_store WHERE id = 1`);
+	console.log("GetData: ", stmt.get()?.[key]);
+	return stmt.get()?.[key];
+};
+
+const destroyTableData = () => {
+	const stmt = db.prepare(`DELETE FROM local_store WHERE id = 1`);
+	stmt.run();
+};
+
+module.exports = {
+	upsertData,
+	getData,
+	destroyTableData,
 };

@@ -43,12 +43,6 @@ function MainDashboard(props) {
 	const navigate = useNavigate();
 	const theme = useMantineTheme();
 
-	useEffect(() => {
-		if (!configData) {
-			navigate("/login");
-		}
-	}, [configData]);
-
 	return (
 		<>
 			<Container fluid mt="xs">

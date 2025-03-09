@@ -38,15 +38,19 @@ function SpotLightSearchModal({ onClose }) {
 
 	useEffect(() => {
 		// Fetch from local storage only on mount
-		const storedConfigData = localStorage.getItem("config-data");
-		if (storedConfigData) {
-			const items = JSON.parse(storedConfigData);
-			setConfigData(items);
-			setVisible(false);
-			dispatch(setMenu({ module: "core", value: items }));
-		} else {
-			navigate("/login");
+		async function fetchingData() {
+			// const storedConfigData = localStorage.getItem("config-data");
+			const storedConfigData = await window.dbAPI.getData("config-data");
+			if (storedConfigData) {
+				const items = JSON.parse(storedConfigData);
+				setConfigData(items);
+				setVisible(false);
+				dispatch(setMenu({ module: "core", value: items }));
+			} else {
+				navigate("/login");
+			}
 		}
+		fetchingData();
 	}, [navigate, dispatch]); // Only runs once on mount
 
 	useEffect(() => {

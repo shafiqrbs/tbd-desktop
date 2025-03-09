@@ -66,8 +66,9 @@ export default function Header({ isOnline, configData }) {
 	const [_, setVisible] = useState(true);
 
 	useEffect(() => {
-		const checkConfigData = () => {
-			const storedConfigData = localStorage.getItem("config-data");
+		const checkConfigData = async () => {
+			// const storedConfigData = localStorage.getItem("config-data");
+			const storedConfigData = await window.dbAPI.getData("config-data");
 			if (storedConfigData) {
 				setConfigData(JSON.parse(storedConfigData));
 				setVisible(false);
@@ -96,14 +97,14 @@ export default function Header({ isOnline, configData }) {
 			})),
 		}));
 	};
-	function logout() {
+	async function logout() {
 		dispatch({
 			type: "crud/resetState",
 			payload: {
 				modules: ["inventory", "production", "core", "sales"], // add all modules you want to reset
 			},
 		});
-		localStorage.clear();
+		await window.dbAPI.destroyTableData();
 		navigate("/login");
 	}
 	const list = getActions().reduce((acc, group) => [...acc, ...group.actions], []);
