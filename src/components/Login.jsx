@@ -97,10 +97,9 @@ export default function Login() {
 			if (response.data.status === 200) {
 				window.dbAPI.upsertData("user", JSON.stringify(response.data.data));
 				orderProcessDropdownLocalDataStore(response.data?.data?.id);
-				(async () => {
-					await commonDataStoreIntoLocalStorage(response.data?.data?.id);
-					navigate("/", { replace: true });
-				})();
+
+				await commonDataStoreIntoLocalStorage(response.data?.data?.id);
+				navigate("/", { replace: true });
 			} else {
 				setErrorMessage(response.data.message);
 			}

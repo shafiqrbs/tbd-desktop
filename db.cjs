@@ -176,6 +176,7 @@ db.prepare(
 		post_production INTEGER,
 		mid_production INTEGER,
 		pre_production INTEGER,
+
 		domain TEXT,
 		currency TEXT,
 		business_model TEXT
@@ -303,8 +304,8 @@ const getData = (key) => {
 	return stmt.get()?.[key];
 };
 
-const destroyTableData = () => {
-	const stmt = db.prepare(`DELETE FROM local_store WHERE id = 1`);
+const destroyTableData = (table = "local_store") => {
+	const stmt = db.prepare(`DELETE FROM ${table}`);
 	stmt.run();
 };
 
