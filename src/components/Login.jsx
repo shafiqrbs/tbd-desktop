@@ -40,7 +40,6 @@ export default function Login() {
 		const checkAuth = async () => {
 			try {
 				const res = await window.dbAPI.getDataFromTable("users");
-				console.log("res", res);
 				setUser(res);
 				if (res?.id) {
 					navigate("/", { replace: true });

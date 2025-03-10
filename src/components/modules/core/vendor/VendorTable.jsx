@@ -45,9 +45,9 @@ function VendorTable() {
 
 	useEffect(() => {
 		window.dbAPI
-			.getData("core-vendors")
+			.getDataFromTable("core-vendors")
 			.then((res) => {
-				setCoreVendors(JSON.parse(res));
+				setCoreVendors(res);
 			})
 			.catch(console.error);
 	}, []);
@@ -327,6 +327,10 @@ function VendorTable() {
 																deleteEntityData(
 																	`core/vendor/${data.id}`
 																)
+															);
+															window.dbAPI.deleteDataFromTable(
+																"core-vendors",
+																data.id
 															);
 														},
 													});

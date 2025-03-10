@@ -27,10 +27,22 @@ const Layout = () => {
 				setUser(user);
 
 				if (user?.id) {
-					if (!configData.length) {
+					if (!configData || Object.keys(configData).length === 0) {
 						const configRes = await window.dbAPI.getDataFromTable("config-data");
 						if (configRes) {
-							dispatch(setMenu({ module: "core", value: configRes }));
+							dispatch(
+								setMenu({
+									module: "core",
+									value: {
+										...configRes,
+										business_model: JSON.parse(
+											configRes.business_model || "{}"
+										),
+										currency: JSON.parse(configRes.currency || "{}"),
+										domain: JSON.parse(configRes.domain || "{}"),
+									},
+								})
+							);
 						}
 					}
 				}

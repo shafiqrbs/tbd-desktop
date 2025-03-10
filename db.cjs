@@ -7,25 +7,7 @@ const dbPath = path.join(app.getPath("userData"), "electro.db");
 console.log(`Local database path: ${dbPath}`);
 const db = new Database(dbPath);
 
-const convertKey = (key) => key.replace(/-/g, "_");
-
-db.prepare(
-	`
-	CREATE TABLE IF NOT EXISTS local_store (
-		id INTEGER PRIMARY KEY,
-		user TEXT,
-		accounting_transaction_mode TEXT,
-		config_data TEXT,
-		core_products TEXT,
-		core_customers TEXT,
-		core_vendors TEXT,
-		core_users TEXT,
-		order_process TEXT,
-		temp_requistion_invoice TEXT,
-		created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-	)
-	`
-).run();
+const convertTableName = (key) => key.replace(/-/g, "_");
 
 // users table
 db.prepare(
@@ -291,21 +273,6 @@ db.prepare(
   	`
 ).run();
 
-const upsertData = (key, value) => {
-	try {
-		key = convertKey(key);
-		const stmt = db.prepare(
-			`INSERT INTO local_store (id, ${key}) 
-			VALUES (1, ?) 
-			ON CONFLICT(id) DO UPDATE SET ${key} = excluded.${key}`
-		);
-
-		stmt.run(value);
-	} catch (error) {
-		console.error(`Failed to upsert into ${key}:`, error);
-		console.error("Data:", value);
-	}
-};
 const formatValue = (value) => {
 	if (value === undefined || value === null) return null;
 	try {
@@ -319,7 +286,7 @@ const formatValue = (value) => {
 
 // data insertion into the table
 const upsertIntoTable = (table, data) => {
-	table = convertKey(table);
+	table = convertTableName(table);
 	const keys = Object.keys(data);
 	const placeholders = keys.map(() => "?").join(", ");
 	const updatePlaceholders = keys.map((key) => `${key} = excluded.${key}`).join(", ");
@@ -361,6 +328,7 @@ const upsertIntoTable = (table, data) => {
 			return JSON.stringify(existingValue) !== JSON.stringify(newValue);
 		});
 
+		// update row if data is different
 		if (isChanged) {
 			stmt.run(...Object.values(formattedData));
 		}
@@ -368,15 +336,15 @@ const upsertIntoTable = (table, data) => {
 };
 
 const getDataFromTable = (table) => {
-	table = convertKey(table);
+	table = convertTableName(table);
 	const stmt = db.prepare(`SELECT * FROM ${table}`);
 	return stmt.get();
 };
 
-const getData = (key) => {
-	key = convertKey(key);
-	const stmt = db.prepare(`SELECT ${key} FROM local_store WHERE id = 1`);
-	return stmt.get()?.[key];
+const deleteDataFromTable = (table, id) => {
+	table = convertTableName(table);
+	const stmt = db.prepare(`DELETE FROM ${table} WHERE id = ?`);
+	stmt.run(id);
 };
 
 const destroyTableData = (table = "users") => {
@@ -387,7 +355,6 @@ const destroyTableData = (table = "users") => {
 module.exports = {
 	upsertIntoTable,
 	getDataFromTable,
-	upsertData,
-	getData,
+	deleteDataFromTable,
 	destroyTableData,
 };

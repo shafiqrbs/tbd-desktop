@@ -20,21 +20,12 @@ ipcMain.handle("get-data-from-table", async (event, table, id) => {
 	}
 });
 
-ipcMain.handle("store-data", async (event, key, value) => {
+ipcMain.handle("delete-data-from-table", async (event, table, id) => {
 	try {
-		return dbModule.upsertData(key, value);
+		return dbModule.deleteDataFromTable(table, id);
 	} catch (error) {
 		console.error("Error fetching users:", error);
 		throw error;
-	}
-});
-
-ipcMain.handle("get-data", async (event, key) => {
-	try {
-		return dbModule.getData(key);
-	} catch (error) {
-		console.error(`Failed to get ${key}:`, error);
-		return null;
 	}
 });
 

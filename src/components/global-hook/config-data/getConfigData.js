@@ -9,7 +9,7 @@ const getConfigData = () => {
 	const fetchData = async () => {
 		const storedConfigData = await window.dbAPI.getDataFromTable("config-data");
 
-		if (!storedConfigData) {
+		if (!storedConfigData || Object.keys(configData).length === 0) {
 			dispatch(
 				getIndexEntityData({
 					url: "inventory/config",

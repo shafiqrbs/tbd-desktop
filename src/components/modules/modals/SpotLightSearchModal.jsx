@@ -37,12 +37,15 @@ function SpotLightSearchModal({ onClose }) {
 	const [configDataSpot, setConfigData] = useState(null);
 
 	useEffect(() => {
-		// Fetch from local storage only on mount
 		async function fetchingData() {
-			// const storedConfigData = localStorage.getItem("config-data");
 			const storedConfigData = await window.dbAPI.getDataFromTable("config-data");
-			if (storedConfigData) {
-				const items = storedConfigData;
+			if (storedConfigData && Object.keys(storedConfigData).length > 0) {
+				const items = {
+					...storedConfigData,
+					business_model: JSON.parse(storedConfigData.business_model || "{}"),
+					currency: JSON.parse(storedConfigData.currency || "{}"),
+					domain: JSON.parse(storedConfigData.domain || "{}"),
+				};
 				setConfigData(items);
 				setVisible(false);
 				dispatch(setMenu({ module: "core", value: items }));
@@ -54,7 +57,6 @@ function SpotLightSearchModal({ onClose }) {
 	}, [navigate, dispatch]); // Only runs once on mount
 
 	useEffect(() => {
-		// Only update state when configData changes
 		if (configData.length) {
 			setConfigData(configData);
 			setVisible(false);
