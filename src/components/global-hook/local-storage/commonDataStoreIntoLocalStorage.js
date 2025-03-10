@@ -1,24 +1,16 @@
 import axios from "axios";
 
-const commonDataStoreIntoLocalStorage = async (user_id) => {
-	const apiBackendRoutes = [
-		"inventory/config",
-		"inventory/stock-item",
-		"core/customer/local-storage",
-		"core/vendor/local-storage",
-		"core/user/local-storage",
-		"accounting/transaction-mode/local-storage",
-	];
-	const localStorageKeys = [
-		"config_data",
-		"core_products",
-		"core_customers",
-		"core_vendors",
-		"core_users",
-		"accounting_transaction_mode",
-	];
+const tableMap = {
+	"inventory/config": "config_data",
+	"inventory/stock-item": "core_products",
+	"core/customer/local-storage": "core_customers",
+	"core/vendor/local-storage": "core_vendors",
+	"core/user/local-storage": "core_users",
+	"accounting/transaction-mode/local-storage": "accounting_transaction_mode",
+};
 
-	const requests = apiBackendRoutes.map(async (route, i) => {
+const commonDataStoreIntoLocalStorage = async (user_id) => {
+	const requests = Object.entries(tableMap).map(async ([route, table]) => {
 		try {
 			const response = await axios({
 				method: "get",
@@ -33,10 +25,14 @@ const commonDataStoreIntoLocalStorage = async (user_id) => {
 			});
 
 			if (response.data.data) {
-				await window.dbAPI.upsertData(
-					localStorageKeys[i],
-					JSON.stringify(response?.data?.data || [])
-				);
+				const dataList = Array.isArray(response.data.data)
+					? response.data.data
+					: [response.data.data];
+
+				for (const data of dataList) {
+					// insert only if data is new or different
+					window.dbAPI.upsertIntoTable(table, data);
+				}
 			}
 		} catch (error) {
 			console.error(`Failed to fetch ${route}:`, error);

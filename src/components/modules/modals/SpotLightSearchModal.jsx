@@ -40,9 +40,9 @@ function SpotLightSearchModal({ onClose }) {
 		// Fetch from local storage only on mount
 		async function fetchingData() {
 			// const storedConfigData = localStorage.getItem("config-data");
-			const storedConfigData = await window.dbAPI.getData("config-data");
+			const storedConfigData = await window.dbAPI.getDataFromTable("config-data");
 			if (storedConfigData) {
-				const items = JSON.parse(storedConfigData);
+				const items = storedConfigData;
 				setConfigData(items);
 				setVisible(false);
 				dispatch(setMenu({ module: "core", value: items }));

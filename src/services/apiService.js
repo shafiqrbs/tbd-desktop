@@ -1,8 +1,8 @@
 import axios from "axios";
 
 const getUserData = async () => {
-	const user = await window.dbAPI.getData("user");
-	return JSON.parse(user || "{}");
+	const user = await window.dbAPI.getDataFromTable("users");
+	return user ? user : {};
 };
 
 // a helper function to get common headers
@@ -78,7 +78,7 @@ export const createDataWithFile = async (value) => {
 		const response = await createAxiosRequest(
 			"POST",
 			value.url,
-			getCommonHeaders("multipart/form-data"),
+			await getCommonHeaders("multipart/form-data"),
 			value.data
 		);
 		return response;
@@ -106,7 +106,7 @@ export const updateData = async (value) => {
 		const response = await createAxiosRequest(
 			isConfigUpdate ? "POST" : "PATCH",
 			value.url,
-			getCommonHeaders(isConfigUpdate ? "multipart/form-data" : "application/json"),
+			await getCommonHeaders(isConfigUpdate ? "multipart/form-data" : "application/json"),
 			value.data
 		);
 		return response;
@@ -131,7 +131,7 @@ export const updateDataWithFile = async (value) => {
 		const response = await createAxiosRequest(
 			"POST",
 			value.url,
-			getCommonHeaders("multipart/form-data"),
+			await getCommonHeaders("multipart/form-data"),
 			value.data
 		);
 		return response;

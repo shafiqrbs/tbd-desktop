@@ -8,6 +8,12 @@ const convertKey = (key) => key.replace(/-/g, "_");
 try {
 	contextBridge.exposeInMainWorld("dbAPI", {
 		// production startup start
+		upsertIntoTable: (table, data) => {
+			return ipcRenderer.invoke("upsert-into-table", table, data);
+		},
+		getDataFromTable: (table, id) => {
+			return ipcRenderer.invoke("get-data-from-table", table, id);
+		},
 		getData: (key) => {
 			key = convertKey(key);
 			return ipcRenderer.invoke("get-data", key);

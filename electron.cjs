@@ -2,6 +2,24 @@ const { app, BrowserWindow, ipcMain } = require("electron");
 const path = require("path");
 const dbModule = require("./db.cjs");
 
+ipcMain.handle("upsert-into-table", async (event, table, data) => {
+	try {
+		return dbModule.upsertIntoTable(table, data);
+	} catch (error) {
+		console.error("Error fetching users:", error);
+		throw error;
+	}
+});
+
+ipcMain.handle("get-data-from-table", async (event, table, id) => {
+	try {
+		return dbModule.getDataFromTable(table, id);
+	} catch (error) {
+		console.error("Error fetching users:", error);
+		throw error;
+	}
+});
+
 ipcMain.handle("store-data", async (event, key, value) => {
 	try {
 		return dbModule.upsertData(key, value);

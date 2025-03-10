@@ -39,10 +39,10 @@ export default function Login() {
 	useEffect(() => {
 		const checkAuth = async () => {
 			try {
-				const res = await window.dbAPI.getData("user");
-				const userData = res ? JSON.parse(res) : null;
-				setUser(userData);
-				if (userData?.id) {
+				const res = await window.dbAPI.getDataFromTable("users");
+				console.log("res", res);
+				setUser(res);
+				if (res?.id) {
 					navigate("/", { replace: true });
 				}
 			} catch (error) {
@@ -95,7 +95,7 @@ export default function Login() {
 			});
 
 			if (response.data.status === 200) {
-				window.dbAPI.upsertData("user", JSON.stringify(response.data.data));
+				window.dbAPI.upsertIntoTable("users", response.data.data);
 				orderProcessDropdownLocalDataStore(response.data?.data?.id);
 
 				await commonDataStoreIntoLocalStorage(response.data?.data?.id);

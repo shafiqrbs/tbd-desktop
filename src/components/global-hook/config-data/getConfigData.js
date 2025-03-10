@@ -7,7 +7,7 @@ const getConfigData = () => {
 	const configData = useSelector((state) => state.crudSlice?.data?.core?.menu) || [];
 
 	const fetchData = async () => {
-		const storedConfigData = await window.dbAPI.getData("config-data");
+		const storedConfigData = await window.dbAPI.getDataFromTable("config-data");
 
 		if (!storedConfigData) {
 			dispatch(
@@ -17,7 +17,7 @@ const getConfigData = () => {
 				})
 			);
 		} else {
-			return JSON.parse(storedConfigData);
+			return storedConfigData;
 		}
 	};
 

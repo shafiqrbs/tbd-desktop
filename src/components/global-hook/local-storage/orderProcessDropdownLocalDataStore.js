@@ -1,3 +1,4 @@
+import { randomId } from "@mantine/hooks";
 import axios from "axios";
 
 const orderProcessDropdownLocalDataStore = async (user_id) => {
@@ -14,15 +15,15 @@ const orderProcessDropdownLocalDataStore = async (user_id) => {
 			},
 			params: { "dropdown-type": "sales-process-type" },
 		});
-		if (response) {
-			if (response.data.data) {
-				if (response.data.data && response.data.data.length > 0) {
-					const transformedData = response.data.data.map((type) => {
-						return { label: type.name, value: String(type.id) };
-					});
-					// localStorage.setItem("order-process", JSON.stringify(transformedData));
-					await window.dbAPI.upsertData("order-process", JSON.stringify(transformedData));
-				}
+		if (response?.data?.data?.length > 0) {
+			const transformedData = response.data.data.map(({ id, name }) => ({
+				id: randomId(),
+				label: name,
+				value: id,
+			}));
+
+			for (const entry of transformedData) {
+				await window.dbAPI.upsertIntoTable("order_process", entry);
 			}
 		}
 	} catch (error) {

@@ -68,9 +68,9 @@ export default function Header({ isOnline, configData }) {
 	useEffect(() => {
 		const checkConfigData = async () => {
 			// const storedConfigData = localStorage.getItem("config-data");
-			const storedConfigData = await window.dbAPI.getData("config-data");
-			if (storedConfigData) {
-				setConfigData(JSON.parse(storedConfigData));
+			const storedConfigData = await window.dbAPI.getDataFromTable("config-data");
+			if (storedConfigData.length) {
+				setConfigData(storedConfigData);
 				setVisible(false);
 			} else {
 				setVisible(false);

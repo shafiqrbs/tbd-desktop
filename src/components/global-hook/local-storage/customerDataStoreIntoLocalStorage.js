@@ -2,8 +2,8 @@ import axios from "axios";
 
 const customerDataStoreIntoLocalStorage = async () => {
 	try {
-		const user = await window.dbAPI.getData("user");
-		const userId = user ? JSON.parse(user).id : null;
+		const user = await window.dbAPI.getDataFromTable("users");
+		const userId = user ? user.id : null;
 
 		const response = await axios.get(
 			`${import.meta.env.VITE_API_GATEWAY_URL}core/customer/local-storage`,
@@ -21,7 +21,11 @@ const customerDataStoreIntoLocalStorage = async () => {
 		let { data } = response;
 
 		if (data && data.data) {
-			await window.dbAPI.upsertData("core-customers", JSON.stringify(data.data));
+			await Promise.all(
+				data.data.map(async (customer) => {
+					await window.dbAPI.upsertData(`core-customers`, customer);
+				})
+			);
 		}
 	} catch (error) {
 		console.error(error);

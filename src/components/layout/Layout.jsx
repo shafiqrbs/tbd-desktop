@@ -23,15 +23,14 @@ const Layout = () => {
 	useEffect(() => {
 		const initializeData = async () => {
 			try {
-				const userRes = await window.dbAPI.getData("user");
-				const userData = userRes ? JSON.parse(userRes) : null;
-				setUser(userData);
+				const user = await window.dbAPI.getDataFromTable("users");
+				setUser(user);
 
-				if (userData?.id) {
+				if (user?.id) {
 					if (!configData.length) {
-						const configRes = await window.dbAPI.getData("config-data");
+						const configRes = await window.dbAPI.getDataFromTable("config-data");
 						if (configRes) {
-							dispatch(setMenu({ module: "core", value: JSON.parse(configRes) }));
+							dispatch(setMenu({ module: "core", value: configRes }));
 						}
 					}
 				}

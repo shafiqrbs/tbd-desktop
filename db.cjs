@@ -38,6 +38,8 @@ db.prepare(
 		username TEXT,
 		user_group TEXT,
 		domain_id INTEGER,
+		access_control_role TEXT,
+		android_control_role TEXT,
 		created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 	)
 	`
@@ -176,6 +178,7 @@ db.prepare(
 		post_production INTEGER,
 		mid_production INTEGER,
 		pre_production INTEGER,
+		sku_warehouse INTEGER,
 
 		domain TEXT,
 		currency TEXT,
@@ -188,20 +191,21 @@ db.prepare(
 db.prepare(
 	`
 	CREATE TABLE IF NOT EXISTS core_products (
-		ID INTEGER PRIMARY KEY,
-		ProductName TEXT NOT NULL,
-		Name TEXT NOT NULL,
-		ProductNature TEXT NOT NULL,
-		DisplayName TEXT NOT NULL,
-		Slug TEXT NOT NULL,
-		CategoryID INTEGER NOT NULL,
-		UnitID INTEGER NOT NULL,
-		Quantity REAL NOT NULL,
-		PurchasePrice REAL NOT NULL,
-		SalesPrice REAL NOT NULL,
-		Barcode TEXT NOT NULL,
-		UnitName TEXT NOT NULL,
-		FeatureImage TEXT
+		id INTEGER PRIMARY KEY,
+		vendor_id INTEGER,
+		product_name TEXT NOT NULL,
+		name TEXT NOT NULL,
+		product_nature TEXT NOT NULL,
+		display_name TEXT NOT NULL,
+		slug TEXT NOT NULL,
+		category_id INTEGER NOT NULL,
+		unit_id INTEGER NOT NULL,
+		quantity REAL NOT NULL,
+		purchase_price REAL NOT NULL,
+		sales_price REAL NOT NULL,
+		barcode TEXT NOT NULL,
+		unit_name TEXT NOT NULL,
+		feature_image TEXT
 	);
 	`
 ).run();
@@ -241,18 +245,18 @@ db.prepare(
 db.prepare(
 	`
 	CREATE TABLE IF NOT EXISTS core_vendors (
-		id INT PRIMARY KEY,
+		id INTEGER PRIMARY KEY,
 		name VARCHAR(255) NOT NULL,
 		vendor_code VARCHAR(255) NOT NULL,
-		code INT NOT NULL,
+		code INTEGER NOT NULL,
 		company_name VARCHAR(255),
 		slug VARCHAR(255) NOT NULL,
 		address VARCHAR(255),
 		email VARCHAR(255),
 		mobile VARCHAR(20),
 		unique_id VARCHAR(255) NOT NULL,
-		sub_domain_id INT,
-		customer_id INT,
+		sub_domain_id INTEGER,
+		customer_id INTEGER,
 		created_date DATE NOT NULL,
 		created_at TIMESTAMP NOT NULL
 	);
@@ -263,7 +267,7 @@ db.prepare(
 db.prepare(
 	`
 	CREATE TABLE IF NOT EXISTS core_users (
-		id INT PRIMARY KEY,
+		id INTEGER PRIMARY KEY,
 		name VARCHAR(255),
 		username VARCHAR(255) NOT NULL,
 		email VARCHAR(255),
@@ -280,22 +284,93 @@ db.prepare(
 db.prepare(
 	`
 	CREATE TABLE IF NOT EXISTS order_process (
-		id INT PRIMARY KEY,
+		id VARCHAR(255) PRIMARY KEY,
 		label VARCHAR(255) NOT NULL,
-		value INT NOT NULL
+		value INTEGER NOT NULL
 	);
   	`
 ).run();
 
 const upsertData = (key, value) => {
-	key = convertKey(key);
+	try {
+		key = convertKey(key);
+		const stmt = db.prepare(
+			`INSERT INTO local_store (id, ${key}) 
+			VALUES (1, ?) 
+			ON CONFLICT(id) DO UPDATE SET ${key} = excluded.${key}`
+		);
+
+		stmt.run(value);
+	} catch (error) {
+		console.error(`Failed to upsert into ${key}:`, error);
+		console.error("Data:", value);
+	}
+};
+const formatValue = (value) => {
+	if (value === undefined || value === null) return null;
+	try {
+		if (typeof value === "object") return JSON.stringify(value);
+	} catch (e) {
+		console.error(`Failed to stringify value: ${value}`, e);
+		return null;
+	}
+	return value;
+};
+
+// data insertion into the table
+const upsertIntoTable = (table, data) => {
+	table = convertKey(table);
+	const keys = Object.keys(data);
+	const placeholders = keys.map(() => "?").join(", ");
+	const updatePlaceholders = keys.map((key) => `${key} = excluded.${key}`).join(", ");
+
+	// convert objects/arrays to JSON strings
+	const formattedData = keys.reduce((acc, key) => {
+		acc[key] = formatValue(data[key]);
+		return acc;
+	}, {});
+
 	const stmt = db.prepare(
-		`INSERT INTO local_store (id, ${key}) 
-     VALUES (1, ?) 
-     ON CONFLICT(id) DO UPDATE SET ${key} = excluded.${key}`
+		`INSERT INTO ${table} (${keys.join(", ")}) 
+		 VALUES (${placeholders})
+		 ON CONFLICT(id) DO UPDATE SET ${updatePlaceholders}`
 	);
 
-	stmt.run(value);
+	// check if row exists by ID
+	const existingRow = db.prepare(`SELECT id FROM ${table} WHERE id = ?`).get(data.id);
+
+	if (!existingRow) {
+		// insert new row if not found
+		stmt.run(...Object.values(formattedData));
+	} else {
+		// update only if data is different
+		const existingData = db.prepare(`SELECT * FROM ${table} WHERE id = ?`).get(data.id);
+
+		const isChanged = keys.some((key) => {
+			// compare stored JSON string vs new value
+			const existingValue =
+				typeof existingData[key] === "string" && existingData[key].startsWith("{")
+					? JSON.parse(existingData[key])
+					: existingData[key];
+
+			const newValue =
+				typeof formattedData[key] === "string" && formattedData[key].startsWith("{")
+					? JSON.parse(formattedData[key])
+					: formattedData[key];
+
+			return JSON.stringify(existingValue) !== JSON.stringify(newValue);
+		});
+
+		if (isChanged) {
+			stmt.run(...Object.values(formattedData));
+		}
+	}
+};
+
+const getDataFromTable = (table) => {
+	table = convertKey(table);
+	const stmt = db.prepare(`SELECT * FROM ${table}`);
+	return stmt.get();
 };
 
 const getData = (key) => {
@@ -304,12 +379,14 @@ const getData = (key) => {
 	return stmt.get()?.[key];
 };
 
-const destroyTableData = (table = "local_store") => {
+const destroyTableData = (table = "users") => {
 	const stmt = db.prepare(`DELETE FROM ${table}`);
 	stmt.run();
 };
 
 module.exports = {
+	upsertIntoTable,
+	getDataFromTable,
 	upsertData,
 	getData,
 	destroyTableData,
