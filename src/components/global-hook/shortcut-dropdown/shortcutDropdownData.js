@@ -3,9 +3,9 @@ import { IconCode } from "@tabler/icons-react";
 const shortcutDropdownData = (t, configData) => {
 	configData = {
 		...configData,
-		domain: JSON.parse(configData.domain || "{}"),
-		business_model: JSON.parse(configData.business_model || "{}"),
-		currency: JSON.parse(configData.currency || "{}"),
+		domain: JSON.parse(configData?.domain || "{}"),
+		business_model: JSON.parse(configData?.business_model || "{}"),
+		currency: JSON.parse(configData?.currency || "{}"),
 	};
 
 	return [

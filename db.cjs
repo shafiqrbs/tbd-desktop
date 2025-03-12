@@ -266,7 +266,7 @@ db.prepare(
 db.prepare(
 	`
 	CREATE TABLE IF NOT EXISTS order_process (
-		id VARCHAR(255) PRIMARY KEY,
+		id INTEGER PRIMARY KEY,
 		label VARCHAR(255) NOT NULL,
 		value INTEGER NOT NULL
 	);

@@ -1,4 +1,3 @@
-import { randomId } from "@mantine/hooks";
 import axios from "axios";
 
 const orderProcessDropdownLocalDataStore = async (user_id) => {
@@ -16,8 +15,8 @@ const orderProcessDropdownLocalDataStore = async (user_id) => {
 			params: { "dropdown-type": "sales-process-type" },
 		});
 		if (response?.data?.data?.length > 0) {
-			const transformedData = response.data.data.map(({ id, name }) => ({
-				id: randomId(),
+			const transformedData = response.data.data.map(({ id, name }, index) => ({
+				id: index,
 				label: name,
 				value: id,
 			}));
