@@ -8,22 +8,20 @@ import {
 	getDataWithoutParam,
 	updateData,
 	updateDataWithFile,
+	showData,
 } from "../../services/apiService.js";
 
 // a generic CRUD thunks that can be used inside all modules
-export const getIndexEntityData = createAsyncThunk(
-	"core/index",
-	async (value, { rejectWithValue }) => {
-		try {
-			const data = value.params
-				? await getDataWithParam(value)
-				: await getDataWithoutParam(value);
-			return { data, module: value.module };
-		} catch (error) {
-			return rejectWithValue(error.response?.data || "Failed to fetch data");
-		}
+export const getIndexEntityData = createAsyncThunk("core/index", async (value) => {
+	try {
+		const data = value.params
+			? await getDataWithParam(value)
+			: await getDataWithoutParam(value);
+		return { data, module: value.module };
+	} catch (error) {
+		console.error("Failed to fetch, reason:", error);
 	}
-);
+});
 
 export const storeEntityData = createAsyncThunk(
 	"core/store",
@@ -74,6 +72,18 @@ export const editEntityData = createAsyncThunk("core/edit", async (value, { reje
 	}
 });
 
+export const showInstantEntityData = createAsyncThunk(
+	"show-instant", // Unique action type
+	async (value, { rejectWithValue }) => {
+		try {
+			const data = await showData(value); // Wait for the API response
+			return data; // Return data (will trigger `fulfilled` case)
+		} catch (error) {
+			return rejectWithValue(error.response?.data || "Failed to fetch data"); // Return error details to `rejected` case
+		}
+	}
+);
+
 const initialState = {
 	data: {
 		inventory: {
@@ -93,11 +103,16 @@ const initialState = {
 		sales: {
 			list: [],
 			current: null,
+			filters: {
+				sales: {},
+			},
+			filterData: null,
 			validation: false,
 			validationMessage: [],
 			formLoading: false,
 			insertType: "create",
 			editData: null,
+			deleteData: null,
 		},
 		purchase: {
 			list: [],
@@ -313,6 +328,11 @@ const crudSlice = createSlice({
 				state.isLoading = false;
 				state.error = action.payload;
 			});
+
+		builder.addCase(showInstantEntityData.fulfilled, (state, action) => {
+			const { data, module = "inventory" } = action.payload;
+			state.data[module].showEntityData = data.data;
+		});
 	},
 });
 

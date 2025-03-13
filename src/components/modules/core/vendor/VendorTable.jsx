@@ -19,8 +19,10 @@ import { deleteEntityData } from "../../../../store/core/crudSlice";
 import tableCss from "../../../../assets/css/Table.module.css";
 import VendorViewDrawer from "./VendorViewDrawer.jsx";
 import { notifications } from "@mantine/notifications";
+import { useNetwork } from "@mantine/hooks";
 
 function VendorTable() {
+	const networkStatus = useNetwork();
 	const dispatch = useDispatch();
 	const { t } = useTranslation();
 	const { mainAreaHeight } = useOutletContext();
@@ -68,8 +70,18 @@ function VendorTable() {
 		};
 
 		try {
-			const resultAction = await dispatch(getIndexEntityData(value));
-			setIndexData(resultAction.payload);
+			if (networkStatus.online) {
+				const resultAction = await dispatch(getIndexEntityData(value));
+				setIndexData(resultAction.payload);
+			} else {
+				const result = await window.dbAPI.getDataFromTable("core_vendors");
+				setIndexData({
+					data: {
+						data: result,
+					},
+					total: result.length,
+				});
+			}
 		} catch (err) {
 			console.error("Unexpected error:", err);
 		} finally {
@@ -101,7 +113,7 @@ function VendorTable() {
 
 	useEffect(() => {
 		fetchData();
-	}, [dispatch, searchKeyword, filters, page]);
+	}, [dispatch, searchKeyword, filters, page, networkStatus.online]);
 
 	useEffect(() => {
 		if (fetchingReload) {

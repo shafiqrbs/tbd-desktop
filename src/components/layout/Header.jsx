@@ -63,17 +63,13 @@ export default function Header({ isOnline, configData }) {
 	const [languageSelected, setLanguageSelected] = useState(
 		languages.find((item) => item.value === i18n.language)
 	);
-	const [_, setVisible] = useState(true);
 
 	useEffect(() => {
 		const checkConfigData = async () => {
-			// const storedConfigData = localStorage.getItem("config-data");
 			const storedConfigData = await window.dbAPI.getDataFromTable("config-data");
 			if (storedConfigData) {
 				setConfigData(storedConfigData);
-				setVisible(false);
 			} else {
-				setVisible(false);
 				navigate("/login");
 			}
 		};
@@ -108,8 +104,6 @@ export default function Header({ isOnline, configData }) {
 		navigate("/login");
 	}
 	const list = getActions().reduce((acc, group) => [...acc, ...group.actions], []);
-
-	console.log("list in Header:-", list);
 
 	useHotkeys(
 		[

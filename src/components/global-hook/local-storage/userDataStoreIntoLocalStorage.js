@@ -2,7 +2,6 @@ import axios from "axios";
 
 const userDataStoreIntoLocalStorage = async () => {
 	try {
-		// const user = localStorage.getItem('user');
 		const user = await window.dbAPI.getData("user");
 		const userId = user ? JSON.parse(user).id : null;
 
@@ -21,7 +20,6 @@ const userDataStoreIntoLocalStorage = async () => {
 
 		let { data } = response;
 		if (data && data.data) {
-			// localStorage.setItem("core-users", JSON.stringify(data.data));
 			await window.dbAPI.upsertData("core-users", JSON.stringify(data.data));
 		}
 	} catch (error) {

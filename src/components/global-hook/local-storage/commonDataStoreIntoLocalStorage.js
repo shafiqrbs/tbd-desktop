@@ -7,6 +7,7 @@ const tableMap = {
 	"core/vendor/local-storage": "core_vendors",
 	"core/user/local-storage": "core_users",
 	"accounting/transaction-mode/local-storage": "accounting_transaction_mode",
+	"inventory/sales": "sales",
 };
 
 const commonDataStoreIntoLocalStorage = async (user_id) => {

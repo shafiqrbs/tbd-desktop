@@ -109,6 +109,11 @@ db.prepare(
 		invoice_print_logo INTEGER,
 		barcode_print INTEGER,
 		custom_invoice INTEGER,
+		pos_invoice_position INTEGER,
+		multi_kitchen INTEGER,
+		payment_split INTEGER,
+		item_addons INTEGER,
+		cash_on_delivery INTEGER,
 		custom_invoice_print INTEGER,
 		show_stock INTEGER,
 		is_powered INTEGER,
@@ -152,6 +157,7 @@ db.prepare(
 		is_sku INTEGER,
 		is_sales_auto_approved INTEGER,
 		is_purchase_auto_approved INTEGER,
+		is_online INTEGER,
 		is_pos INTEGER,
 		is_table_pos INTEGER,
 		is_pay_first INTEGER,
@@ -273,6 +279,41 @@ db.prepare(
   	`
 ).run();
 
+// sales table
+db.prepare(
+	`
+	CREATE TABLE IF NOT EXISTS sales (
+		id INTEGER PRIMARY KEY,
+		created TEXT,
+		invoice TEXT,
+		sub_total REAL,
+		total REAL,
+		approved_by_id INTEGER,
+		payment REAL,
+		discount REAL,
+		is_domain_sales_completed INTEGER,
+		discount_calculation REAL,
+		discount_type TEXT,
+		invoice_batch_id INTEGER,
+		customerId INTEGER,
+		customerName TEXT,
+		customerMobile TEXT,
+		createdByUser TEXT,
+		createdByName TEXT,
+		createdById INTEGER,
+		salesById INTEGER,
+		salesByUser TEXT,
+		salesByName TEXT,
+		process TEXT,
+		mode_name TEXT,
+		customer_address TEXT,
+		customer_group TEXT,
+		balance REAL,
+		sales_items TEXT
+	);
+  	`
+).run();
+
 const formatValue = (value) => {
 	if (value === undefined || value === null) return null;
 	try {
@@ -335,10 +376,18 @@ const upsertIntoTable = (table, data) => {
 	}
 };
 
-const getDataFromTable = (table) => {
+const getDataFromTable = (table, id) => {
 	table = convertTableName(table);
-	const stmt = db.prepare(`SELECT * FROM ${table}`);
-	return stmt.get();
+	// this tables uses get instead of all cause there will be no new rows ever always 1
+	const useGet = ["config_data", "users"].includes(table);
+
+	if (id) {
+		const stmt = db.prepare(`SELECT * FROM ${table} WHERE id = ?`);
+		return stmt.get(id);
+	} else {
+		const stmt = db.prepare(`SELECT * FROM ${table}`);
+		return useGet ? stmt.get() : stmt.all();
+	}
 };
 
 const deleteDataFromTable = (table, id) => {

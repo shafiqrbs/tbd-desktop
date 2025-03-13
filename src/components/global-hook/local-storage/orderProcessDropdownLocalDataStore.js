@@ -1,10 +1,12 @@
 import axios from "axios";
 
 const orderProcessDropdownLocalDataStore = async (user_id) => {
+	if (!user_id) return console.warn("No user id passed");
+
 	try {
 		const response = await axios({
 			method: "get",
-			url: `${import.meta.env.VITE_API_GATEWAY_URL + "utility/select/setting"}`,
+			url: `${import.meta.env.VITE_API_GATEWAY_URL}utility/select/setting`,
 			headers: {
 				Accept: `application/json`,
 				"Content-Type": `application/json`,
