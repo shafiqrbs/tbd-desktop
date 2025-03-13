@@ -239,46 +239,47 @@ export function SalesPrintA4({ salesViewData, setPrintA4, salesItems }) {
 								</tr>
 							</thead>
 							<tbody>
-								{salesItems.map((element, index) => (
-									<React.Fragment key={index}>
-										<tr className={classes["invoice-body-table-tr"]}>
-											<td
-												className={`${classes["invoice-body-table-td"]} ${classes["text-center"]}`}
-											>
-												{index + 1}
-											</td>
-											<td className={classes["invoice-body-table-td"]}>
-												{element.name}
-												{element.sku && (
-													<>
-														<br />
-														{t("Sku")} {element.sku}
-													</>
-												)}
-											</td>
-											<td
-												className={`${classes["invoice-body-table-td"]} ${classes["text-center"]}`}
-											>
-												{element.quantity}
-											</td>
-											<td
-												className={`${classes["invoice-body-table-td"]} ${classes["text-right"]}`}
-											>
-												{element.uom}
-											</td>
-											<td
-												className={`${classes["invoice-body-table-td"]} ${classes["text-center"]}`}
-											>
-												{element.sales_price}
-											</td>
-											<td
-												className={`${classes["invoice-body-table-td"]} ${classes["text-right"]}`}
-											>
-												{element.sub_total}
-											</td>
-										</tr>
-									</React.Fragment>
-								))}
+								{Array.isArray(salesItems) &&
+									salesItems?.map((element, index) => (
+										<React.Fragment key={index}>
+											<tr className={classes["invoice-body-table-tr"]}>
+												<td
+													className={`${classes["invoice-body-table-td"]} ${classes["text-center"]}`}
+												>
+													{index + 1}
+												</td>
+												<td className={classes["invoice-body-table-td"]}>
+													{element.name}
+													{element.sku && (
+														<>
+															<br />
+															{t("Sku")} {element.sku}
+														</>
+													)}
+												</td>
+												<td
+													className={`${classes["invoice-body-table-td"]} ${classes["text-center"]}`}
+												>
+													{element.quantity}
+												</td>
+												<td
+													className={`${classes["invoice-body-table-td"]} ${classes["text-right"]}`}
+												>
+													{element.uom}
+												</td>
+												<td
+													className={`${classes["invoice-body-table-td"]} ${classes["text-center"]}`}
+												>
+													{element.sales_price}
+												</td>
+												<td
+													className={`${classes["invoice-body-table-td"]} ${classes["text-right"]}`}
+												>
+													{element.sub_total}
+												</td>
+											</tr>
+										</React.Fragment>
+									))}
 							</tbody>
 						</table>
 					</div>
@@ -316,7 +317,6 @@ export function SalesPrintA4({ salesViewData, setPrintA4, salesItems }) {
 									>
 										{t("Due")}
 									</p>
-									{/* <p className={classes['invoice-footer-text-two']}>Grand Total</p> */}
 								</div>
 							</div>
 							<div className={classes["footer-data-section"]}>

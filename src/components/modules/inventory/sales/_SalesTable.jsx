@@ -104,30 +104,34 @@ function _SalesTable() {
 
 	const salesItems = networkStatus.online
 		? salesViewData?.sales_items
+		: Array.isArray(salesViewData?.sales_items)
+		? salesViewData?.sales_items
 		: JSON.parse(salesViewData?.sales_items || "[]");
 
-	const rows = salesItems?.map((element, index) => (
-		<Table.Tr key={element.name}>
-			<Table.Td fz="xs" width={"20"}>
-				{index + 1}
-			</Table.Td>
-			<Table.Td ta="left" fz="xs" width={"300"}>
-				{element.name}
-			</Table.Td>
-			<Table.Td ta="center" fz="xs" width={"60"}>
-				{element.quantity}
-			</Table.Td>
-			<Table.Td ta="right" fz="xs" width={"80"}>
-				{element.uom}
-			</Table.Td>
-			<Table.Td ta="right" fz="xs" width={"80"}>
-				{element.sales_price}
-			</Table.Td>
-			<Table.Td ta="right" fz="xs" width={"100"}>
-				{element.sub_total}
-			</Table.Td>
-		</Table.Tr>
-	));
+	const rows =
+		Array.isArray(salesItems) &&
+		salesItems?.map((element, index) => (
+			<Table.Tr key={element.name}>
+				<Table.Td fz="xs" width={"20"}>
+					{index + 1}
+				</Table.Td>
+				<Table.Td ta="left" fz="xs" width={"300"}>
+					{element.name}
+				</Table.Td>
+				<Table.Td ta="center" fz="xs" width={"60"}>
+					{element.quantity}
+				</Table.Td>
+				<Table.Td ta="right" fz="xs" width={"80"}>
+					{element.uom}
+				</Table.Td>
+				<Table.Td ta="right" fz="xs" width={"80"}>
+					{element.sales_price}
+				</Table.Td>
+				<Table.Td ta="right" fz="xs" width={"100"}>
+					{element.sub_total}
+				</Table.Td>
+			</Table.Tr>
+		));
 
 	useEffect(() => {
 		dispatch(
