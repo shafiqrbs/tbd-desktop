@@ -5,29 +5,29 @@ import { useTranslation } from "react-i18next";
 import { Grid, Text } from "@mantine/core";
 import getConfigData from "../../../../global-hook/config-data/getConfigData";
 
-export function SalesPrintPos({ salesItems, setPrintPos, posData }) {
+export function SalesPrintPos({ salesItems, setPrintPos, salesViewData }) {
 	const { configData } = getConfigData();
-	const componentRef = useRef();
-	const effectRan = useRef(false);
+	const ref = useRef();
 	const { t } = useTranslation();
 
-	const imageSrc = `${import.meta.env.VITE_IMAGE_GATEWAY_URL}uploads/inventory/logo/${
-		configData.path
-	}`;
-
 	const handlePrint = useReactToPrint({
-		content: () => componentRef.current,
+		documentTitle: "Invoice",
+		contentRef: ref,
+		onAfterPrint: () => setPrintPos(false),
 	});
 
 	useEffect(() => {
-		!effectRan.current && (handlePrint(), setPrintPos(false), (effectRan.current = true));
-	}, []);
+		if (salesItems && salesItems) {
+			console.info("Printing process started...");
+			handlePrint();
+		}
+	}, [salesItems, salesViewData, handlePrint]);
+
 	return (
 		<>
-			<div className={classes["pos-body"]} ref={componentRef}>
+			<div className={classes["pos-body"]} ref={ref}>
 				<header className={classes["body-head"]}>
 					<div className={classes["pos-head"]}>
-						<img src={imageSrc} alt="logo" className={classes["head-img"]} />
 						<h3 className={classes["head-title"]}>{configData.domain.name}</h3>
 						<Grid
 							columns={24}
@@ -73,7 +73,7 @@ export function SalesPrintPos({ salesItems, setPrintPos, posData }) {
 							>
 								<Grid.Col span={6}>{t("Invoice")}</Grid.Col>
 								<Grid.Col span={2}>:</Grid.Col>
-								<Grid.Col span={16}>{posData?.invoice_id}</Grid.Col>
+								<Grid.Col span={16}>{salesViewData?.invoice_id}</Grid.Col>
 							</Grid>
 							<Grid
 								columns={24}
@@ -82,7 +82,7 @@ export function SalesPrintPos({ salesItems, setPrintPos, posData }) {
 							>
 								<Grid.Col span={6}>{t("Created")}</Grid.Col>
 								<Grid.Col span={2}>:</Grid.Col>
-								<Grid.Col span={16}>{posData?.invoice_time}</Grid.Col>
+								<Grid.Col span={16}>{salesViewData?.invoice_time}</Grid.Col>
 							</Grid>
 							<Grid
 								columns={24}
@@ -92,7 +92,9 @@ export function SalesPrintPos({ salesItems, setPrintPos, posData }) {
 								<Grid.Col span={6}>{t("CreatedBy")}</Grid.Col>
 								<Grid.Col span={2}>:</Grid.Col>
 								<Grid.Col span={16}>
-									{posData && posData.createdByName && posData.createdByName}
+									{salesViewData &&
+										salesViewData.createdByName &&
+										salesViewData.createdByName}
 								</Grid.Col>
 							</Grid>
 						</div>
@@ -108,7 +110,7 @@ export function SalesPrintPos({ salesItems, setPrintPos, posData }) {
 						>
 							<Grid.Col span={6}>{t("Customer")}</Grid.Col>
 							<Grid.Col span={2}>:</Grid.Col>
-							<Grid.Col span={16}>{posData?.customerName}</Grid.Col>
+							<Grid.Col span={16}>{salesViewData?.customerName}</Grid.Col>
 						</Grid>
 						<Grid
 							columns={24}
@@ -117,7 +119,7 @@ export function SalesPrintPos({ salesItems, setPrintPos, posData }) {
 						>
 							<Grid.Col span={6}>{t("Mobile")}</Grid.Col>
 							<Grid.Col span={2}>:</Grid.Col>
-							<Grid.Col span={16}>{posData?.customerMobile}</Grid.Col>
+							<Grid.Col span={16}>{salesViewData?.customerMobile}</Grid.Col>
 						</Grid>
 						<Grid
 							columns={24}
@@ -126,7 +128,7 @@ export function SalesPrintPos({ salesItems, setPrintPos, posData }) {
 						>
 							<Grid.Col span={6}>{t("Address")}</Grid.Col>
 							<Grid.Col span={2}>:</Grid.Col>
-							<Grid.Col span={16}>{posData?.customer_address}</Grid.Col>
+							<Grid.Col span={16}>{salesViewData?.customer_address}</Grid.Col>
 						</Grid>
 					</div>
 					<h3 className={classes["main-title"]}></h3>
@@ -220,9 +222,9 @@ export function SalesPrintPos({ salesItems, setPrintPos, posData }) {
 							<p
 								className={`${classes["footer-details"]} ${classes["invoice-text"]}`}
 							>
-								{posData &&
-									posData.grand_total &&
-									Number(posData.grand_total).toFixed(2)}
+								{salesViewData &&
+									salesViewData.grand_total &&
+									Number(salesViewData.grand_total).toFixed(2)}
 							</p>
 						</div>
 						<div className={classes["footer-items"]}>
@@ -232,7 +234,9 @@ export function SalesPrintPos({ salesItems, setPrintPos, posData }) {
 							<p
 								className={`${classes["footer-details"]} ${classes["invoice-text"]}`}
 							>
-								{posData && posData.discount && Number(posData.discount).toFixed(2)}
+								{salesViewData &&
+									salesViewData.discount &&
+									Number(salesViewData.discount).toFixed(2)}
 							</p>
 						</div>
 						<div className={classes["footer-items"]}>
@@ -242,7 +246,9 @@ export function SalesPrintPos({ salesItems, setPrintPos, posData }) {
 							<p
 								className={`${classes["footer-details"]} ${classes["invoice-text"]}`}
 							>
-								{posData && posData.total && Number(posData.total).toFixed(2)}
+								{salesViewData &&
+									salesViewData.total &&
+									Number(salesViewData.total).toFixed(2)}
 							</p>
 						</div>
 						<h3 className={classes["table-title"]}></h3>
@@ -253,7 +259,9 @@ export function SalesPrintPos({ salesItems, setPrintPos, posData }) {
 							<p
 								className={`${classes["footer-details"]} ${classes["invoice-text"]}`}
 							>
-								{posData && posData.payment && Number(posData.payment).toFixed(2)}
+								{salesViewData &&
+									salesViewData.payment &&
+									Number(salesViewData.payment).toFixed(2)}
 							</p>
 						</div>
 						<h3 className={classes["table-title"]}></h3>
@@ -264,9 +272,11 @@ export function SalesPrintPos({ salesItems, setPrintPos, posData }) {
 							<p
 								className={`${classes["footer-details"]} ${classes["invoice-text"]}`}
 							>
-								{posData &&
-									posData.total &&
-									(Number(posData.total) - Number(posData.payment)).toFixed(2)}
+								{salesViewData &&
+									salesViewData.total &&
+									(
+										Number(salesViewData.total) - Number(salesViewData.payment)
+									).toFixed(2)}
 							</p>
 						</div>
 						<Text

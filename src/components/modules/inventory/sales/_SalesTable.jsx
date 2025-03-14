@@ -21,7 +21,6 @@ import { useTranslation } from "react-i18next";
 import {
 	IconEdit,
 	IconPrinter,
-	IconReceipt,
 	IconDotsVertical,
 	IconTrashX,
 	IconCheck,
@@ -44,6 +43,7 @@ import { SalesPrintPos } from "./print-component/SalesPrintPos";
 import { modals } from "@mantine/modals";
 import { notifications } from "@mantine/notifications";
 import { showNotificationComponent } from "../../../core-component/showNotificationComponent";
+import SalesPrintThermal from "./print-component/SalesPrintThermal.jsx";
 
 function _SalesTable() {
 	const networkStatus = useNetwork();
@@ -988,17 +988,10 @@ function _SalesTable() {
 								>
 									{t("Print")}
 								</Button>
-								<Button
-									fullWidth={true}
-									variant="filled"
-									leftSection={<IconReceipt size={14} />}
-									color="red.5"
-									onClick={() => {
-										setPrintPos(true);
-									}}
-								>
-									{t("Pos")}
-								</Button>
+								<SalesPrintThermal
+									salesViewData={salesViewData}
+									salesItems={salesItems}
+								/>
 								{!checked && (
 									<Button
 										onClick={() =>
@@ -1032,15 +1025,6 @@ function _SalesTable() {
 					<SalesPrintA4
 						salesViewData={salesViewData}
 						setPrintA4={setPrintA4}
-						salesItems={salesItems}
-					/>
-				</div>
-			)}
-			{printPos && (
-				<div style={{ display: "none" }}>
-					<SalesPrintPos
-						salesViewData={salesViewData}
-						setPrintPos={setPrintPos}
 						salesItems={salesItems}
 					/>
 				</div>
