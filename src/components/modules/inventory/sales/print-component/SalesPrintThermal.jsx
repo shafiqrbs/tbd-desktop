@@ -26,7 +26,7 @@ export default function SalesPrintThermal({ salesViewData, salesItems }) {
 				<Row left={t("Mobile")} right={configData?.domain?.mobile || "N/A"} />
 
 				{/* Address */}
-				<Row left={t("Address")} right={configData?.address || "N/A"} />
+				<Row left={t("Address")} right={configData?.domain?.address || "N/A"} />
 
 				<Line />
 				<Br />
@@ -39,10 +39,10 @@ export default function SalesPrintThermal({ salesViewData, salesItems }) {
 				<Line />
 
 				{/* Invoice ID */}
-				<Row left={t("Invoice")} right={salesViewData?.invoice_id || "N/A"} />
+				<Row left={t("Invoice")} right={salesViewData?.invoice || "N/A"} />
 
 				{/* Created Time */}
-				<Row left={t("Created")} right={salesViewData?.invoice_time || "N/A"} />
+				<Row left={t("Created")} right={salesViewData?.created || "N/A"} />
 
 				{/* Created By */}
 				<Row left={t("CreatedBy")} right={salesViewData?.createdByName || "N/A"} />
@@ -74,9 +74,9 @@ export default function SalesPrintThermal({ salesViewData, salesItems }) {
 					left={<Text bold>{t("Name")}</Text>}
 					right={
 						<>
-							<Text style={{ marginRight: 2 }}>{t("QTY")}</Text>
-							<Text style={{ marginRight: 2 }}>{t("Unit")}</Text>
-							<Text style={{ marginRight: 2 }}>{t("Price")}</Text>
+							<Text>{t("QTY")}</Text>
+							<Text>{t("Unit")}</Text>
+							<Text>{t("Price")}</Text>
 							<Text>{t("Total")}</Text>
 						</>
 					}
@@ -89,16 +89,12 @@ export default function SalesPrintThermal({ salesViewData, salesItems }) {
 					{salesItems?.map((element, index) => (
 						<Fragment key={index}>
 							<Row
-								left={<Text>{element?.product_name}</Text>}
+								left={<Text>{element?.item_name}</Text>}
 								right={
 									<>
-										<Text style={{ marginRight: 2 }}>{element?.quantity}</Text>
-										<Text style={{ marginRight: 2 }}>
-											{element?.purchase_price}
-										</Text>
-										<Text style={{ marginRight: 2 }}>
-											{element?.sales_price}
-										</Text>
+										<Text>{element?.quantity}</Text>
+										<Text>{element?.purchase_price}</Text>
+										<Text>{element?.sales_price}</Text>
 										<Text>{element?.sub_total}</Text>
 									</>
 								}
@@ -115,8 +111,8 @@ export default function SalesPrintThermal({ salesViewData, salesItems }) {
 					left={<Text>{t("SubTotal")}</Text>}
 					right={
 						<Text>
-							{salesViewData?.grand_total
-								? Number(salesViewData?.grand_total).toFixed(2)
+							{salesViewData?.sub_total
+								? Number(salesViewData?.sub_total).toFixed(2)
 								: "N/A"}
 						</Text>
 					}
@@ -173,11 +169,9 @@ export default function SalesPrintThermal({ salesViewData, salesItems }) {
 					left={<Text>{t("Due")}</Text>}
 					right={
 						<Text>
-							{salesViewData?.total && salesViewData?.payment
-								? (
-										Number(salesViewData.total) - Number(salesViewData.payment)
-								  ).toFixed(2)
-								: "N/A"}
+							{(
+								Number(salesViewData?.total) - Number(salesViewData?.payment)
+							).toFixed(2)}
 						</Text>
 					}
 					gap={2}
@@ -188,7 +182,7 @@ export default function SalesPrintThermal({ salesViewData, salesItems }) {
 				{/* ================ Footer Text =============== */}
 				<Text>{configData?.print_footer_text}</Text>
 				<Br />
-				<Text align="center">{configData?.domain?.name}</Text>
+				<Text align="center">{"© " + configData?.domain?.name}</Text>
 
 				<Cut />
 			</Printer>
