@@ -1,203 +1,170 @@
 import { Button } from "@mantine/core";
 import { IconReceipt } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
-import { Printer, Text, Row, Line, Br, Cut, render } from "react-thermal-printer";
 import getConfigData from "../../../../global-hook/config-data/getConfigData";
-import { Fragment } from "react";
+
+const options = {
+	preview: false,
+	silent: true,
+	margin: "0 0 0 0",
+	copies: 1,
+	printerName: import.meta.env.VITE_PRINTER_NAME,
+	timeOutPerLine: 1000,
+	pageSize: "80mm",
+};
 
 export default function SalesPrintThermal({ salesViewData, salesItems }) {
 	const { t } = useTranslation();
 	const { configData } = getConfigData();
 
+	console.log("ConfigData:", configData);
+	console.log("salesViewData:", salesViewData, "salesItems:", salesItems);
+
 	const handlePrint = async () => {
-		const receipt = (
-			<Printer type="epson" width={42}>
-				{/* ================== Business Name ================ */}
-				<Text align="center" size={{ width: 2, height: 2 }} bold>
-					{configData?.domain?.name}
-				</Text>
-				<Br />
-				<Line />
-
-				{/* Email */}
-				<Row left={t("Email")} right={configData?.domain?.email || "N/A"} />
-
-				{/* Mobile */}
-				<Row left={t("Mobile")} right={configData?.domain?.mobile || "N/A"} />
-
-				{/* Address */}
-				<Row left={t("Address")} right={configData?.domain?.address || "N/A"} />
-
-				<Line />
-				<Br />
-
-				{/* ================= Invoice Title ================= */}
-				<Text align="center" size={{ width: 2, height: 2 }} bold>
-					{t("RetailInvoice")}
-				</Text>
-				<Br />
-				<Line />
-
-				{/* Invoice ID */}
-				<Row left={t("Invoice")} right={salesViewData?.invoice || "N/A"} />
-
-				{/* Created Time */}
-				<Row left={t("Created")} right={salesViewData?.created || "N/A"} />
-
-				{/* Created By */}
-				<Row left={t("CreatedBy")} right={salesViewData?.createdByName || "N/A"} />
-
-				<Line />
-				<Br />
-
-				{/* ================= Bill To Title =============== */}
-				<Text align="center" size={{ width: 2, height: 2 }} bold>
-					{t("BillTo")}
-				</Text>
-				<Br />
-				<Line />
-
-				{/* Customer Name */}
-				<Row left={t("Customer")} right={salesViewData?.customerName || "N/A"} />
-
-				{/* Customer Mobile */}
-				<Row left={t("Mobile")} right={salesViewData?.customerMobile || "N/A"} />
-
-				{/* Customer Address */}
-				<Row left={t("Address")} right={salesViewData?.customer_address || "N/A"} />
-
-				<Line />
-				<Br />
-
-				{/* ================ Table Header ================= */}
-				<Row
-					left={<Text bold>{t("Name")}</Text>}
-					right={
-						<>
-							<Text>{t("QTY")}</Text>
-							<Text>{t("Unit")}</Text>
-							<Text>{t("Price")}</Text>
-							<Text>{t("Total")}</Text>
-						</>
-					}
-					gap={2}
-				/>
-				<Line />
-				<Br />
-
-				<>
-					{salesItems?.map((element, index) => (
-						<Fragment key={index}>
-							<Row
-								left={<Text>{element?.item_name}</Text>}
-								right={
-									<>
-										<Text>{element?.quantity}</Text>
-										<Text>{element?.purchase_price}</Text>
-										<Text>{element?.sales_price}</Text>
-										<Text>{element?.sub_total}</Text>
-									</>
-								}
-								gap={2}
-							/>
-							<Line />
-							<Br />
-						</Fragment>
-					))}
-				</>
-
-				{/* ================= SubTotal ================ */}
-				<Row
-					left={<Text>{t("SubTotal")}</Text>}
-					right={
-						<Text>
-							{salesViewData?.sub_total
-								? Number(salesViewData?.sub_total).toFixed(2)
-								: "N/A"}
-						</Text>
-					}
-					gap={2}
-				/>
-				<Line />
-				<Br />
-
-				{/* ================= Discount =============== */}
-				<Row
-					left={<Text>{t("Discount")}</Text>}
-					right={
-						<Text>
-							{salesViewData?.discount
-								? Number(salesViewData?.discount).toFixed(2)
-								: "N/A"}
-						</Text>
-					}
-					gap={2}
-				/>
-				<Line />
-				<Br />
-
-				{/* ================== Total =============== */}
-				<Row
-					left={<Text>{t("Total")}</Text>}
-					right={
-						<Text>
-							{salesViewData?.total ? Number(salesViewData?.total).toFixed(2) : "N/A"}
-						</Text>
-					}
-					gap={2}
-				/>
-				<Line />
-				<Br />
-
-				{/* ================= Receive ================ */}
-				<Row
-					left={<Text>{t("Receive")}</Text>}
-					right={
-						<Text>
-							{salesViewData?.payment
-								? Number(salesViewData.payment).toFixed(2)
-								: "N/A"}
-						</Text>
-					}
-					gap={2}
-				/>
-				<Line />
-				<Br />
-
-				{/* ================ Due =============== */}
-				<Row
-					left={<Text>{t("Due")}</Text>}
-					right={
-						<Text>
-							{(
+		const data = [
+			{
+				type: "text",
+				value: configData?.domain?.name,
+				style: { fontWeight: "600", textAlign: "center", fontSize: "16px" },
+			},
+			{
+				type: "divider",
+				style: { borderTop: "1px dashed black" },
+			},
+			{
+				type: "table",
+				style: { border: "1px solid #ddd", fontFamily: "sans-serif", fontSize: "10px" },
+				tableBody: [
+					[
+						{ type: "text", value: "Email" },
+						{ type: "text", value: configData?.domain?.email || "N/A" },
+					],
+					[
+						{ type: "text", value: "Mobile" },
+						{ type: "text", value: configData?.domain?.mobile || "N/A" },
+					],
+					[
+						{ type: "text", value: "Address" },
+						{ type: "text", value: configData?.domain?.address || "N/A" },
+					],
+				],
+			},
+			{
+				type: "text",
+				value: t("RetailInvoice"),
+				style: { fontWeight: "600", textAlign: "center", fontSize: "12px" },
+			},
+			{
+				type: "divider",
+				style: { borderTop: "1px dashed black" },
+			},
+			{
+				type: "table",
+				style: { border: "1px solid #ddd", fontFamily: "sans-serif", fontSize: "10px" },
+				tableBody: [
+					[
+						{ type: "text", value: "Invoice" },
+						{ type: "text", value: salesViewData?.invoice || "N/A" },
+					],
+					[
+						{ type: "text", value: "Created" },
+						{ type: "text", value: salesViewData?.created || "N/A" },
+					],
+					[
+						{ type: "text", value: "Created By" },
+						{ type: "text", value: salesViewData?.createdByName || "N/A" },
+					],
+				],
+			},
+			{
+				type: "text",
+				value: t("BillTo"),
+				style: { fontWeight: "600", textAlign: "center", fontSize: "12px" },
+			},
+			{
+				type: "divider",
+				style: { borderTop: "1px dashed black" },
+			},
+			{
+				type: "table",
+				style: { border: "1px solid #ddd", fontFamily: "sans-serif", fontSize: "10px" },
+				tableBody: [
+					[
+						{ type: "text", value: "Customer" },
+						{ type: "text", value: salesViewData?.customerName || "N/A" },
+					],
+					[
+						{ type: "text", value: "Mobile" },
+						{ type: "text", value: salesViewData?.customerMobile || "N/A" },
+					],
+					[
+						{ type: "text", value: "Address" },
+						{ type: "text", value: salesViewData?.customer_address || "N/A" },
+					],
+				],
+			},
+			{
+				type: "table",
+				style: {
+					border: "1px solid #ddd",
+					fontFamily: "sans-serif",
+					fontSize: "10px",
+					marginTop: "10px",
+				},
+				tableHeader: [
+					{ type: "text", value: t("Name") },
+					{ type: "text", value: t("QTY") },
+					{ type: "text", value: t("Unit") },
+					{ type: "text", value: t("Price") },
+					{ type: "text", value: t("Total") },
+				],
+				tableBody: salesItems?.map((element) => [
+					{ type: "text", value: element?.item_name },
+					{ type: "text", value: element?.quantity },
+					{ type: "text", value: element?.purchase_price },
+					{ type: "text", value: element?.sales_price },
+					{ type: "text", value: element?.sub_total },
+				]),
+			},
+			{
+				type: "table",
+				style: { border: "1px solid #ddd", fontFamily: "sans-serif", fontSize: "10px" },
+				tableBody: [
+					[
+						{ type: "text", value: t("SubTotal") },
+						{ type: "text", value: salesViewData?.sub_total || "0.00" },
+					],
+					[
+						{ type: "text", value: t("Discount") },
+						{ type: "text", value: salesViewData?.discount || "0.00" },
+					],
+					[
+						{ type: "text", value: t("Total") },
+						{ type: "text", value: salesViewData?.total || "0.00" },
+					],
+					[
+						{ type: "text", value: t("Receive") },
+						{ type: "text", value: salesViewData?.payment || "0.00" },
+					],
+					[
+						{ type: "text", value: t("Due") },
+						{
+							type: "text",
+							value: (
 								Number(salesViewData?.total) - Number(salesViewData?.payment)
-							).toFixed(2)}
-						</Text>
-					}
-					gap={2}
-				/>
-				<Line />
-				<Br />
+							).toFixed(2),
+						},
+					],
+				],
+			},
+			{
+				type: "text",
+				value: "© " + configData?.domain?.name,
+				style: { textAlign: "center", fontSize: "10px", fontWeight: "600" },
+			},
+		];
 
-				{/* ================ Footer Text =============== */}
-				<Text>{configData?.print_footer_text}</Text>
-				<Br />
-				<Text align="center">{"© " + configData?.domain?.name}</Text>
-
-				<Cut />
-			</Printer>
-		);
-
-		const data = await render(receipt);
-
-		// Send to printer using serial port
-		const port = await navigator.serial.requestPort();
-		await port.open({ baudRate: 9600 });
-
-		const writer = port.writable?.getWriter();
-		await writer.write(data);
-		writer.releaseLock();
-		await port.close();
+		await window.deviceAPI.posPrint(data, options);
 	};
 
 	return (

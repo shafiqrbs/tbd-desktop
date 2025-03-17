@@ -1,4 +1,5 @@
 const { app, BrowserWindow, ipcMain } = require("electron");
+const { PosPrinter } = require("@plick/electron-pos-printer");
 const path = require("path");
 const dbModule = require("./db.cjs");
 
@@ -36,6 +37,12 @@ ipcMain.handle("destroy-table-data", async () => {
 		console.error("Error fetching users:", error);
 		throw error;
 	}
+});
+
+ipcMain.handle("pos-print", async (event, data, options) => {
+	console.log("Options:", options);
+	console.log("Data:", JSON.stringify(data));
+	PosPrinter.print(data, options).then(console.log).catch(console.error);
 });
 
 let mainWindow;

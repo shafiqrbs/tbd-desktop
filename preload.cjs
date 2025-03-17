@@ -20,6 +20,12 @@ try {
 			return ipcRenderer.invoke("destroy-table-data");
 		},
 	});
+
+	contextBridge.exposeInMainWorld("deviceAPI", {
+		posPrint: (data, options) => {
+			return ipcRenderer.invoke("pos-print", data, options);
+		},
+	});
 	console.log("dbAPI exposed successfully");
 } catch (error) {
 	console.error("Error in preload script:", error);
