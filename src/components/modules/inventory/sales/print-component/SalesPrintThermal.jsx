@@ -9,7 +9,7 @@ const options = {
 	margin: "0 0 0 0",
 	copies: 1,
 	printerName: import.meta.env.VITE_PRINTER_NAME,
-	timeOutPerLine: 1000,
+	timeOutPerLine: 600,
 	pageSize: "80mm",
 };
 
@@ -17,15 +17,12 @@ export default function SalesPrintThermal({ salesViewData, salesItems }) {
 	const { t } = useTranslation();
 	const { configData } = getConfigData();
 
-	console.log("ConfigData:", configData);
-	console.log("salesViewData:", salesViewData, "salesItems:", salesItems);
-
 	const handlePrint = async () => {
 		const data = [
 			{
 				type: "text",
 				value: configData?.domain?.name,
-				style: { fontWeight: "600", textAlign: "center", fontSize: "16px" },
+				style: { fontWeight: "700", textAlign: "center", fontSize: "16px" },
 			},
 			{
 				type: "divider",
@@ -34,20 +31,25 @@ export default function SalesPrintThermal({ salesViewData, salesItems }) {
 			{
 				type: "table",
 				style: { border: "1px solid #ddd", fontFamily: "sans-serif", fontSize: "10px" },
+				tableHeader: [],
 				tableBody: [
 					[
-						{ type: "text", value: "Email" },
+						{ type: "text", value: "Email", style: { fontWeight: "600" } },
 						{ type: "text", value: configData?.domain?.email || "N/A" },
 					],
 					[
-						{ type: "text", value: "Mobile" },
+						{ type: "text", value: "Mobile", style: { fontWeight: "600" } },
 						{ type: "text", value: configData?.domain?.mobile || "N/A" },
 					],
 					[
-						{ type: "text", value: "Address" },
+						{ type: "text", value: "Address", style: { fontWeight: "600" } },
 						{ type: "text", value: configData?.domain?.address || "N/A" },
 					],
 				],
+				tableFooter: [],
+				tableHeaderStyle: {},
+				tableBodyStyle: {},
+				tableFooterStyle: {},
 			},
 			{
 				type: "text",
@@ -61,20 +63,25 @@ export default function SalesPrintThermal({ salesViewData, salesItems }) {
 			{
 				type: "table",
 				style: { border: "1px solid #ddd", fontFamily: "sans-serif", fontSize: "10px" },
+				tableHeader: [],
 				tableBody: [
 					[
-						{ type: "text", value: "Invoice" },
+						{ type: "text", value: "Invoice", style: { fontWeight: "600" } },
 						{ type: "text", value: salesViewData?.invoice || "N/A" },
 					],
 					[
-						{ type: "text", value: "Created" },
+						{ type: "text", value: "Created", style: { fontWeight: "600" } },
 						{ type: "text", value: salesViewData?.created || "N/A" },
 					],
 					[
-						{ type: "text", value: "Created By" },
+						{ type: "text", value: "Created By", style: { fontWeight: "600" } },
 						{ type: "text", value: salesViewData?.createdByName || "N/A" },
 					],
 				],
+				tableFooter: [],
+				tableHeaderStyle: {},
+				tableBodyStyle: {},
+				tableFooterStyle: {},
 			},
 			{
 				type: "text",
@@ -88,20 +95,25 @@ export default function SalesPrintThermal({ salesViewData, salesItems }) {
 			{
 				type: "table",
 				style: { border: "1px solid #ddd", fontFamily: "sans-serif", fontSize: "10px" },
+				tableHeader: [],
 				tableBody: [
 					[
-						{ type: "text", value: "Customer" },
+						{ type: "text", value: "Customer", style: { fontWeight: "600" } },
 						{ type: "text", value: salesViewData?.customerName || "N/A" },
 					],
 					[
-						{ type: "text", value: "Mobile" },
+						{ type: "text", value: "Mobile", style: { fontWeight: "600" } },
 						{ type: "text", value: salesViewData?.customerMobile || "N/A" },
 					],
 					[
-						{ type: "text", value: "Address" },
+						{ type: "text", value: "Address", style: { fontWeight: "600" } },
 						{ type: "text", value: salesViewData?.customer_address || "N/A" },
 					],
 				],
+				tableFooter: [],
+				tableHeaderStyle: {},
+				tableBodyStyle: {},
+				tableFooterStyle: {},
 			},
 			{
 				type: "table",
@@ -125,29 +137,34 @@ export default function SalesPrintThermal({ salesViewData, salesItems }) {
 					{ type: "text", value: element?.sales_price },
 					{ type: "text", value: element?.sub_total },
 				]),
+				tableFooter: [],
+				tableHeaderStyle: {},
+				tableBodyStyle: {},
+				tableFooterStyle: {},
 			},
 			{
 				type: "table",
 				style: { border: "1px solid #ddd", fontFamily: "sans-serif", fontSize: "10px" },
+				tableHeader: [],
 				tableBody: [
 					[
-						{ type: "text", value: t("SubTotal") },
+						{ type: "text", value: t("SubTotal"), style: { fontWeight: "600" } },
 						{ type: "text", value: salesViewData?.sub_total || "0.00" },
 					],
 					[
-						{ type: "text", value: t("Discount") },
+						{ type: "text", value: t("Discount"), style: { fontWeight: "600" } },
 						{ type: "text", value: salesViewData?.discount || "0.00" },
 					],
 					[
-						{ type: "text", value: t("Total") },
+						{ type: "text", value: t("Total"), style: { fontWeight: "600" } },
 						{ type: "text", value: salesViewData?.total || "0.00" },
 					],
 					[
-						{ type: "text", value: t("Receive") },
+						{ type: "text", value: t("Receive"), style: { fontWeight: "600" } },
 						{ type: "text", value: salesViewData?.payment || "0.00" },
 					],
 					[
-						{ type: "text", value: t("Due") },
+						{ type: "text", value: t("Due"), style: { fontWeight: "600" } },
 						{
 							type: "text",
 							value: (
@@ -156,6 +173,10 @@ export default function SalesPrintThermal({ salesViewData, salesItems }) {
 						},
 					],
 				],
+				tableFooter: [],
+				tableHeaderStyle: {},
+				tableBodyStyle: {},
+				tableFooterStyle: {},
 			},
 			{
 				type: "text",

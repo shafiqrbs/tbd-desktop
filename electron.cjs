@@ -40,8 +40,6 @@ ipcMain.handle("destroy-table-data", async () => {
 });
 
 ipcMain.handle("pos-print", async (event, data, options) => {
-	console.log("Options:", options);
-	console.log("Data:", JSON.stringify(data));
 	PosPrinter.print(data, options).then(console.log).catch(console.error);
 });
 
