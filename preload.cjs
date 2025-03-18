@@ -1,7 +1,7 @@
 const { contextBridge, ipcRenderer } = require("electron");
 
 // Add more verbose logging
-console.log("Preload script starting...");
+console.info("Preload script starting...");
 
 try {
 	contextBridge.exposeInMainWorld("dbAPI", {
@@ -20,13 +20,17 @@ try {
 			return ipcRenderer.invoke("destroy-table-data");
 		},
 	});
+	console.info("dbAPI exposed successfully");
 
 	contextBridge.exposeInMainWorld("deviceAPI", {
-		posPrint: (data, options) => {
-			return ipcRenderer.invoke("pos-print", data, options);
+		posPrint: (data) => {
+			return ipcRenderer.invoke("pos-print", data);
+		},
+		thermalPrint: (data) => {
+			return ipcRenderer.invoke("pos-thermal", data);
 		},
 	});
-	console.log("dbAPI exposed successfully");
+	console.info("deviceAPI exposed successfully");
 } catch (error) {
 	console.error("Error in preload script:", error);
 }

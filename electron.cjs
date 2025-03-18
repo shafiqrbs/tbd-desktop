@@ -1,7 +1,7 @@
 const { app, BrowserWindow, ipcMain } = require("electron");
-const { PosPrinter } = require("@plick/electron-pos-printer");
 const path = require("path");
 const dbModule = require("./db.cjs");
+const deviceModule = require("./pos.cjs");
 
 ipcMain.handle("upsert-into-table", async (event, table, data) => {
 	try {
@@ -39,8 +39,21 @@ ipcMain.handle("destroy-table-data", async () => {
 	}
 });
 
-ipcMain.handle("pos-print", async (event, data, options) => {
-	PosPrinter.print(data, options).then(console.log).catch(console.error);
+ipcMain.handle("pos-print", async (event, data) => {
+	try {
+		return deviceModule.print(data);
+	} catch (error) {
+		console.error("Error occurred on pos printing:", error);
+		throw error;
+	}
+});
+
+ipcMain.handle("pos-thermal", async (event, data) => {
+	try {
+		return deviceModule.thermalPrint(data);
+	} catch (error) {
+		console.error("Error occurred on pos thermal printing: ", error);
+	}
 });
 
 let mainWindow;
