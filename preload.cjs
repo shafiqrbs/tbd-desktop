@@ -23,9 +23,6 @@ try {
 	console.info("dbAPI exposed successfully");
 
 	contextBridge.exposeInMainWorld("deviceAPI", {
-		posPrint: (data) => {
-			return ipcRenderer.invoke("pos-print", data);
-		},
 		thermalPrint: (data) => {
 			return ipcRenderer.invoke("pos-thermal", data);
 		},

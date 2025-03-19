@@ -9,7 +9,6 @@ export default function SalesPrintThermal({ salesViewData, salesItems }) {
 
 	const handlePrint = async () => {
 		await window.deviceAPI.thermalPrint({ configData, salesItems, salesViewData });
-		// await window.deviceAPI.posPrint({ configData, salesItems, salesViewData });
 	};
 
 	return (
