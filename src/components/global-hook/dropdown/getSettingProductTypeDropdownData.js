@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { getSettingDropdown } from "../../../store/utility/utilitySlice.js";
+import { getSettingDropdown } from "../../../store/core/utilitySlice";
 
 const getSettingProductTypeDropdownData = () => {
 	const dispatch = useDispatch();

@@ -57,6 +57,26 @@ const utilitySlice = createSlice({
 			const { module } = action.payload;
 			state.dropdowns[module] = {};
 		},
+		getLocationDropdown: (state, action) => {
+			const { data } = action.payload;
+			state.dropdowns.core.locations = data;
+		},
+		coreSettingDropdown: (state, action) => {
+			const { data } = action.payload;
+			state.dropdowns.core.settingTypes = data;
+		},
+		getSettingDropdown: (state, action) => {
+			const { data } = action.payload;
+			state.dropdowns.production.settingTypes = data;
+		},
+		setCustomersDropdown: (state, action) => {
+			const { data } = action.payload;
+			state.dropdowns.core.customers = data;
+		},
+		getCategoryDropdown: (state, action) => {
+			const { data } = action.payload;
+			state.dropdowns.inventory.categories = data;
+		},
 	},
 	extraReducers: (builder) => {
 		builder
@@ -80,5 +100,12 @@ export const selectCustomerDropdownData = createSelector(
 	(customers) => (customers ? [...customers] : [])
 );
 
-export const { clearDropdowns, setCustomersDropdown } = utilitySlice.actions;
+export const {
+	clearDropdowns,
+	setCustomersDropdown,
+	getLocationDropdown,
+	coreSettingDropdown,
+	getSettingDropdown,
+	getCategoryDropdown,
+} = utilitySlice.actions;
 export default utilitySlice.reducer;

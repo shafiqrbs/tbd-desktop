@@ -46,13 +46,12 @@ function _GenericInvoiceForm(props) {
 		domainId,
 		isSMSActive,
 		isZeroReceiveAllow,
-		focusFrom,
 		isWarehouse,
 	} = props;
-	const { t, i18n } = useTranslation();
-	const { isOnline, mainAreaHeight } = useOutletContext();
+	const { t } = useTranslation();
+	const { mainAreaHeight } = useOutletContext();
 	const height = mainAreaHeight - 170; //TabList height 104
-	const [fetching, setFetching] = useState(false);
+	const [fetching] = useState(false);
 
 	const [searchValue, setSearchValue] = useState("");
 	const [productDropdown, setProductDropdown] = useState([]);
@@ -197,6 +196,7 @@ function _GenericInvoiceForm(props) {
 				? warehouseDropdownData.find((warehouse) => warehouse.value === values.warehouse_id)
 						.label
 				: null,
+
 			bonus_quantity: values.bonus_quantity,
 		};
 	}
@@ -369,7 +369,7 @@ function _GenericInvoiceForm(props) {
 		}
 	}, []);
 
-	const [leftSide, setLeftSide] = useState(false);
+	const [leftSide] = useState(false);
 
 	return (
 		<Box>
