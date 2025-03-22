@@ -3,32 +3,30 @@ const PrinterTypes = require("node-thermal-printer").types;
 
 const printer = new ThermalPrinter({
 	type: PrinterTypes.EPSON, // Printer type: 'star' or 'epson'
-	// usb://EPSON/RP328
-	// interface: "//localhost//RP328", // Printer interface
-	interface: "printer:RP328",
-	// driver: nodePrinter,
+	interface: "//localhost//RP328", // Printer interface
 	characterSet: "PC437_USA", // Printer character set - default: SLOVENIA
 	lineCharacter: "-", // Set character for lines - default: "-"
-
+	width: 64,
 	options: {
 		timeout: 5000,
 	},
 });
 
-const thermalPrint = (salesViewData, configData, salesItems) => {
+const thermalPrint = ({ configData, salesItems, salesViewData }) => {
 	printer.bold(true);
 	printer.setTextSize(1, 1);
 	printer.alignCenter();
-	printer.println(configData?.domain?.name || "TBD");
+	printer.println(`${configData?.domain?.name || "TBD"}`);
 	printer.bold(false);
+	printer.setTypeFontB();
 	printer.setTextSize(0, 0);
 	printer.drawLine();
 
 	printer.alignLeft();
 	printer.setTextSize(0, 0);
-	printer.println(`Email: ${configData?.domain?.email || "N/A"}`);
+	printer.println(`Email  : ${configData?.domain?.email || "N/A"}`);
 	printer.setTextSize(0, 0);
-	printer.println(`Mobile: ${configData?.domain?.mobile || "N/A"}`);
+	printer.println(`Mobile : ${configData?.domain?.mobile || "N/A"}`);
 	printer.setTextSize(0, 0);
 	printer.println(`Address: ${configData?.domain?.address || "N/A"}`);
 	printer.drawLine();
@@ -42,11 +40,11 @@ const thermalPrint = (salesViewData, configData, salesItems) => {
 
 	printer.setTypeFontB();
 	printer.tableCustom([
-		{ text: `Date: ${salesViewData?.created || "N/A"}`, align: "LEFT", width: 0.5 },
+		{ text: `${salesViewData?.created || "N/A"}`, align: "LEFT", width: 0.5 },
 		{ text: `${salesViewData?.customerName || "N/A"}`, align: "RIGHT", width: 0.5 },
 	]);
 	printer.tableCustom([
-		{ text: `Seller:${salesViewData?.createdByName || "N/A"}`, align: "LEFT", width: 0.5 },
+		{ text: `${salesViewData?.createdByName || "N/A"}`, align: "LEFT", width: 0.5 },
 		{ text: `${salesViewData?.customerMobile || "N/A"}`, align: "RIGHT", width: 0.5 },
 	]);
 	printer.drawLine();
@@ -66,37 +64,36 @@ const thermalPrint = (salesViewData, configData, salesItems) => {
 	// Table Rows (Sales Items)
 	salesItems.forEach((item) => {
 		printer.tableCustom([
-			{ text: item?.item_name || "-", align: "LEFT", width: 0.4 },
-			{ text: item?.quantity?.toString() || "0", align: "CENTER", width: 0.1 },
-			{ text: item?.sales_price?.toString() || "0.00", align: "RIGHT", width: 0.2 },
-			{ text: item?.sub_total?.toString() || "0.00", align: "RIGHT", width: 0.2 },
+			{ text: `${item?.item_name || "-"}`, align: "LEFT", width: 0.5 },
+			{ text: `${item?.quantity?.toString() || "0"}`, align: "CENTER", width: 0.1 },
+			{ text: `${item?.sales_price?.toString() || "0.00"}`, align: "RIGHT", width: 0.2 },
+			{ text: `${item?.sub_total?.toString() || "0.00"}`, align: "RIGHT", width: 0.2 },
 		]);
 	});
 
 	printer.drawLine();
-	printer.newLine();
 	// Totals
 	printer.tableCustom([
 		{ text: "SubTotal", align: "LEFT", bold: true, width: 0.5 },
-		{ text: salesViewData?.sub_total?.toFixed(2) || "0.00", align: "RIGHT", width: 0.5 },
+		{ text: `${salesViewData?.sub_total?.toFixed(2) || "0.00"}`, align: "RIGHT", width: 0.5 },
 	]);
 	printer.tableCustom([
 		{ text: "Discount", align: "LEFT", bold: true, width: 0.5 },
-		{ text: salesViewData?.discount?.toFixed(2) || "0.00", align: "RIGHT", width: 0.5 },
+		{ text: `${salesViewData?.discount?.toFixed(2) || "0.00"}`, align: "RIGHT", width: 0.5 },
 	]);
 	printer.tableCustom([
 		{ text: "Total", align: "LEFT", bold: true, width: 0.5 },
-		{ text: salesViewData?.total?.toFixed(2) || "0.00", align: "RIGHT", width: 0.5 },
+		{ text: `${salesViewData?.total?.toFixed(2) || "0.00"}`, align: "RIGHT", width: 0.5 },
 	]);
 	printer.tableCustom([
 		{ text: "Receive", align: "LEFT", bold: true, width: 0.5 },
-		{ text: salesViewData?.payment?.toFixed(2) || "0.00", align: "RIGHT", width: 0.5 },
+		{ text: `${salesViewData?.payment?.toFixed(2) || "0.00"}`, align: "RIGHT", width: 0.5 },
 	]);
 	printer.drawLine();
 	printer.tableCustom([
 		{ text: "Due", align: "LEFT", bold: true, width: 0.5 },
 		{
-			text: (Number(salesViewData?.total) - Number(salesViewData?.payment)).toFixed(2),
+			text: `${(Number(salesViewData?.total) - Number(salesViewData?.payment)).toFixed(2)}`,
 			align: "RIGHT",
 			width: 0.5,
 		},
