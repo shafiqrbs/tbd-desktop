@@ -5,10 +5,10 @@ import Layout from "./components/layout/Layout";
 import VendorIndex from "./components/modules/core/vendor/VendorIndex";
 import SalesIndex from "./components/modules/inventory/sales/SalesIndex";
 // import PurchaseEdit from "./components/modules/inventory/purchase/PurchaseEdit";
-// import PurchaseIndex from "./components/modules/inventory/purchase/PurchaseIndex.jsx";
+import PurchaseIndex from "./components/modules/inventory/purchase/PurchaseIndex";
 // import PurchaseInvoice from "./components/modules/inventory/purchase/PurchaseInvoice.jsx";
 // import SalesEdit from "./components/modules/inventory/sales/SalesEdit";
-// import SalesInvoice from "./components/modules/inventory/sales/SalesInvoice.jsx";
+import SalesInvoice from "./components/modules/inventory/sales/SalesInvoice.jsx";
 
 export default function AppRoute() {
 	return (
@@ -22,9 +22,9 @@ export default function AppRoute() {
 				<Route path="inventory">
 					{/* <Route path="sales/edit/:id" element={<SalesEdit />} /> */}
 					<Route path="sales" element={<SalesIndex />} />
-					{/* <Route path="sales-invoice" element={<SalesInvoice />} />
-					<Route path="purchase/edit/:id" element={<PurchaseEdit />} />
 					<Route path="purchase" element={<PurchaseIndex />} />
+					<Route path="sales-invoice" element={<SalesInvoice />} />
+					{/* <Route path="purchase/edit/:id" element={<PurchaseEdit />} />
 					<Route path="purchase-invoice" element={<PurchaseInvoice />} /> */}
 				</Route>
 			</Route>

@@ -39,7 +39,6 @@ import __ShortcutTable from "../../shortcut/__ShortcutTable";
 import _SalesSearch from "./_SalesSearch";
 import { setSearchKeyword } from "../../../../store/core/crudSlice.js";
 import { SalesPrintA4 } from "./print-component/SalesPrintA4";
-import { SalesPrintPos } from "./print-component/SalesPrintPos";
 import { modals } from "@mantine/modals";
 import { notifications } from "@mantine/notifications";
 import { showNotificationComponent } from "../../../core-component/showNotificationComponent";

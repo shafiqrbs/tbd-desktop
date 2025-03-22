@@ -117,6 +117,10 @@ const initialState = {
 		purchase: {
 			list: [],
 			current: null,
+			filters: {
+				purchase: { searchKeyword: "", vendor: "", start_date: "", end_date: "" },
+			},
+			filterData: null,
 			validation: false,
 			validationMessage: [],
 			formLoading: false,
