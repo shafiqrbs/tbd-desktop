@@ -24,12 +24,11 @@ const initialState = {
 		inventory: {
 			categories: [],
 			brands: [],
-			// we can add other inventory dropdowns
+			productUnitDropdown: [],
 		},
 		sales: {
 			customers: [],
 			salesTypes: [],
-			// we can add other sales dropdowns
 		},
 		production: {
 			settingTypes: [],
@@ -43,6 +42,8 @@ const initialState = {
 			users: [],
 			locations: [],
 			executives: [],
+			productType: [],
+			customerGroup: [],
 		},
 	},
 	isLoading: false,
@@ -56,10 +57,6 @@ const utilitySlice = createSlice({
 		clearDropdowns: (state, action) => {
 			const { module } = action.payload;
 			state.dropdowns[module] = {};
-		},
-		getLocationDropdown: (state, action) => {
-			const { data } = action.payload;
-			state.dropdowns.core.locations = data;
 		},
 		coreSettingDropdown: (state, action) => {
 			const { data } = action.payload;
@@ -85,7 +82,7 @@ const utilitySlice = createSlice({
 			})
 			.addCase(getDropdownData.fulfilled, (state, action) => {
 				const { data, dropdownType, module } = action.payload;
-				state.dropdowns[module][dropdownType] = data;
+				state.dropdowns[module][dropdownType] = Array.isArray(data) ? data : data.data;
 				state.isLoading = false;
 			})
 			.addCase(getDropdownData.rejected, (state, action) => {

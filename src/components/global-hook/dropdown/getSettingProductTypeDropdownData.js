@@ -1,6 +1,7 @@
+/* eslint-disable react-hooks/rules-of-hooks */
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { getSettingDropdown } from "../../../store/core/utilitySlice";
+import { getDropdownData } from "../../../store/core/utilitySlice";
 
 const getSettingProductTypeDropdownData = () => {
 	const dispatch = useDispatch();
@@ -9,12 +10,16 @@ const getSettingProductTypeDropdownData = () => {
 	useEffect(() => {
 		const value = {
 			url: "inventory/select/setting",
-			param: { "dropdown-type": "product-type" },
+			params: { "dropdown-type": "product-type" },
+			module: "core",
+			dropdownType: "productType",
 		};
-		dispatch(getSettingDropdown(value));
+		dispatch(getDropdownData(value));
 	}, [dispatch]);
 
-	const productTypeDropdown = useSelector((state) => state.utilitySlice.productDropdownData);
+	const productTypeDropdown = useSelector(
+		(state) => state.utilitySlice.dropdowns?.core?.productType
+	);
 
 	useEffect(() => {
 		if (productTypeDropdown && productTypeDropdown.length > 0) {

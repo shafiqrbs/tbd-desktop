@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/rules-of-hooks */
 import { useEffect, useState, useRef } from "react";
 import { useOutletContext } from "react-router";
 import {
@@ -87,29 +88,32 @@ function _GenericInvoiceForm(props) {
 	// console.log(tempCardProducts)
 	useEffect(() => {
 		if (searchValue.length > 0) {
-			const storedProducts = localStorage.getItem("core-products");
-			const localProducts = storedProducts ? JSON.parse(storedProducts) : [];
+			async function fetchData() {
+				const storedProducts = await window.dbAPI.getDataFromTable("core_products");
 
-			// Filter products where product_nature is not 'raw-materials'
-			const filteredProducts = localProducts.filter(
-				(product) => product.product_nature !== "raw-materials"
-			);
+				// Filter products where product_nature is not 'raw-materials'
+				const filteredProducts = storedProducts.filter(
+					(product) => product.product_nature !== "raw-materials"
+				);
 
-			const lowerCaseSearchTerm = searchValue.toLowerCase();
-			const fieldsToSearch = ["product_name"];
-			const productFilterData = filteredProducts.filter((product) =>
-				fieldsToSearch.some(
-					(field) =>
-						product[field] &&
-						String(product[field]).toLowerCase().includes(lowerCaseSearchTerm)
-				)
-			);
-			const formattedProductData = productFilterData.map((type) => ({
-				label: type.product_name,
-				value: String(type.id),
-			}));
+				const lowerCaseSearchTerm = searchValue.toLowerCase();
+				const fieldsToSearch = ["product_name"];
+				const productFilterData = filteredProducts.filter((product) =>
+					fieldsToSearch.some(
+						(field) =>
+							product[field] &&
+							String(product[field]).toLowerCase().includes(lowerCaseSearchTerm)
+					)
+				);
+				const formattedProductData = productFilterData.map((type) => ({
+					label: type.product_name,
+					value: String(type.id),
+				}));
 
-			setProductDropdown(formattedProductData);
+				setProductDropdown(formattedProductData);
+			}
+
+			fetchData();
 		} else {
 			setProductDropdown([]);
 		}
@@ -350,13 +354,13 @@ function _GenericInvoiceForm(props) {
 	);
 
 	const inputGroupText = (
-		<Text style={{ textAlign: "right", width: "100%", paddingRight: 16 }} color={"gray"}>
+		<Text style={{ textAlign: "right", width: "100%", paddingRight: 16 }} c="gray">
 			{selectProductDetails && selectProductDetails.unit_name}
 		</Text>
 	);
 
 	const inputGroupCurrency = (
-		<Text style={{ textAlign: "right", width: "100%", paddingRight: 16 }} color={"gray"}>
+		<Text style={{ textAlign: "right", width: "100%", paddingRight: 16 }} c="gray">
 			{currencySymbol}
 		</Text>
 	);
@@ -391,7 +395,7 @@ function _GenericInvoiceForm(props) {
 					</Grid.Col>
 				) : (
 					<Grid.Col span={15}>
-						<Box bg={"white"} p={"xs"} className={"borderRadiusAll"}>
+						<Box bg={"white"} p="xs" className="borderRadiusAll">
 							<Box>
 								<form
 									onSubmit={form.onSubmit((values) => {

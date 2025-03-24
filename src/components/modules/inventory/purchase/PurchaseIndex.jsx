@@ -17,7 +17,7 @@ function PurchaseIndex() {
 			{progress !== 100 && (
 				<Progress
 					color="red"
-					size={"sm"}
+					size="sm"
 					striped
 					animated
 					value={progress}
@@ -34,7 +34,7 @@ function PurchaseIndex() {
 								allowZeroPercentage={configData?.zero_stock}
 								currancySymbol={configData?.currency?.symbol}
 							/>
-							<Box p={"8"}>
+							<Box p="8">
 								<_PurchaseTable
 									allowZeroPercentage={configData?.zero_stock}
 									currancySymbol={configData?.currency?.symbol}

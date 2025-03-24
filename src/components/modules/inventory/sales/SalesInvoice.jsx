@@ -9,7 +9,7 @@ import _SalesPurchaseHeaderNavbar from "../../domain/configuration/_SalesPurchas
 
 function SalesInvoice() {
 	const { t } = useTranslation();
-	const insertType = useSelector((state) => state.crudSlice.insertType);
+	const insertType = useSelector((state) => state.crudSlice.data?.sales?.insertType || "create");
 	const progress = getLoadingProgress();
 	const { configData } = getConfigData();
 	return (

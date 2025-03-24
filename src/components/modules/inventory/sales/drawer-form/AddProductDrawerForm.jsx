@@ -46,6 +46,10 @@ function AddProductDrawerForm(props) {
 	const effectRan = useRef(false);
 
 	const { setProductDrawer, setStockProductRestore, focusField, fieldPrefix } = props;
+	const productType = getSettingProductTypeDropdownData();
+	const categories = getSettingCategoryDropdownData();
+	const units = getSettingParticularDropdownData("product-unit");
+	console.log("units", units);
 
 	useEffect(() => {
 		!effectRan.current &&
@@ -86,7 +90,7 @@ function AddProductDrawerForm(props) {
 		<>
 			<Box>
 				<form
-					onSubmit={productAddedForm.onSubmit((values) => {
+					onSubmit={productAddedForm.onSubmit(() => {
 						modals.openConfirmModal({
 							title: <Text size="md"> {t("FormConfirmationTitle")}</Text>,
 							children: <Text size="sm"> {t("FormConfirmationMessage")}</Text>,
@@ -162,7 +166,7 @@ function AddProductDrawerForm(props) {
 														required={true}
 														name={"product_type_id"}
 														form={productAddedForm}
-														dropdownValue={getSettingProductTypeDropdownData()}
+														dropdownValue={productType}
 														id={fieldPrefix + "product_type_id"}
 														nextField={fieldPrefix + "category_id"}
 														searchable={true}
@@ -180,7 +184,7 @@ function AddProductDrawerForm(props) {
 														nextField={fieldPrefix + "name"}
 														name={"category_id"}
 														form={productAddedForm}
-														dropdownValue={getSettingCategoryDropdownData()}
+														dropdownValue={categories}
 														id={fieldPrefix + "category_id"}
 														searchable={true}
 														value={categoryData}
@@ -208,9 +212,7 @@ function AddProductDrawerForm(props) {
 														required={true}
 														name={"unit_id"}
 														form={productAddedForm}
-														dropdownValue={getSettingParticularDropdownData(
-															"product-unit"
-														)}
+														dropdownValue={units}
 														id={fieldPrefix + "unit_id"}
 														nextField={fieldPrefix + "purchase_price"}
 														searchable={true}

@@ -46,7 +46,7 @@ import getConfigData from "../../../global-hook/config-data/getConfigData.js";
 
 function _PurchaseTable() {
 	const { configData } = getConfigData();
-	let isWarehouse = configData?.configData?.sku_warehouse;
+	let isWarehouse = configData?.sku_warehouse;
 
 	const printRef = useRef();
 	const dispatch = useDispatch();
@@ -826,6 +826,7 @@ function _PurchaseTable() {
 			{printA4 && (
 				<div style={{ display: "none" }}>
 					<PurchasePrintNormal
+						configData={configData}
 						setPrintA4={setPrintA4}
 						purchaseViewData={purchaseViewData}
 					/>
@@ -834,6 +835,7 @@ function _PurchaseTable() {
 			{printPos && (
 				<div style={{ display: "none" }}>
 					<PurchasePrintPos
+						configData={configData}
 						purchaseViewData={purchaseViewData}
 						setPrintPos={setPrintPos}
 					/>

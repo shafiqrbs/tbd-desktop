@@ -111,6 +111,7 @@ const initialState = {
 			validationMessage: [],
 			formLoading: false,
 			insertType: "create",
+			newData: null,
 			editData: null,
 			deleteData: null,
 		},
@@ -126,6 +127,7 @@ const initialState = {
 			formLoading: false,
 			insertType: "create",
 			editData: null,
+			data: null,
 		},
 		production: {
 			list: [],

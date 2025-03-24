@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/rules-of-hooks */
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Box, Button, Grid, Center, ScrollArea, Text, Flex, Group, Stack } from "@mantine/core";
 import { useTranslation } from "react-i18next";
@@ -11,21 +10,21 @@ import { useNavigate, useOutletContext } from "react-router";
 import getConfigData from "../../../../global-hook/config-data/getConfigData";
 
 function _PurchaseInvoiceDomain359Custom(props) {
-	const invoicePrintData = useSelector((state) =>
-		props.mode === "insert"
-			? state.crudSlice.data.purchase?.data
-			: state.crudSlice.data.purchase?.editData
-	);
-
-	const { configData } = getConfigData();
-
-	const { t } = useTranslation();
+	let invoicePrintData;
+	if (props.mode === "insert") {
+		invoicePrintData = useSelector((state) => state?.inventoryCrudSlice.entityNewData.data);
+	} else {
+		invoicePrintData = useSelector((state) => state?.inventoryCrudSlice.entityUpdateData.data);
+	}
+	const { t, i18n } = useTranslation();
 	const printRef = useRef();
 	const navigate = useNavigate();
 	const [isPrinting, setIsPrinting] = useState(false);
-	const { mainAreaHeight } = useOutletContext();
+	const { isOnline, mainAreaHeight } = useOutletContext();
 	const height = mainAreaHeight; //TabList height 104;
 	const effectRan = useRef(false);
+
+	const configData = getConfigData();
 
 	const imageSrc = `${import.meta.env.VITE_IMAGE_GATEWAY_URL}uploads/inventory/logo/${
 		configData.path
@@ -37,9 +36,7 @@ function _PurchaseInvoiceDomain359Custom(props) {
 
 	const handleAfterPrint = useCallback(() => {
 		props.mode === "insert"
-			? (setIsPrinting(false),
-			  // props.setOpenInvoiceDrawerForPrint(false))
-			  console.log("printing closed"))
+			? (setIsPrinting(false), console.log("printing closed"))
 			: (setIsPrinting(false), navigate("/inventory/sales"));
 	}, []);
 

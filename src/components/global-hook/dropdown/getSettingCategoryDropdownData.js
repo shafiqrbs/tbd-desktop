@@ -1,6 +1,7 @@
+/* eslint-disable react-hooks/rules-of-hooks */
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { getCategoryDropdown } from "../../../store/core/utilitySlice.js";
+import { getDropdownData } from "../../../store/core/utilitySlice.js";
 
 const getSettingCategoryDropdownData = () => {
 	const dispatch = useDispatch();
@@ -9,15 +10,17 @@ const getSettingCategoryDropdownData = () => {
 	useEffect(() => {
 		const value = {
 			url: "inventory/select/category",
-			param: {
+			params: {
 				type: "parent",
 			},
+			module: "inventory",
+			dropdownType: "categories",
 		};
-		dispatch(getCategoryDropdown(value));
+		dispatch(getDropdownData(value));
 	}, [dispatch]);
 
 	const categoryDropdownData = useSelector(
-		(state) => state?.inventoryUtilitySlice?.categoryDropdownData
+		(state) => state?.utilitySlice?.dropdowns?.inventory?.categories
 	);
 
 	useEffect(() => {

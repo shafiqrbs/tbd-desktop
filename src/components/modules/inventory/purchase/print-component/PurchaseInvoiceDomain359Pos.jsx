@@ -9,17 +9,13 @@ import { useNavigate, useOutletContext } from "react-router";
 import getConfigData from "../../../../global-hook/config-data/getConfigData";
 
 function PurchaseInvoiceDomain359Pos(props) {
-	const invoicePrintData = useSelector((state) =>
-		props.mode === "insert"
-			? state.inventoryCrudSlice.entityNewData.data
-			: state.inventoryCrudSlice.entityUpdateData.data
-	);
-
-	const { configData } = getConfigData();
-
-	useEffect(() => {
-		console.log(invoicePrintData);
-	}, [invoicePrintData]);
+	let invoicePrintData;
+	if (props.mode === "insert") {
+		invoicePrintData = useSelector((state) => state.inventoryCrudSlice.entityNewData.data);
+	} else {
+		invoicePrintData = useSelector((state) => state.inventoryCrudSlice.entityUpdateData.data);
+	}
+	console.log(invoicePrintData);
 
 	const { t } = useTranslation();
 	const printRef = useRef();
@@ -29,9 +25,7 @@ function PurchaseInvoiceDomain359Pos(props) {
 	const height = mainAreaHeight; //TabList height 104
 	const effectRan = useRef(false);
 
-	const imageSrc = `${import.meta.env.VITE_IMAGE_GATEWAY_URL}uploads/inventory/logo/${
-		configData.path
-	}`;
+	const configData = getConfigData();
 
 	const handleBeforePrint = useCallback(() => {
 		setIsPrinting(true);

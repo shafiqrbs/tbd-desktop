@@ -6,19 +6,17 @@ import classes from "./PurchasePrintNormal.module.css";
 import { useTranslation } from "react-i18next";
 
 export function PurchasePrintNormal(props) {
-	const { purchaseViewData, setPrintA4 } = props;
+	const { purchaseViewData, setPrintA4, configData } = props;
 	const componentRef = useRef();
 	const { t } = useTranslation();
 	const effectRan = useRef(false);
-	const configData = localStorage.getItem("config-data")
-		? JSON.parse(localStorage.getItem("config-data"))
-		: [];
 	const imageSrc = `${import.meta.env.VITE_IMAGE_GATEWAY_URL}uploads/inventory/logo/${
 		configData.path
 	}`;
 
 	const handlePrint = useReactToPrint({
-		content: () => componentRef.current,
+		documentTitle: "Purchase",
+		contentRef: componentRef,
 	});
 
 	useEffect(() => {

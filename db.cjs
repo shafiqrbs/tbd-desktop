@@ -314,6 +314,14 @@ db.prepare(
   	`
 ).run();
 
+// temp sales table
+// db.prepare(
+// 	`
+// 	CREATE TABLE IF NOT EXISTS temp_sales_products (
+
+// 	)`
+// ).run();
+
 const formatValue = (value) => {
 	if (value === undefined || value === null) return null;
 	try {

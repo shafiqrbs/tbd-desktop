@@ -1,6 +1,16 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { getSettingDropdown } from "../../../store/core/utilitySlice.js";
+import { getDropdownData } from "../../../store/core/utilitySlice.js";
+
+const dropdownKeyMap = {
+	"product-unit": "productUnitDropdown",
+	color: "productColorDropdown",
+	"product-grade": "productGradeDropdown",
+	brand: "productBrandDropdown",
+	size: "productSizeDropdown",
+	model: "productModelDropdown",
+	table: "posTableData",
+};
 
 const useSettingParticularDropdownData = (type) => {
 	const dispatch = useDispatch();
@@ -9,26 +19,17 @@ const useSettingParticularDropdownData = (type) => {
 	useEffect(() => {
 		const value = {
 			url: "inventory/select/particular",
-			param: { "dropdown-type": type },
+			params: { "dropdown-type": type },
+			module: "inventory",
+			dropdownType: dropdownKeyMap[type],
 		};
-		dispatch(getSettingDropdown(value));
+		dispatch(getDropdownData(value));
 	}, [dispatch, type]);
-
-	// Dropdown mappings based on type
-	const dropdownKeyMap = {
-		"product-unit": "productUnitDropdown",
-		color: "productColorDropdown",
-		"product-grade": "productGradeDropdown",
-		brand: "productBrandDropdown",
-		size: "productSizeDropdown",
-		model: "productModelDropdown",
-		table: "posTableData",
-	};
 
 	// Dynamically select dropdown data based on type
 	const dropdownData = useSelector((state) => {
 		const dynamicKey = dropdownKeyMap[type];
-		return state.utilitySlice[dynamicKey] || [];
+		return state.utilitySlice.dropdowns?.inventory[dynamicKey] || [];
 	});
 
 	useEffect(() => {

@@ -43,7 +43,6 @@ import InputNumberForm from "../../../form-builders/InputNumberForm";
 import InputButtonForm from "../../../form-builders/InputButtonForm";
 import { notifications } from "@mantine/notifications";
 import _SmsPurchaseModel from "./modal/_SmsPurchaseModel.jsx";
-import customerDataStoreIntoLocalStorage from "../../../global-hook/local-storage/customerDataStoreIntoLocalStorage.js";
 import DatePickerForm from "../../../form-builders/DatePicker";
 import _InvoiceDrawerForPrint from "./print-drawer/_InvoiceDrawerForPrint.jsx";
 import AddCustomerDrawer from "./drawer-form/AddCustomerDrawer.jsx";
@@ -54,11 +53,18 @@ function __SalesForm(props) {
 	const { t } = useTranslation();
 	const dispatch = useDispatch();
 	const { isOnline, mainAreaHeight } = useOutletContext();
-	const entityNewData = useSelector((state) => state.inventoryCrudSlice.entityNewData);
+	const entityNewData = useSelector((state) => state.crudSlice.data.sales?.newData);
+	const [profitShow, setProfitShow] = useState(false);
+	const [_, setTempCardProducts] = useState([]);
+	const [loadCardProducts, setLoadCardProducts] = useState(false);
+	const [discountType, setDiscountType] = useToggle(["Flat", "Percent"]);
+	const [lastClicked, setLastClicked] = useState(null);
+	const [customerDrawer, setCustomerDrawer] = useState(false);
 
-	const transactionModeData = JSON.parse(localStorage.getItem("accounting-transaction-mode"))
-		? JSON.parse(localStorage.getItem("accounting-transaction-mode"))
-		: [];
+	const [refreshCustomerDropdown, setRefreshCustomerDropdown] = useState(false);
+	const [customersDropdownData, setCustomersDropdownData] = useState([]);
+	const [defaultCustomerId, setDefaultCustomerId] = useState(null);
+	const [viewDrawer, setViewDrawer] = useState(false);
 
 	const [salesSubTotalAmount, setSalesSubTotalAmount] = useState(0);
 	const [salesProfitAmount, setSalesProfitAmount] = useState(0);
@@ -69,27 +75,22 @@ function __SalesForm(props) {
 	const [hoveredModeId, setHoveredModeId] = useState(false);
 	const [isShowSMSPackageModel, setIsShowSMSPackageModel] = useState(false);
 
-	const formHeight = mainAreaHeight - 262; //TabList height 104
-
-	const [_, setTempCardProducts] = useState([]);
-	const [loadCardProducts, setLoadCardProducts] = useState(false);
-	const [discountType, setDiscountType] = useToggle(["Flat", "Percent"]);
-	const [lastClicked, setLastClicked] = useState(null);
-	const [customerDrawer, setCustomerDrawer] = useState(false);
-
-	const handleClick = (event) => {
-		setLastClicked(event.currentTarget.name);
-	};
-
-	useEffect(() => {
-		const tempProducts = localStorage.getItem("temp-sales-products");
-		setTempCardProducts(tempProducts ? JSON.parse(tempProducts) : []);
-		setLoadCardProducts(false);
-	}, [loadCardProducts]);
-
 	const [customerData, setCustomerData] = useState(null);
 	const [salesByUser, setSalesByUser] = useState(null);
 	const [orderProcess, setOrderProcess] = useState(null);
+	const [returnOrDueText, setReturnOrDueText] = useState("Due");
+	const [salesByDropdownData, setSalesByDropdownData] = useState([]);
+	const [transactionModeData, setTransactionModeData] = useState([]);
+	const [orderProcessData, setOrderProcessData] = useState([]);
+
+	/*START FOR SUBMIT Disabled*/
+	const isDefaultCustomer = !customerData || customerData == defaultCustomerId;
+	const isDisabled = isDefaultCustomer && (isZeroReceiveAllow ? false : salesDueAmount > 0);
+	/*END FOR SUBMIT Disabled*/
+
+	/*START GET CUSTOMER DATA FROM LOCAL STORAGE*/
+	const [customerObject, setCustomerObject] = useState({});
+	const [openInvoiceDrawerForPrint, setOpenInvoiceDrawerForPrint] = useState(false);
 
 	const form = useForm({
 		initialValues: {
@@ -106,12 +107,44 @@ function __SalesForm(props) {
 		},
 	});
 
-	const [returnOrDueText, setReturnOrDueText] = useState("Due");
+	const formHeight = mainAreaHeight - 262; //TabList height 104
+
+	const handleClick = (event) => {
+		setLastClicked(event.currentTarget.name);
+	};
+
+	useEffect(() => {
+		async function fetchTransactionData() {
+			const data = await window.dbAPI.getDataFromTable("accounting_transaction_mode");
+			setTransactionModeData(data);
+		}
+		fetchTransactionData();
+	}, []);
+
+	useEffect(() => {
+		const tempProducts = localStorage.getItem("temp-sales-products");
+		setTempCardProducts(tempProducts ? JSON.parse(tempProducts) : []);
+		setLoadCardProducts(false);
+	}, [loadCardProducts]);
 
 	useEffect(() => {
 		setSalesSubTotalAmount(props.salesSubTotalAmount);
 		setSalesDueAmount(props.salesSubTotalAmount);
 	}, [props.salesSubTotalAmount]);
+
+	useEffect(() => {
+		(async () => {
+			const orderProcess = await window.dbAPI.getDataFromTable("order_process");
+			const modifiedOrderProcess = orderProcess.map((item) => {
+				return {
+					id: item.id,
+					label: item.label,
+					value: String(item.value),
+				};
+			});
+			setOrderProcessData(modifiedOrderProcess);
+		})();
+	}, []);
 
 	useEffect(() => {
 		const totalAmount = salesSubTotalAmount - salesDiscountAmount;
@@ -147,19 +180,9 @@ function __SalesForm(props) {
 		salesTotalAmount,
 	]);
 
-	const [profitShow, setProfitShow] = useState(false);
-
-	/*START GET CUSTOMER DROPDOWN FROM LOCAL STORAGE*/
-	const [refreshCustomerDropdown, setRefreshCustomerDropdown] = useState(false);
-	const [customersDropdownData, setCustomersDropdownData] = useState([]);
-	const [defaultCustomerId, setDefaultCustomerId] = useState(null);
-	const [viewDrawer, setViewDrawer] = useState(false);
-
 	useEffect(() => {
 		const fetchCustomers = async () => {
-			await customerDataStoreIntoLocalStorage();
-			let coreCustomers = localStorage.getItem("core-customers");
-			coreCustomers = coreCustomers ? JSON.parse(coreCustomers) : [];
+			const coreCustomers = await window.dbAPI.getDataFromTable("core_customers");
 			let defaultId = defaultCustomerId;
 			if (coreCustomers && coreCustomers.length > 0) {
 				const transformedData = coreCustomers.map((type) => {
@@ -180,17 +203,17 @@ function __SalesForm(props) {
 	/*END GET CUSTOMER DROPDOWN FROM LOCAL STORAGE*/
 
 	/*START GET SALES BY / USERS DROPDOWN FROM LOCAL STORAGE*/
-	const [salesByDropdownData, setSalesByDropdownData] = useState([]);
 	useEffect(() => {
-		let coreUsers = localStorage.getItem("core-users")
-			? JSON.parse(localStorage.getItem("core-users"))
-			: [];
-		if (coreUsers && coreUsers.length > 0) {
-			const transformedData = coreUsers.map((type) => {
-				return { label: type.username + " - " + type.email, value: String(type.id) };
-			});
-			setSalesByDropdownData(transformedData);
-		}
+		const fetchUsers = async () => {
+			const coreUsers = await window.dbAPI.getDataFromTable("core_users");
+			if (coreUsers && coreUsers.length > 0) {
+				const transformedData = coreUsers.map((type) => {
+					return { label: type.username + " - " + type.email, value: String(type.id) };
+				});
+				setSalesByDropdownData(transformedData);
+			}
+		};
+		fetchUsers();
 	}, []);
 	/*END GET SALES BY / USERS DROPDOWN FROM LOCAL STORAGE*/
 
@@ -210,21 +233,16 @@ function __SalesForm(props) {
 	}, [transactionModeData, form]);
 	/*END FOR TRANSACTION MODE DEFAULT SELECT*/
 
-	/*START FOR SUBMIT Disabled*/
-	const isDefaultCustomer = !customerData || customerData == defaultCustomerId;
-	const isDisabled = isDefaultCustomer && (isZeroReceiveAllow ? false : salesDueAmount > 0);
-	/*END FOR SUBMIT Disabled*/
-
-	/*START GET CUSTOMER DATA FROM LOCAL STORAGE*/
-	const [customerObject, setCustomerObject] = useState({});
 	useEffect(() => {
 		if (customerData && customerData != defaultCustomerId) {
-			const coreCustomers = JSON.parse(localStorage.getItem("core-customers") || "[]");
-			const foundCustomer = coreCustomers.find((type) => type.id == customerData);
+			(async () => {
+				const coreCustomers = await window.dbAPI.getDataFromTable("core_customers");
+				const foundCustomer = coreCustomers.find((type) => type.id == customerData);
 
-			if (foundCustomer) {
-				setCustomerObject(foundCustomer);
-			}
+				if (foundCustomer) {
+					setCustomerObject(foundCustomer);
+				}
+			})();
 		}
 	}, [customerData]);
 	/*END GET CUSTOMER DATA FROM LOCAL STORAGE*/
@@ -271,8 +289,6 @@ function __SalesForm(props) {
 		</Text>
 	);
 
-	const [openInvoiceDrawerForPrint, setOpenInvoiceDrawerForPrint] = useState(false);
-
 	useEffect(() => {
 		if (entityNewData?.data?.id && (lastClicked === "print" || lastClicked === "pos")) {
 			setTimeout(() => {
@@ -293,12 +309,12 @@ function __SalesForm(props) {
 			)}
 
 			<form
-				onSubmit={form.onSubmit((values) => {
+				onSubmit={form.onSubmit(async () => {
 					const tempProducts = localStorage.getItem("temp-sales-products");
-					let items = tempProducts ? JSON.parse(tempProducts) : [];
-					let createdBy = JSON.parse(localStorage.getItem("user"));
+					const items = tempProducts ? JSON.parse(tempProducts) : [];
+					const createdBy = await window.dbAPI.getDataFromTable("users");
 
-					let transformedArray = items.map((product) => {
+					const transformedArray = items.map((product) => {
 						return {
 							product_id: product.product_id,
 							item_name: product.display_name,
@@ -495,7 +511,7 @@ function __SalesForm(props) {
 																!customerData ||
 																customerData == defaultCustomerId
 															}
-															onClick={(e) => {
+															onClick={() => {
 																if (isSMSActive) {
 																	notifications.show({
 																		withCloseButton: true,
@@ -846,13 +862,7 @@ function __SalesForm(props) {
 											required={false}
 											name={"order_process"}
 											form={form}
-											dropdownValue={
-												localStorage.getItem("order-process")
-													? JSON.parse(
-															localStorage.getItem("order-process")
-													  )
-													: []
-											}
+											dropdownValue={orderProcessData}
 											id={"order_process"}
 											nextField={"narration"}
 											searchable={false}

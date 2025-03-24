@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/rules-of-hooks */
 import React, { useEffect, useRef, useState } from "react";
 import { useOutletContext } from "react-router";
 import {
@@ -13,11 +14,13 @@ import {
 	ActionIcon,
 	SegmentedControl,
 	Center,
+	Menu,
 } from "@mantine/core";
 import { useTranslation } from "react-i18next";
 import {
 	IconCheck,
 	IconDeviceFloppy,
+	IconDotsVertical,
 	IconRefreshDot,
 	IconUserCircle,
 	IconX,
@@ -567,7 +570,7 @@ function _AddCustomerFormPos(props) {
 											accessor: "action",
 											title: t("Action"),
 											textAlign: "right",
-											render: (data) => (
+											render: () => (
 												<Group gap={4} justify="right" wrap="nowrap">
 													<Menu
 														position="bottom-end"
@@ -609,10 +612,6 @@ function _AddCustomerFormPos(props) {
 											),
 										},
 									]}
-									// fetching={fetching}
-									// totalRecords={indexData.total}
-									// recordsPerPage={perPage}
-									// page={page}
 									onPageChange={(p) => {
 										setPage(p);
 										setFetching(true);

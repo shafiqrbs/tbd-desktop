@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/rules-of-hooks */
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { rem, Grid, Tooltip, TextInput, ActionIcon, Select, Button } from "@mantine/core";

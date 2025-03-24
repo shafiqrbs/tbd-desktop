@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/rules-of-hooks */
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useOutletContext } from "react-router";
 import tableCss from "../../../../assets/css/Table.module.css";
@@ -58,7 +59,6 @@ function _SalesTable() {
 	const [page, setPage] = useState(1);
 	const [selectedRow, setSelectedRow] = useState("");
 	const [printA4, setPrintA4] = useState(false);
-	const [printPos, setPrintPos] = useState(false);
 	const [checked, setChecked] = useState(false);
 	const [indexData, setIndexData] = useState([]);
 	const [fetching, setFetching] = useState(true);

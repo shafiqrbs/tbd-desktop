@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/rules-of-hooks */
 import { ActionIcon, Box, Drawer, ScrollArea, Text } from "@mantine/core";
 import { useTranslation } from "react-i18next";
 import { IconX, IconXboxX } from "@tabler/icons-react";

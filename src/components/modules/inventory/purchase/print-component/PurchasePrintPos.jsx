@@ -5,19 +5,17 @@ import { useTranslation } from "react-i18next";
 import { Grid } from "@mantine/core";
 
 export function PurchasePrintPos(props) {
-	const { purchaseViewData, setPrintPos } = props;
+	const { purchaseViewData, setPrintPos, configData } = props;
 	const componentRef = useRef();
 	const effectRan = useRef(false);
 	const { t } = useTranslation();
-	const configData = localStorage.getItem("config-data")
-		? JSON.parse(localStorage.getItem("config-data"))
-		: [];
 	const imageSrc = `${import.meta.env.VITE_IMAGE_GATEWAY_URL}uploads/inventory/logo/${
 		configData.path
 	}`;
 
 	const handlePrint = useReactToPrint({
-		content: () => componentRef.current,
+		documentTitle: "Purchase",
+		contentRef: componentRef,
 	});
 
 	useEffect(() => {
@@ -200,12 +198,6 @@ export function PurchasePrintPos(props) {
 												style={{ width: "35mm" }}
 											>
 												{element.item_name}
-												{/* {element.sku && (
-                                                <>
-                                                    <br />
-                                                    {t('Sku')} {element.sku}
-                                                </>
-                                            )} */}
 											</td>
 											<td
 												className={`${classes["invoice-text"]} ${classes["text-left"]}`}
