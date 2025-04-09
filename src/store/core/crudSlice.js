@@ -173,6 +173,36 @@ const initialState = {
 			insertType: "create",
 			editData: null,
 		},
+		pos: {
+			list: [],
+			current: null,
+			validation: false,
+			validationMessage: [],
+			deleteMessage: "",
+			fetching: false,
+			filters: {
+				customer: {},
+				vendor: {
+					name: "",
+					mobile: "",
+					company_name: "",
+				},
+				user: {},
+				warehouse: {},
+				categoryGroup: {},
+			},
+			searchKeyword: "",
+			formLoading: false,
+			insertType: "create",
+			editData: null,
+		},
+		posDetails: {
+			list: [],
+			current: null,
+			validation: false,
+			validationMessage: [],
+			deleteMessage: "",
+		}
 		// +++++ new other modules can be added from here +++++
 	},
 	isLoading: false,

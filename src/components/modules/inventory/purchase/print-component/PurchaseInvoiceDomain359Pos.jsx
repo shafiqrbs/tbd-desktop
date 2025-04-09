@@ -15,8 +15,7 @@ function PurchaseInvoiceDomain359Pos(props) {
 	} else {
 		invoicePrintData = useSelector((state) => state.inventoryCrudSlice.entityUpdateData.data);
 	}
-	console.log(invoicePrintData);
-
+	
 	const { t } = useTranslation();
 	const printRef = useRef();
 	const [isPrinting, setIsPrinting] = useState(false);

@@ -9,6 +9,7 @@ import PurchaseIndex from "./components/modules/inventory/purchase/PurchaseIndex
 import PurchaseInvoice from "./components/modules/inventory/purchase/PurchaseInvoice";
 // import SalesEdit from "./components/modules/inventory/sales/SalesEdit";
 import SalesInvoice from "./components/modules/inventory/sales/SalesInvoice.jsx";
+import BakeryIndex from "./components/modules/pos/bakery/BakeryIndex";
 
 export default function AppRoute() {
 	return (
@@ -28,6 +29,9 @@ export default function AppRoute() {
 					<Route path="sales-invoice" element={<SalesInvoice />} />
 					{/* <Route path="purchase/edit/:id" element={<PurchaseEdit />} /> */}
 					<Route path="purchase-invoice" element={<PurchaseInvoice />} />
+				</Route>
+				<Route path="pos">
+					<Route path="bakery" element={<BakeryIndex />} />
 				</Route>
 			</Route>
 			<Route path="*" element={<NotFound />} />

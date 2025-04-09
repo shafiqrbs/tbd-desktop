@@ -66,6 +66,9 @@ function _AddCustomerFormPos(props) {
 
 	const [customerIdForReceiver, setCustomerIdForReceiver] = useState(null);
 	const [indexData] = useState([]);
+
+	console.log("customer object: ", customerObject);
+
 	const customerDetails = React.useMemo(() => {
 		if (customerObject && customerId) {
 			return (
@@ -167,6 +170,7 @@ function _AddCustomerFormPos(props) {
 			}, 100),
 			(effectRan.current = true));
 	}, []);
+
 	const customerAddedForm = useForm({
 		initialValues: {
 			name: "",
@@ -281,6 +285,7 @@ function _AddCustomerFormPos(props) {
 										const value = {
 											url: "core/customer",
 											data: values,
+											module: "core",
 										};
 										try {
 											const response = await dispatch(
@@ -302,20 +307,14 @@ function _AddCustomerFormPos(props) {
 											});
 											if (response && response?.data?.data) {
 												const newCustomer = response?.data?.data;
-												const coreCustomers = localStorage.getItem(
-													"core-customers"
-												)
-													? JSON.parse(
-															localStorage.getItem("core-customers")
-													  )
-													: [];
+												const coreCustomers = await window.dbAPI.getDataFromTable("core_customers");
 												const updatedCustomers = [
 													...coreCustomers,
 													newCustomer,
 												];
-												localStorage.setItem(
-													"core-customers",
-													JSON.stringify(updatedCustomers)
+												await window.dbAPI.upsertIntoTable(
+													"core_customers",
+													updatedCustomers
 												);
 
 												setCustomerId(newCustomer.id);
@@ -370,7 +369,7 @@ function _AddCustomerFormPos(props) {
 										required={true}
 										nextField={fieldPrefix + "mobile"}
 										form={customerAddedForm}
-										name={"name"}
+										name="name"
 										id={fieldPrefix + "name"}
 										leftSection={<IconUserCircle size={16} opacity={0.5} />}
 										rightIcon={""}
@@ -388,7 +387,7 @@ function _AddCustomerFormPos(props) {
 										required={true}
 										nextField={fieldPrefix + "email"}
 										form={customerAddedForm}
-										name={"mobile"}
+										name="mobile"
 										id={fieldPrefix + "mobile"}
 										rightIcon={""}
 									/>
@@ -475,18 +474,12 @@ function _AddCustomerFormPos(props) {
 											mt={1}
 											searchable={true}
 											value={customerId}
-											changeValue={(value) => {
+											changeValue={async (value) => {
 												setCustomerId(value);
 												if (value) {
-													const coreCustomers = localStorage.getItem(
-														"core-customers"
+													const coreCustomers = await window.dbAPI.getDataFromTable(
+														"core_customers"
 													)
-														? JSON.parse(
-																localStorage.getItem(
-																	"core-customers"
-																)
-														  )
-														: [];
 													const customer = coreCustomers.find(
 														(c) => String(c.id) === String(value)
 													);
@@ -640,7 +633,6 @@ function _AddCustomerFormPos(props) {
 										onCancel: () => console.log("Cancel"),
 										onConfirm: async () => {
 											setSaveCreateLoading(true);
-											console.log("values", values);
 											setCustomerIdForReceiver(null);
 											setValue("Existing");
 											setSaveCreateLoading(false);

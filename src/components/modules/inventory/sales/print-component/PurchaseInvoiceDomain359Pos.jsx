@@ -40,7 +40,6 @@ function PurchaseInvoiceDomain359Pos(props) {
 	const handleAfterPrint = useCallback(() => {
 		props.mode === "insert"
 			? (setIsPrinting(false),
-			  // props.setOpenInvoiceDrawerForPrint(false))
 			  console.log("printing closed"))
 			: (setIsPrinting(false), navigate("/inventory/purchase"));
 	}, []);

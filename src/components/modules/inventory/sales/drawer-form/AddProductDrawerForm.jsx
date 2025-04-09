@@ -49,7 +49,6 @@ function AddProductDrawerForm(props) {
 	const productType = getSettingProductTypeDropdownData();
 	const categories = getSettingCategoryDropdownData();
 	const units = getSettingParticularDropdownData("product-unit");
-	console.log("units", units);
 
 	useEffect(() => {
 		!effectRan.current &&

@@ -23,7 +23,7 @@ const customerDataStoreIntoLocalStorage = async () => {
 		if (data && data.data) {
 			await Promise.all(
 				data.data.map(async (customer) => {
-					await window.dbAPI.upsertData(`core-customers`, customer);
+					await window.dbAPI.upsertIntoTable('core-customers', customer);
 				})
 			);
 		}

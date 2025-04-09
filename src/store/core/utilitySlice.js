@@ -44,6 +44,7 @@ const initialState = {
 			executives: [],
 			productType: [],
 			customerGroup: [],
+			dropdownLoad: [],
 		},
 	},
 	isLoading: false,

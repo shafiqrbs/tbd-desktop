@@ -16,7 +16,7 @@ const getCoreSettingCustomerGroupDropdownData = () => {
 		dispatch(getDropdownData(value));
 	}, [dispatch]);
 
-	const dropdownData = useSelector((state) => state.utilitySlice.dropdowns.core.customerGroup);
+	const dropdownData = useSelector((state) => state.utilitySlice.dropdowns.core?.customerGroup);
 
 	useEffect(() => {
 		if (dropdownData && dropdownData.length > 0) {

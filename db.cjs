@@ -167,10 +167,13 @@ db.prepare(
 		mid_production INTEGER,
 		pre_production INTEGER,
 		sku_warehouse INTEGER,
+		pos_invoice_mode_id INTEGER,
+		child_domain_exists INTEGER,
 
 		domain TEXT,
 		currency TEXT,
-		business_model TEXT
+		business_model TEXT,
+		pos_invoice_mode TEXT
 	);
 	`
 ).run();
@@ -326,6 +329,7 @@ const formatValue = (value) => {
 	if (value === undefined || value === null) return null;
 	try {
 		if (typeof value === "object") return JSON.stringify(value);
+		if (typeof value === "boolean") return value ? 1 : 0;
 	} catch (e) {
 		console.error(`Failed to stringify value: ${value}`, e);
 		return null;
