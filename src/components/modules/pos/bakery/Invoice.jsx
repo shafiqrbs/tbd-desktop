@@ -31,6 +31,7 @@ import {
 	IconScissors,
 	IconCurrency,
 	IconPlusMinus,
+	IconTicket,
 	IconCurrencyTaka,
 	IconPercentage,
 } from "@tabler/icons-react";
@@ -51,7 +52,6 @@ import customerDataStoreIntoLocalStorage from "../../../global-hook/local-storag
 import _CommonDrawer from "./drawer/_CommonDrawer.jsx";
 import { useScroll } from "./utils/ScrollOperations";
 import { showNotificationComponent } from "../../../core-component/showNotificationComponent.jsx";
-import { useToggle } from "@mantine/hooks";
 
 export default function Invoice(props) {
 	const {
@@ -80,7 +80,7 @@ export default function Invoice(props) {
 	const { t } = useTranslation();
 	const { isOnline, mainAreaHeight } = useOutletContext();
 	const height = mainAreaHeight - 190;
-	const calculatedHeight = height - 200; //
+	const calculatedHeight = height - 200;
 
 	const { configData } = getConfigData();
 	const enableTable = !!(configData?.is_pos && invoiceMode === "table");
@@ -90,6 +90,7 @@ export default function Invoice(props) {
 	const [salesByUserName] = useState(null);
 	const [salesByDropdownData, setSalesByDropdownData] = useState([]);
 	const [isDisabled, setIsDisabled] = useState(false);
+	const [transactionModeData, setTransactionModeData] = useState([]);
 
 	const [returnOrDueText, setReturnOrDueText] = useState(
 		invoiceData?.sub_total > invoiceData?.payment ? "Return" : "Due"
@@ -122,15 +123,9 @@ export default function Invoice(props) {
 
 	const [disabledDiscountButton, setDisabledDiscountButton] = useState(false);
 
-	const [discountMode, setDiscountMode] = useToggle(["Discount", "Coupon"]);
+	const [enableCoupon, setEnableCoupon] = useState("Coupon");
 
 	const [tableReceiveAmounts, setTableReceiveAmounts] = useState({});
-
-	const [transactionModeData, setTransactionModeData] = useState([]);
-
-	console.log("discountType", discountType);
-	console.log("discountMode", discountMode);
-
 	useEffect(() => {
 		if (enableTable && tableId && tableCustomerMap && tableCustomerMap[tableId]) {
 			const tableCustomer = tableCustomerMap[tableId];
@@ -141,6 +136,7 @@ export default function Invoice(props) {
 			setCustomerObject({});
 		}
 	}, [tableId, enableTable, tableCustomerMap]);
+
 	useEffect(() => {
 		async function fetchData() {
 			let coreUsers = await window.dbAPI.getDataFromTable("core_users");
@@ -215,6 +211,7 @@ export default function Invoice(props) {
 				field_name: "transaction_mode_id",
 				value: id,
 			},
+			module: "pos",
 		};
 
 		// Dispatch and handle response
@@ -278,8 +275,8 @@ export default function Invoice(props) {
 		updateTableSplitPayment(currentTableKey, splitPayments);
 	};
 	useEffect(() => {
-		let subtotal = 0;
 		if (form.values.split_amount) {
+			let subtotal = 0;
 			const totalAmount = subtotal - salesDiscountAmount;
 			let receiveAmount = 0;
 			for (let key in form.values.split_amount) {
@@ -470,11 +467,13 @@ export default function Invoice(props) {
 
 		const fetchData = async () => {
 			setIsDisabled(true);
+			console.log(invoiceData);
 			try {
 				const resultAction = await dispatch(
 					getIndexEntityData({
 						url: "inventory/pos/sales-complete/" + invoiceData.id,
 						params: {},
+						module: "sales",
 					})
 				);
 				if (getIndexEntityData.fulfilled.match(resultAction)) {
@@ -516,7 +515,7 @@ export default function Invoice(props) {
 	return (
 		<>
 			<Box
-				w={"100%"}
+				w="100%"
 				pl={10}
 				pr={10}
 				h={enableTable ? height + 84 : height + 195}
@@ -532,20 +531,19 @@ export default function Invoice(props) {
 					wrap="nowrap"
 				>
 					<SelectForm
-						mt="8"
 						pt="8"
 						label=""
-						tooltip={"SalesBy"}
+						tooltip="SalesBy"
 						placeholder={enableTable ? t("OrderTakenBy") : t("SalesBy")}
-						name={"sales_by_id"}
+						name="sales_by_id"
 						form={form}
 						dropdownValue={salesByDropdownData}
-						id={"sales_by_id"}
+						id="sales_by_id"
 						searchable={true}
 						value={salesByUser}
 						changeValue={setSalesByUser}
-						color={"orange.8"}
-						position={"top-start"}
+						color="orange.8"
+						position="top-start"
 						inlineUpdate={true}
 						updateDetails={{
 							url: "inventory/pos/inline-update",
@@ -554,6 +552,7 @@ export default function Invoice(props) {
 								field_name: "sales_by_id",
 								value: salesByUser,
 							},
+							module: "pos",
 						}}
 					/>
 					{enableTable && (
@@ -573,7 +572,7 @@ export default function Invoice(props) {
 								radius="sm"
 								size="sm"
 								color="green"
-								name={"kitchen"}
+								name="kitchen"
 								mt={8}
 								miw={122}
 								maw={122}
@@ -639,7 +638,7 @@ export default function Invoice(props) {
 						>
 							<Paper p="md" radius="md" bg={"green.0"}>
 								<Grid columns={15} gutter="md">
-									{tables?.map((item) => (
+									{tables.map((item) => (
 										<Grid.Col span={3} key={item.id}>
 											<Checkbox
 												label={`Table ${item.id}`}
@@ -1088,18 +1087,23 @@ export default function Invoice(props) {
 									}}
 								>
 									<ActionIcon
+										name={
+											isThisTableSplitPaymentActive
+												? "clearSplitPayment"
+												: "splitPayment"
+										}
 										size="xl"
 										bg={isThisTableSplitPaymentActive ? "red.6" : "gray.8"}
 										variant="filled"
 										aria-label="Settings"
 										onClick={(e) => {
+											// console.log(e)
 											if (isThisTableSplitPaymentActive) {
 												clearSplitPayment();
 											} else {
 												handleClick(e);
 											}
 										}}
-										name="splitPayment"
 									>
 										{isThisTableSplitPaymentActive ? (
 											<IconX
@@ -1189,177 +1193,221 @@ export default function Invoice(props) {
 									>
 										<Button
 											fullWidth={true}
-											onClick={() => {
-												setDiscountMode();
-												setDiscountType((prev) => {
-													if (prev === "Percent") return "Flat";
-													return "Percent";
-												});
-											}}
+											onClick={() =>
+												enableCoupon === "Coupon"
+													? setEnableCoupon("Discount")
+													: setEnableCoupon("Coupon")
+											}
 											variant="filled"
 											fz={"xs"}
 											leftSection={
-												discountMode === "Discount" ? (
-													<IconCurrencyTaka size={14} />
+												enableCoupon === "Coupon" ? (
+													<IconTicket size={14} />
 												) : (
 													<IconPercentage size={14} />
 												)
 											}
 											color="gray"
 										>
-											{discountMode === "Discount"
-												? t("Discount")
-												: t("Coupon")}
+											{enableCoupon === "Coupon"
+												? t("Coupon")
+												: t("Discount")}
 										</Button>
 									</Tooltip>
 								</Grid.Col>
 								<Grid.Col span={6} bg={"red.3"}>
-									<Tooltip
-										label={t("ClickRightButtonForPercentFlat")}
-										px={16}
-										py={2}
-										position="top"
-										bg={"red.4"}
-										c={"white"}
-										withArrow
-										offset={2}
-										zIndex={999}
-										transitionProps={{
-											transition: "pop-bottom-left",
-											duration: 500,
-										}}
-									>
+									{enableCoupon === "Coupon" ? (
 										<TextInput
-											type="number"
-											style={{ textAlign: "right" }}
-											placeholder={t("Discount")}
-											value={salesDiscountAmount}
-											error={form.errors.discount}
+											type="text"
+											placeholder={t("CouponCode")}
+											value={form.values.coupon_code}
+											error={form.errors.coupon_code}
 											size={"sm"}
 											classNames={{ input: classes.input }}
 											onChange={(event) => {
-												form.setFieldValue("discount", event.target.value);
-												const newValue = event.target.value;
-												setSalesDiscountAmount(newValue);
-												form.setFieldValue("discount", newValue);
+												form.setFieldValue(
+													"coupon_code",
+													event.target.value
+												);
 											}}
 											rightSection={
-												<ActionIcon
-													size={32}
-													bg={"red.5"}
-													variant="filled"
-													onClick={async () => {
-														setDisabledDiscountButton(true);
-														const newDiscountType =
-															discountType === "Percent"
-																? "Flat"
-																: "Percent";
-														setDiscountType(newDiscountType);
-														const currentDiscountValue =
-															salesDiscountAmount;
+												<>
+													<Tooltip
+														label={t("CouponCode")}
+														px={16}
+														py={2}
+														withArrow
+														position={"left"}
+														c={"black"}
+														bg={`gray.1`}
+														transitionProps={{
+															transition: "pop-bottom-left",
+															duration: 500,
+														}}
+													>
+														<IconTicket size={16} opacity={0.5} />
+													</Tooltip>
+												</>
+											}
+										/>
+									) : (
+										<Tooltip
+											label={t("ClickRightButtonForPercentFlat")}
+											px={16}
+											py={2}
+											position="top"
+											bg={"red.4"}
+											c={"white"}
+											withArrow
+											offset={2}
+											zIndex={999}
+											transitionProps={{
+												transition: "pop-bottom-left",
+												duration: 500,
+											}}
+										>
+											<TextInput
+												type="number"
+												style={{ textAlign: "right" }}
+												placeholder={t("Discount")}
+												value={salesDiscountAmount}
+												error={form.errors.discount}
+												size={"sm"}
+												classNames={{ input: classes.input }}
+												onChange={(event) => {
+													form.setFieldValue(
+														"discount",
+														event.target.value
+													);
+													const newValue = event.target.value;
+													setSalesDiscountAmount(newValue);
+													form.setFieldValue("discount", newValue);
+												}}
+												rightSection={
+													<ActionIcon
+														size={32}
+														bg={"red.5"}
+														variant="filled"
+														onClick={async () => {
+															setDisabledDiscountButton(true);
+															const newDiscountType =
+																discountType === "Percent"
+																	? "Flat"
+																	: "Percent";
+															setDiscountType(newDiscountType);
+															const currentDiscountValue =
+																salesDiscountAmount;
 
-														const data = {
-															url: "inventory/pos/inline-update",
-															data: {
-																invoice_id: tableId,
-																field_name: "discount_type",
-																value: newDiscountType,
-																discount_amount:
-																	currentDiscountValue,
-															},
-															module: "pos",
-														};
+															const data = {
+																url: "inventory/pos/inline-update",
+																data: {
+																	invoice_id: tableId,
+																	field_name: "discount_type",
+																	value: newDiscountType,
+																	discount_amount:
+																		currentDiscountValue,
+																},
+																module: "pos",
+															};
 
-														setSalesDiscountAmount(
-															currentDiscountValue
-														);
-
-														try {
-															const resultAction = await dispatch(
-																storeEntityData(data)
+															setSalesDiscountAmount(
+																currentDiscountValue
 															);
 
-															if (
-																resultAction.payload?.status !== 200
-															) {
+															try {
+																const resultAction = await dispatch(
+																	storeEntityData(data)
+																);
+
+																if (
+																	resultAction.payload?.status !==
+																	200
+																) {
+																	showNotificationComponent(
+																		resultAction.payload
+																			?.message ||
+																			"Error updating invoice",
+																		"red",
+																		"",
+																		"",
+																		true
+																	);
+																}
+															} catch (error) {
 																showNotificationComponent(
-																	resultAction.payload?.message ||
-																		"Error updating invoice",
+																	"Request failed. Please try again.",
 																	"red",
 																	"",
 																	"",
 																	true
 																);
+																console.error(
+																	"Error updating invoice:",
+																	error
+																);
+															} finally {
+																setReloadInvoiceData(true);
+																setTimeout(() => {
+																	setDisabledDiscountButton(
+																		false
+																	);
+																}, 500);
 															}
-														} catch (error) {
+														}}
+													>
+														{discountType === "Flat" ? (
+															<IconCurrencyTaka size={16} />
+														) : (
+															<IconPercentage size={16} />
+														)}
+													</ActionIcon>
+												}
+												onBlur={async (event) => {
+													const data = {
+														url: "inventory/pos/inline-update",
+														data: {
+															invoice_id: tableId,
+															field_name: "discount",
+															value: event.target.value,
+															discount_type: discountType,
+														},
+														module: "pos",
+													};
+													// Dispatch and handle response
+													try {
+														const resultAction = await dispatch(
+															storeEntityData(data)
+														);
+
+														if (resultAction.payload?.status !== 200) {
 															showNotificationComponent(
-																"Request failed. Please try again.",
+																resultAction.payload?.message ||
+																	"Error updating invoice",
 																"red",
 																"",
 																"",
 																true
 															);
-															console.error(
-																"Error updating invoice:",
-																error
-															);
-														} finally {
-															setReloadInvoiceData(true);
-															setTimeout(() => {
-																setDisabledDiscountButton(false);
-															}, 500);
 														}
-													}}
-												>
-													{discountType === "Flat" ? (
-														<IconCurrencyTaka size={16} />
-													) : (
-														<IconPercentage size={16} />
-													)}
-												</ActionIcon>
-											}
-											onBlur={async (event) => {
-												const data = {
-													url: "inventory/pos/inline-update",
-													data: {
-														invoice_id: tableId,
-														field_name: "discount",
-														value: event.target.value,
-														discount_type: discountType,
-													},
-													module: "pos",
-												};
-												// Dispatch and handle response
-												try {
-													const resultAction = await dispatch(
-														storeEntityData(data)
-													);
-
-													if (resultAction.payload?.status !== 200) {
+													} catch (error) {
 														showNotificationComponent(
-															resultAction.payload?.message ||
-																"Error updating invoice",
+															"Request failed. Please try again.",
 															"red",
 															"",
 															"",
 															true
 														);
+														console.error(
+															"Error updating invoice:",
+															error
+														);
+													} finally {
+														setReloadInvoiceData(true);
 													}
-												} catch (error) {
-													showNotificationComponent(
-														"Request failed. Please try again.",
-														"red",
-														"",
-														"",
-														true
-													);
-													console.error("Error updating invoice:", error);
-												} finally {
-													setReloadInvoiceData(true);
-												}
-											}}
-										/>
-									</Tooltip>
+												}}
+											/>
+										</Tooltip>
+									)}
 								</Grid.Col>
 								<Grid.Col span={6} bg={"green"}>
 									<Tooltip
@@ -1580,14 +1628,12 @@ export default function Invoice(props) {
 									size={"lg"}
 									fullWidth={true}
 									leftSection={<IconPrinter />}
-									// onClick={posPrint}
 								>
 									{t("Pos")}
 								</Button>
 							</Grid.Col>
 							<Grid.Col span={enableTable ? 3 : 4}>
 								<Button
-									// disabled={isDisabled}
 									size={"lg"}
 									c={"white"}
 									bg={"#38b000"}

@@ -317,6 +317,57 @@ db.prepare(
   	`
 ).run();
 
+// invoice table
+db.prepare(
+	`
+	CREATE TABLE IF NOT EXISTS invoice_table (
+		id INTEGER PRIMARY KEY,
+		config_id INTEGER,
+		created_by_id INTEGER,
+		table_id INTEGER,
+		sales_by_id INTEGER,
+		serve_by_id INTEGER,
+		transaction_mode_id INTEGER,
+		customer_id INTEGER,
+		invoice_mode TEXT,
+		process TEXT,
+		is_active INTEGER,
+		order_date TEXT,
+		sub_total REAL,
+		payment REAL,
+		table_nos TEXT,
+		discount_type TEXT,
+		total REAL,
+		vat REAL,
+		sd REAL,
+		discount REAL,
+		percentage INTEGER,
+		discount_calculation INTEGER,
+		discount_coupon TEXT,
+		remark TEXT,
+		created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+		updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+	)`
+).run();
+
+// invoice table item
+db.prepare(
+	`
+	CREATE TABLE IF NOT EXISTS invoice_table_item (
+		id INTEGER PRIMARY KEY,
+		stock_item_id INTEGER,
+		invoice_id INTEGER,
+		quantity REAL NOT NULL,
+		purchase_price REAL,
+		created_at TEXT,
+		updated_at TEXT,
+		sales_price REAL NOT NULL,
+		custom_price INTEGER NOT NULL,
+		is_print INTEGER NOT NULL,
+		sub_total REAL NOT NULL
+	)`
+).run();
+
 // temp sales table
 // db.prepare(
 // 	`

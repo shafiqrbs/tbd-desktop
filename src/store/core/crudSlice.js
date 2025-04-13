@@ -202,7 +202,7 @@ const initialState = {
 			validation: false,
 			validationMessage: [],
 			deleteMessage: "",
-		}
+		},
 		// +++++ new other modules can be added from here +++++
 	},
 	isLoading: false,
@@ -322,10 +322,11 @@ const crudSlice = createSlice({
 		// handle store
 		builder.addCase(storeEntityData.fulfilled, (state, action) => {
 			const { data, module } = action.payload;
-			if (data.success) {
+			if (data.success || data.status === "success") {
 				state.data[module].validation = false;
 				state.data[module].validationMessage = [];
 			} else {
+				console.log(data);
 				state.data[module].validation = true;
 				state.data[module].validationMessage = data.errors;
 			}

@@ -67,8 +67,6 @@ function _AddCustomerFormPos(props) {
 	const [customerIdForReceiver, setCustomerIdForReceiver] = useState(null);
 	const [indexData] = useState([]);
 
-	console.log("customer object: ", customerObject);
-
 	const customerDetails = React.useMemo(() => {
 		if (customerObject && customerId) {
 			return (
@@ -307,7 +305,10 @@ function _AddCustomerFormPos(props) {
 											});
 											if (response && response?.data?.data) {
 												const newCustomer = response?.data?.data;
-												const coreCustomers = await window.dbAPI.getDataFromTable("core_customers");
+												const coreCustomers =
+													await window.dbAPI.getDataFromTable(
+														"core_customers"
+													);
 												const updatedCustomers = [
 													...coreCustomers,
 													newCustomer,
@@ -477,9 +478,10 @@ function _AddCustomerFormPos(props) {
 											changeValue={async (value) => {
 												setCustomerId(value);
 												if (value) {
-													const coreCustomers = await window.dbAPI.getDataFromTable(
-														"core_customers"
-													)
+													const coreCustomers =
+														await window.dbAPI.getDataFromTable(
+															"core_customers"
+														);
 													const customer = coreCustomers.find(
 														(c) => String(c.id) === String(value)
 													);
@@ -508,7 +510,7 @@ function _AddCustomerFormPos(props) {
 											fullWidth
 											size="xs"
 											color={`green.8`}
-											onClick={() => {
+											onClick={async() => {
 												if (customerId && enableTable && tableId) {
 													updateTableCustomer(
 														tableId,
@@ -517,6 +519,27 @@ function _AddCustomerFormPos(props) {
 													);
 												}
 												setCustomerDrawer(false);
+												const data = {
+                                                    url: 'inventory/pos/inline-update',
+                                                    data: {
+                                                        invoice_id: tableId,
+                                                        field_name: 'customer_id',
+                                                        value: customerId,
+                                                    },
+													module: 'pos',
+                                                }
+
+                                                // Dispatch and handle response
+                                                try {
+                                                    const resultAction = await dispatch(storeEntityData(data));
+
+                                                    if (resultAction.payload?.status == 200) {
+                                                        setCustomerDrawer(false);
+                                                    }
+                                                    
+                                                } catch (error) {
+                                                    console.error('Error updating invoice:', error);
+                                                }
 											}}
 											leftSection={<IconDeviceFloppy size={16} />}
 										>
@@ -622,7 +645,7 @@ function _AddCustomerFormPos(props) {
 						<Box pl={`xs`} pr={"xs"} className={"borderRadiusAll"}>
 							<form
 								id="receiverAddedForm"
-								onSubmit={receiverAddedForm.onSubmit((values) => {
+								onSubmit={receiverAddedForm.onSubmit(() => {
 									modals.openConfirmModal({
 										title: <Text size="md"> {t("FormConfirmationTitle")}</Text>,
 										children: (

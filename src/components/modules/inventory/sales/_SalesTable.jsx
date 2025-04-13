@@ -33,12 +33,11 @@ import {
 	deleteEntityData,
 	getIndexEntityData,
 	setDeleteMessage,
-	setFilter,
+	setFilter,setSearchKeyword,
 	showInstantEntityData,
 } from "../../../../store/core/crudSlice.js";
 import __ShortcutTable from "../../shortcut/__ShortcutTable";
 import _SalesSearch from "./_SalesSearch";
-import { setSearchKeyword } from "../../../../store/core/crudSlice.js";
 import { SalesPrintA4 } from "./print-component/SalesPrintA4";
 import { modals } from "@mantine/modals";
 import { notifications } from "@mantine/notifications";
@@ -202,7 +201,7 @@ function _SalesTable() {
 					data: {
 						data: result,
 					},
-					total: result.length,
+					total: result.total,
 				});
 			}
 		} catch (err) {
@@ -662,7 +661,7 @@ function _SalesTable() {
 										},
 									]}
 									fetching={fetching}
-									totalRecords={indexData?.data?.data?.length}
+									totalRecords={indexData?.data?.total}
 									recordsPerPage={perPage}
 									page={page}
 									onPageChange={(p) => {

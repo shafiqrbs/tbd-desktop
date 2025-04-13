@@ -61,11 +61,10 @@ export default function NewSales(props) {
 
     const {t} = useTranslation();
     const {mainAreaHeight} = useOutletContext();
-    const height = mainAreaHeight - 190; //TabList height 104
+    const height = mainAreaHeight - 190;
     const [selected, setSelected] = useState([]);
     const [id, setId] = useState(null);
     const {configData} = getConfigData();
-    //is_table_pos undefined thats why not rendering
     const enableTable = !!(configData?.is_pos && invoiceMode === 'table');
     const [loadCartProducts, setLoadCartProducts] = useState(false);
 
@@ -622,7 +621,7 @@ export default function NewSales(props) {
                                                                     shadow="md"
                                                                     radius="md"
                                                                     padding="xs"
-                                                                    styles={(theme) => ({
+                                                                    styles={() => ({
                                                                         root: {
                                                                             cursor: "pointer",
                                                                             transition: "transform 0.5s ease-in-out",
@@ -713,7 +712,7 @@ export default function NewSales(props) {
                                                                 <Card
                                                                     shadow="md"
                                                                     radius="md"
-                                                                    styles={(theme) => ({
+                                                                    styles={() => ({
                                                                         root: {
                                                                             cursor: "pointer",
                                                                             transform: selected.includes(product.id)
@@ -892,7 +891,6 @@ export default function NewSales(props) {
                                                         loaderSize="xs"
                                                         loaderColor="grape"
                                                         height={height - 30}
-                                                        // backgroundColor={'black'}
                                                         scrollAreaProps={{type: "never"}}
                                                     />
                                                 </>
@@ -984,7 +982,6 @@ export default function NewSales(props) {
                                                         value={barcode}
                                                         onChange={(event) => {
                                                             setBarcode(event.target.value);
-                                                            // handleBarcodeSearch(barcode);
                                                         }}
                                                         onKeyPress={(e) => {
                                                             if (e.key === "Enter" && barcode) {
@@ -1116,7 +1113,6 @@ export default function NewSales(props) {
                                                                         width={"24"}
                                                                         stroke={1.5}
                                                                     />
-                                                                    {/* <span>Minimal</span> */}
                                                                 </Center>
                                                             ),
                                                             value: "minimal",
@@ -1151,7 +1147,7 @@ export default function NewSales(props) {
                                                                     shadow="md"
                                                                     radius="md"
                                                                     padding="xs"
-                                                                    styles={(theme) => ({
+                                                                    styles={() => ({
                                                                         root: {
                                                                             cursor: "pointer",
                                                                             transition: "transform 0.5s ease-in-out",
@@ -1243,7 +1239,7 @@ export default function NewSales(props) {
                                                                 <Card
                                                                     shadow="md"
                                                                     radius="md"
-                                                                    styles={(theme) => ({
+                                                                    styles={() => ({
                                                                         root: {
                                                                             cursor: "pointer",
                                                                             transform: selected.includes(product.id)

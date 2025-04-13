@@ -232,7 +232,7 @@ export default function BakeryIndex() {
 	return (
 		<>
 			{progress !== 100 && (
-				<Progress color="red" size={"sm"} striped animated value={progress} />
+				<Progress color="red" size="sm" striped animated value={progress} />
 			)}
 			{progress === 100 && (
 				<>
