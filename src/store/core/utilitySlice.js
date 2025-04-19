@@ -84,6 +84,12 @@ const utilitySlice = createSlice({
 			.addCase(getDropdownData.fulfilled, (state, action) => {
 				const { data, dropdownType, module } = action.payload;
 				state.dropdowns[module][dropdownType] = Array.isArray(data) ? data : data.data;
+				// preserve the categories for offline usages
+				if(module === "inventory" && dropdownType === "categories") {
+					data?.data.forEach((category) => {
+						window.dbAPI.upsertIntoTable("categories", category);
+					})
+				}
 				state.isLoading = false;
 			})
 			.addCase(getDropdownData.rejected, (state, action) => {

@@ -52,6 +52,8 @@ import customerDataStoreIntoLocalStorage from "../../../global-hook/local-storag
 import _CommonDrawer from "./drawer/_CommonDrawer.jsx";
 import { useScroll } from "./utils/ScrollOperations";
 import { showNotificationComponent } from "../../../core-component/showNotificationComponent.jsx";
+import { useNetwork } from "@mantine/hooks";
+import { formatDate } from "../../../../lib/index.js";
 
 export default function Invoice(props) {
 	const {
@@ -76,6 +78,7 @@ export default function Invoice(props) {
 		setInvoiceData,
 	} = props;
 
+	const networkStatus = useNetwork();
 	const dispatch = useDispatch();
 	const { t } = useTranslation();
 	const { isOnline, mainAreaHeight } = useOutletContext();
@@ -111,6 +114,7 @@ export default function Invoice(props) {
 	const [transactionModeId, setTransactionModeId] = useState(
 		invoiceData?.transaction_mode_id || ""
 	);
+	const [transactionModeName, setTransactionModeName] = useState(null);
 	const currentTableKey = tableId || "general";
 	const currentTableSplitPayments = tableSplitPaymentMap[currentTableKey] || [];
 	const isSplitPaymentActive = currentTableSplitPayments.length > 0;
@@ -153,7 +157,6 @@ export default function Invoice(props) {
 
 		fetchData();
 	}, []);
-
 	const { scrollRef, showLeftArrow, showRightArrow, handleScroll, scroll } = useScroll();
 
 	const form = useForm({
@@ -200,8 +203,9 @@ export default function Invoice(props) {
 		}
 	}, [transactionModeData]);
 
-	const handleTransactionModel = async (id) => {
+	const handleTransactionModel = async (id, name) => {
 		setTransactionModeId(id);
+		setTransactionModeName(name);
 		form.setFieldValue("transaction_mode_id", id);
 
 		const data = {
@@ -216,16 +220,25 @@ export default function Invoice(props) {
 
 		// Dispatch and handle response
 		try {
-			const resultAction = await dispatch(storeEntityData(data));
+			if (networkStatus.online) {
+				const resultAction = await dispatch(storeEntityData(data));
 
-			if (resultAction.payload?.status !== 200) {
-				showNotificationComponent(
-					resultAction.payload?.message || "Error updating invoice",
-					"red",
-					"",
-					"",
-					true
-				);
+				if (resultAction.payload?.status !== 200) {
+					showNotificationComponent(
+						resultAction.payload?.message || "Error updating invoice",
+						"red",
+						"",
+						"",
+						true
+					);
+				}
+			} else {
+				await window.dbAPI.updateDataInTable("invoice_table", {
+					id: tableId,
+					data: {
+						transaction_mode_id: id,
+					},
+				});
 			}
 		} catch (error) {
 			showNotificationComponent("Request failed. Please try again.", "red", "", "", true);
@@ -465,39 +478,88 @@ export default function Invoice(props) {
 			return;
 		}
 
+		function resetAll() {
+			showNotificationComponent(t("SalesComplete"), "blue", "", "", true, 1000, true);
+			clearTableCustomer(tableId);
+			setSalesByUser(null);
+			setCustomerId(null);
+			setTransactionModeId(null);
+			setCurrentPaymentInput("");
+			setSalesDiscountAmount(0);
+			setSalesTotalAmount(0);
+			setSalesTotalWithoutDiscountAmount(0);
+			setSalesDueAmount(0);
+			setReturnOrDueText("Due");
+			setDiscountType("Percent");
+			setCustomerObject({});
+			updateTableStatus("Free");
+			setReloadInvoiceData(true);
+			setTableId(null);
+			setIndexData(null);
+			setInvoiceData(null);
+			form.reset();
+		}
+
 		const fetchData = async () => {
 			setIsDisabled(true);
-			console.log(invoiceData);
 			try {
-				const resultAction = await dispatch(
-					getIndexEntityData({
-						url: "inventory/pos/sales-complete/" + invoiceData.id,
-						params: {},
-						module: "sales",
-					})
-				);
-				if (getIndexEntityData.fulfilled.match(resultAction)) {
-					showNotificationComponent(t("SalesComplete"), "blue", "", "", true, 1000, true);
-					clearTableCustomer(tableId);
-					setSalesByUser(null);
-					setCustomerId(null);
-					setTransactionModeId(null);
-					setCurrentPaymentInput("");
-					setSalesDiscountAmount(0);
-					setSalesTotalAmount(0);
-					setSalesTotalWithoutDiscountAmount(0);
-					setSalesDueAmount(0);
-					setReturnOrDueText("Due");
-					setDiscountType("Percent");
-					setCustomerObject({});
-					updateTableStatus("Free");
-					setReloadInvoiceData(true);
-					setTableId(null);
-					setIndexData(null);
-					setInvoiceData(null);
-					form.reset();
+				if (networkStatus.online) {
+					const resultAction = await dispatch(
+						getIndexEntityData({
+							url: "inventory/pos/sales-complete/" + invoiceData.id,
+							params: {},
+							module: "sales",
+						})
+					);
+					if (getIndexEntityData.fulfilled.match(resultAction)) {
+						resetAll();
+					} else {
+						console.error("Error fetching data:", resultAction);
+					}
 				} else {
-					console.error("Error fetching data:", resultAction);
+					const customerInfo = customersDropdownData.find((data) => data.value == invoiceData.customer_id); 
+					await window.dbAPI.upsertIntoTable("sales", {
+						invoice: Date.now().toString().slice(1, 13),
+						sub_total: invoiceData.sub_total,
+						total: invoiceData.total ?? invoiceData.sub_total,
+						approved_by_id: invoiceData.created_by_id,
+						payment: invoiceData.payment,
+						discount: null,
+						discount_calculation: null,
+						discount_type: invoiceData.discount_type,
+						customerId: invoiceData.customer_id,
+						customerName: customerInfo.label.split(" -- ")[1],
+						customerMobile: customerInfo.label.split(" -- ")[0],
+						createdByUser: "sandra",
+						createdById: invoiceData.created_by_id,
+						salesById: invoiceData.sales_by_id,
+						salesByUser: "sandra",
+						salesByName: null,
+						process: "approved",
+						mode_name: transactionModeName,
+						created: formatDate(new Date()),
+						sales_items: JSON.stringify(invoiceData.invoice_items),
+					});
+					resetAll();
+
+					// TODO: update tables from inv_table
+					// TODO: remove items from inv_table_items
+
+					await window.dbAPI.updateDataInTable("invoice_table", {
+						id: tableId,
+						data : {
+							sales_by_id: null,
+							transaction_mode_id: null,
+							customer_id: null,
+							is_active: 0,
+							sub_total: null,
+							payment: null,
+						}
+					})
+
+					invoiceData.invoice_items.forEach((item) => {
+						window.dbAPI.deleteDataFromTable("invoice_table_item", item.id);
+					})
 				}
 			} catch (err) {
 				console.error("Unexpected error:", err);
@@ -735,7 +797,7 @@ export default function Invoice(props) {
 											<ActionIcon
 												size={"sm"}
 												bg={"gray.7"}
-												onClick={() => handleDecrement(data.product_id)}
+												onClick={() => handleDecrement(data.stock_item_id)}
 											>
 												<IconMinus height={"12"} width={"12"} />
 											</ActionIcon>
@@ -751,7 +813,9 @@ export default function Invoice(props) {
 											<ActionIcon
 												size={"sm"}
 												bg={"gray.7"}
-												onClick={() => handleIncrement(data.product_id)}
+												onClick={() => {
+													handleIncrement(data.stock_item_id);
+												}}
 											>
 												<IconPlus height={"12"} width={"12"} />
 											</ActionIcon>
@@ -782,7 +846,7 @@ export default function Invoice(props) {
 											variant="white"
 											color="red.8"
 											aria-label="Settings"
-											onClick={() => handleDelete(data.product_id)}
+											onClick={() => handleDelete(data.stock_item_id)}
 										>
 											<IconTrash height={20} width={20} stroke={1.5} />
 										</ActionIcon>
@@ -970,7 +1034,7 @@ export default function Invoice(props) {
 												{transactionModeData.map((mode, index) => (
 													<Box
 														onClick={() => {
-															handleTransactionModel(mode.id);
+															handleTransactionModel(mode.id, mode.name);
 														}}
 														key={index}
 														p={4}
@@ -989,6 +1053,9 @@ export default function Invoice(props) {
 															align="center"
 															justify="center"
 															p={2}
+															style={{
+																color: "black",
+															}}
 														>
 															<Tooltip
 																label={mode.name}
@@ -1006,15 +1073,14 @@ export default function Invoice(props) {
 																	w={56}
 																	h={48}
 																	fit="fit"
+																	alt={mode.name}
 																	src={
 																		isOnline
 																			? mode.path
-																			: "/images/transaction-mode-offline.jpg"
+																			: `/transactions/${mode.name}.jpg`
 																	}
-																	fallbackSrc={`https://placehold.co/120x80/FFFFFF/2f9e44?text=${encodeURIComponent(
-																		mode.name
-																	)}`}
-																></Image>
+																	fallbackSrc={`https://placehold.co/120x80/FFFFFF/2f9e44`}
+																/>
 															</Tooltip>
 														</Flex>
 													</Box>
@@ -1097,7 +1163,6 @@ export default function Invoice(props) {
 										variant="filled"
 										aria-label="Settings"
 										onClick={(e) => {
-											// console.log(e)
 											if (isThisTableSplitPaymentActive) {
 												clearSplitPayment();
 											} else {
@@ -1315,23 +1380,39 @@ export default function Invoice(props) {
 															);
 
 															try {
-																const resultAction = await dispatch(
-																	storeEntityData(data)
-																);
+																if (networkStatus.online) {
+																	const resultAction =
+																		await dispatch(
+																			storeEntityData(data)
+																		);
 
-																if (
-																	resultAction.payload?.status !==
-																	200
-																) {
-																	showNotificationComponent(
+																	if (
 																		resultAction.payload
-																			?.message ||
-																			"Error updating invoice",
-																		"red",
-																		"",
-																		"",
-																		true
-																	);
+																			?.status !== 200
+																	) {
+																		showNotificationComponent(
+																			resultAction.payload
+																				?.message ||
+																				"Error updating invoice",
+																			"red",
+																			"",
+																			"",
+																			true
+																		);
+																	} else {
+																		await window.dbAPI.updateDataInTable(
+																			"invoice_table",
+																			{
+																				id: tableId,
+																				data: {
+																					discount_type:
+																						newDiscountType,
+																					discount_amount:
+																						currentDiscountValue,
+																				},
+																			}
+																		);
+																	}
 																}
 															} catch (error) {
 																showNotificationComponent(
@@ -1375,18 +1456,34 @@ export default function Invoice(props) {
 													};
 													// Dispatch and handle response
 													try {
-														const resultAction = await dispatch(
-															storeEntityData(data)
-														);
+														if (networkStatus.online) {
+															const resultAction = await dispatch(
+																storeEntityData(data)
+															);
 
-														if (resultAction.payload?.status !== 200) {
-															showNotificationComponent(
-																resultAction.payload?.message ||
-																	"Error updating invoice",
-																"red",
-																"",
-																"",
-																true
+															if (
+																resultAction.payload?.status !== 200
+															) {
+																showNotificationComponent(
+																	resultAction.payload?.message ||
+																		"Error updating invoice",
+																	"red",
+																	"",
+																	"",
+																	true
+																);
+															}
+														} else {
+															await window.dbAPI.updateDataInTable(
+																"invoice_table",
+																{
+																	id: tableId,
+																	data: {
+																		discount:
+																			event.target.value,
+																		discount_type: discountType,
+																	},
+																}
 															);
 														}
 													} catch (error) {
@@ -1440,18 +1537,30 @@ export default function Invoice(props) {
 
 												// Dispatch and handle response
 												try {
-													const resultAction = await dispatch(
-														storeEntityData(data)
-													);
+													if (networkStatus.online) {
+														const resultAction = await dispatch(
+															storeEntityData(data)
+														);
 
-													if (resultAction.payload?.status !== 200) {
-														showNotificationComponent(
-															resultAction.payload?.message ||
-																"Error updating invoice",
-															"red",
-															"",
-															"",
-															true
+														if (resultAction.payload?.status !== 200) {
+															showNotificationComponent(
+																resultAction.payload?.message ||
+																	"Error updating invoice",
+																"red",
+																"",
+																"",
+																true
+															);
+														}
+													} else {
+														await window.dbAPI.updateDataInTable(
+															"invoice_table",
+															{
+																id: tableId,
+																data: {
+																	payment: event.target.value,
+																},
+															}
 														);
 													}
 												} catch (error) {
@@ -1557,6 +1666,18 @@ export default function Invoice(props) {
 														...prev,
 														[currentTableKey]: newValue,
 													}));
+												}
+
+												if (!networkStatus.online) {
+													await window.dbAPI.updateDataInTable(
+														"invoice_table",
+														{
+															id: tableId,
+															data: {
+																payment: event.target.value,
+															},
+														}
+													);
 												}
 											}}
 										/>

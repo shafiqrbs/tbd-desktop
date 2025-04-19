@@ -489,9 +489,9 @@ export default function NewSales(props) {
                                                                     px={16}
                                                                     py={2}
                                                                     withArrow
-                                                                    position={"left"}
-                                                                    c={"black"}
-                                                                    bg={`gray.1`}
+                                                                    position="left"
+                                                                    c="black"
+                                                                    bg="gray.1"
                                                                     transitionProps={{
                                                                         transition: "pop-bottom-left",
                                                                         duration: 500,

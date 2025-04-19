@@ -345,9 +345,23 @@ db.prepare(
 		discount_calculation INTEGER,
 		discount_coupon TEXT,
 		remark TEXT,
+		particular_name TEXT,
+		particular_slug TEXT,
+		customer_name TEXT,
+		customer_mobile TEXT,
 		created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 		updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 	)`
+).run();
+
+db.prepare(
+	`
+	CREATE TABLE IF NOT EXISTS categories (
+		id INTEGER PRIMARY KEY,
+		name TEXT NOT NULL,
+		slug TEXT NOT NULL
+	)
+	`
 ).run();
 
 // invoice table item
@@ -357,14 +371,15 @@ db.prepare(
 		id INTEGER PRIMARY KEY,
 		stock_item_id INTEGER,
 		invoice_id INTEGER,
+		display_name TEXT NOT NULL,
 		quantity REAL NOT NULL,
 		purchase_price REAL,
-		created_at TEXT,
-		updated_at TEXT,
 		sales_price REAL NOT NULL,
 		custom_price INTEGER NOT NULL,
 		is_print INTEGER NOT NULL,
-		sub_total REAL NOT NULL
+		sub_total REAL NOT NULL,
+		crated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+		updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 	)`
 ).run();
 
@@ -439,18 +454,57 @@ const upsertIntoTable = (table, data) => {
 	}
 };
 
-const getDataFromTable = (table, id) => {
+const getDataFromTable = (table, idOrConditions, property = "id") => {
 	table = convertTableName(table);
-	// this tables uses get instead of all cause there will be no new rows ever always 1
 	const useGet = ["config_data", "users"].includes(table);
 
-	if (id) {
-		const stmt = db.prepare(`SELECT * FROM ${table} WHERE id = ?`);
-		return stmt.get(id);
+	let stmt;
+	let result;
+
+	if (typeof idOrConditions === "object" && idOrConditions !== null) {
+		// multiple conditions
+		const keys = Object.keys(idOrConditions);
+		const conditions = keys.map((key) => `${key} = ?`).join(" AND ");
+		const values = keys.map((key) => idOrConditions[key]);
+
+		stmt = db.prepare(`SELECT * FROM ${table} WHERE ${conditions}`);
+		result = useGet ? stmt.get(...values) : stmt.all(...values);
+	} else if (idOrConditions) {
+		stmt = db.prepare(`SELECT * FROM ${table} WHERE ${property} = ?`);
+		result = stmt.get(idOrConditions);
 	} else {
-		const stmt = db.prepare(`SELECT * FROM ${table}`);
-		return useGet ? stmt.get() : stmt.all();
+		stmt = db.prepare(`SELECT * FROM ${table}`);
+		result = useGet ? stmt.get() : stmt.all();
 	}
+
+	return result;
+};
+
+const updateDataInTable = (table, { id, data, condition = {}, property = "id" }) => {
+	table = convertTableName(table);
+	// build SET clause
+	const setKeys = Object.keys(data);
+	const setClause = setKeys.map((key) => `${key} = ?`).join(", ");
+	const setValues = setKeys.map((key) => data[key]);
+
+	// build WHERE clause
+	let whereClause = "";
+	let whereValues = [];
+
+	if (id !== undefined) {
+		// backward compatible: use id + property
+		whereClause = `WHERE ${property} = ?`;
+		whereValues = [id];
+	} else if (typeof condition === "object" && Object.keys(condition).length > 0) {
+		const conditionKeys = Object.keys(condition);
+		whereClause = "WHERE " + conditionKeys.map((key) => `${key} = ?`).join(" AND ");
+		whereValues = conditionKeys.map((key) => condition[key]);
+	} else {
+		throw new Error("No condition provided for update");
+	}
+
+	const stmt = db.prepare(`UPDATE ${table} SET ${setClause} ${whereClause}`);
+	stmt.run(...setValues, ...whereValues);
 };
 
 const deleteDataFromTable = (table, id) => {
@@ -467,6 +521,7 @@ const destroyTableData = (table = "users") => {
 module.exports = {
 	upsertIntoTable,
 	getDataFromTable,
+	updateDataInTable,
 	deleteDataFromTable,
 	destroyTableData,
 };

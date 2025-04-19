@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useNetwork } from "@mantine/hooks";
 import { useOutletContext } from "react-router";
 import { Box, Progress } from "@mantine/core";
 import { useTranslation } from "react-i18next";
@@ -12,6 +13,8 @@ import { getIndexEntityData } from "../../../../store/core/crudSlice.js";
 import getConfigData from "../../../global-hook/config-data/getConfigData.js";
 
 export default function BakeryIndex() {
+	const [categories, setCategories] = useState([]);
+	const networkStatus = useNetwork();
 	const { mainAreaHeight } = useOutletContext();
 	const height = mainAreaHeight - 130;
 	const { t } = useTranslation();
@@ -21,9 +24,7 @@ export default function BakeryIndex() {
 
 	// ✅ Redux Store Data
 	const dropdownLoad = useSelector((state) => state.utilitySlice.dropdowns?.core?.dropdownLoad);
-	const categoryDropdownData = useSelector(
-		(state) => state.utilitySlice.dropdowns?.inventory?.categories
-	);
+	const categoryDropdownData = useSelector((state) => state.utilitySlice.dropdowns?.inventory?.categories);
 
 	// ✅ Local State
 	const [time, setTime] = useState(new Date().toLocaleTimeString());
@@ -51,6 +52,14 @@ export default function BakeryIndex() {
 		dispatch(getDropdownData(value));
 	}, [dropdownLoad]);
 
+	useEffect(() => {
+		async function refetchCategories() {
+			const categories = await window.dbAPI.getDataFromTable("categories") || [];
+			setCategories(categories.map(({ name, id }) => ({ label: name, value: String(id) })));
+		}
+		refetchCategories();
+	},[networkStatus.online])
+
 	// ✅ Category Dropdown Data Transformation (Using `useMemo`)
 	const categoryDropdown = useMemo(() => {
 		return categoryDropdownData?.length > 0
@@ -70,44 +79,61 @@ export default function BakeryIndex() {
 	// ✅ Optimized Data Fetching
 	useEffect(() => {
 		const fetchData = async () => {
-			try {
-				const resultAction = await dispatch(
-					getIndexEntityData({
-						url: "inventory/pos/check/invoice-mode",
-						params: {},
-						module: "pos",
-					})
-				);
-				if (getIndexEntityData.fulfilled.match(resultAction)) {
-					setInvoiceMode(resultAction.payload?.data?.invoice_mode);
-					setIndexData(resultAction.payload?.data?.data || []);
-				} else {
-					console.error("Error fetching data:", resultAction);
+			if (networkStatus.online) {
+				try {
+					const resultAction = await dispatch(
+						getIndexEntityData({
+							url: "inventory/pos/check/invoice-mode",
+							params: {},
+							module: "pos",
+						})
+					);
+					if (getIndexEntityData.fulfilled.match(resultAction)) {
+						setInvoiceMode(resultAction.payload?.data?.invoice_mode);
+						setIndexData(resultAction.payload?.data?.data || []);
+					} else {
+						console.error("Error fetching data:", resultAction);
+					}
+				} catch (err) {
+					console.error("Unexpected error:", err);
 				}
-			} catch (err) {
-				console.error("Unexpected error:", err);
+			} else {
+				const result = await window.dbAPI.getDataFromTable("invoice_table");
+				setIndexData(result);
+				setInvoiceMode("table");
 			}
 		};
 		fetchData();
-	}, []);
+	}, [networkStatus.online, dispatch]);
 
 	useEffect(() => {
 		if (tableId === null) return;
 		const fetchData = async () => {
 			try {
-				const resultAction = await dispatch(
-					getIndexEntityData({
-						url: "inventory/pos/invoice-details",
-						params: {
-							invoice_id: tableId,
-						},
-						module: "posDetails",
-					})
-				);
-				if (getIndexEntityData.fulfilled.match(resultAction)) {
-					setInvoiceData(resultAction.payload.data?.data);
+				if (networkStatus.online) {
+					const resultAction = await dispatch(
+						getIndexEntityData({
+							url: "inventory/pos/invoice-details",
+							params: {
+								invoice_id: tableId,
+							},
+							module: "posDetails",
+						})
+					);
+					if (getIndexEntityData.fulfilled.match(resultAction)) {
+						setInvoiceData(resultAction.payload.data?.data);
+					} else {
+						console.error("Error fetching data:", resultAction);
+					}
 				} else {
-					console.error("Error fetching data:", resultAction);
+					const [invoiceTable, invoiceItems] = await Promise.all([
+						window.dbAPI.getDataFromTable("invoice_table", tableId),
+						window.dbAPI.getDataFromTable("invoice_table_item"),
+					]);
+					const filteredItems = invoiceItems.filter(
+						(data) => Number(data.invoice_id) === tableId
+					);
+					setInvoiceData({ ...invoiceTable, invoice_items: filteredItems });
 				}
 			} catch (err) {
 				console.error("Unexpected error:", err);
@@ -116,7 +142,7 @@ export default function BakeryIndex() {
 			}
 		};
 		fetchData();
-	}, [dispatch, tableId, reloadInvoiceData]);
+	}, [dispatch, tableId, reloadInvoiceData, networkStatus.online]);
 
 	// ✅ Memoized Active Table Extraction
 	const tableIdMemoized = useMemo(() => {
@@ -262,7 +288,9 @@ export default function BakeryIndex() {
 						<Box pl="4">
 							<NewSales
 								setInvoiceData={setInvoiceData}
-								categoryDropdown={categoryDropdown}
+								categoryDropdown={
+									categoryDropdown.length ? categoryDropdown : categories
+								}
 								tableId={tableId}
 								setTableId={setTableId}
 								tables={tables}

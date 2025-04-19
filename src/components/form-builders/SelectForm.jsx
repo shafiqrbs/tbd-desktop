@@ -4,6 +4,7 @@ import { showNotificationComponent } from "../core-component/showNotificationCom
 import { useDispatch } from "react-redux";
 import { storeEntityData } from "../../store/core/crudSlice.js";
 import inputCss from "../../assets/css/InputField.module.css";
+import { useNetwork } from "@mantine/hooks";
 
 const SelectForm = forwardRef((props, ref) => {
 	const {
@@ -29,6 +30,7 @@ const SelectForm = forwardRef((props, ref) => {
 		pt,
 	} = props;
 	const dispatch = useDispatch();
+	const networkStatus = useNetwork();
 
 	const handleChange = async (e) => {
 		changeValue(e);
@@ -43,18 +45,26 @@ const SelectForm = forwardRef((props, ref) => {
 		}
 		if (inlineUpdate) {
 			updateDetails.data.value = e;
-			// Dispatch and handle response
 			try {
-				const resultAction = await dispatch(storeEntityData(updateDetails));
+				if (networkStatus.online) {
+					const resultAction = await dispatch(storeEntityData(updateDetails));
 
-				if (resultAction.payload?.status !== 200) {
-					showNotificationComponent(
-						resultAction.payload?.message || "Error updating invoice",
-						"red",
-						"",
-						"",
-						true
-					);
+					if (resultAction.payload?.status !== 200) {
+						showNotificationComponent(
+							resultAction.payload?.message || "Error updating invoice",
+							"red",
+							"",
+							"",
+							true
+						);
+					}
+				} else {
+					await window.dbAPI.updateDataInTable("invoice_table", {
+						id: updateDetails.data.invoice_id,
+						data: {
+							"sales_by_id": e,
+						},
+					})
 				}
 			} catch (error) {
 				showNotificationComponent("Request failed. Please try again.", "red", "", "", true);
@@ -104,5 +114,7 @@ const SelectForm = forwardRef((props, ref) => {
 		</>
 	);
 });
+
+SelectForm.displayName = "SelectForm";
 
 export default SelectForm;

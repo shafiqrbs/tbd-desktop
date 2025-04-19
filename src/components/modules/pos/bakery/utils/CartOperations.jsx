@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { storeEntityData } from "../../../../../store/core/crudSlice";
 import { useDispatch } from "react-redux";
 import { showNotificationComponent } from "../../../../core-component/showNotificationComponent";
-storeEntityData;
+import { useNetwork } from "@mantine/hooks";
 
 export const useCartOperations = ({
 	enableTable,
@@ -17,6 +17,7 @@ export const useCartOperations = ({
 	setTables,
 	setReloadInvoiceData,
 }) => {
+	const networkStatus = useNetwork();
 	const { t } = useTranslation();
 	const dispatch = useDispatch();
 	const getStorageKey = useCallback(() => {
@@ -69,16 +70,66 @@ export const useCartOperations = ({
 				module: "pos",
 			};
 			try {
-				const resultAction = await dispatch(storeEntityData(data));
+				if (networkStatus.online) {
+					const resultAction = await dispatch(storeEntityData(data));
 
-				if (resultAction.payload?.status !== 200) {
-					showNotificationComponent(
-						resultAction.payload?.message || "Error updating invoice",
-						"red",
-						"",
-						"",
-						true
-					);
+					if (resultAction.payload?.status !== 200) {
+						showNotificationComponent(
+							resultAction.payload?.message || "Error updating invoice",
+							"red",
+							"",
+							"",
+							true
+						);
+					}
+				} else {
+					let newSubTotal = 0;
+					const [invoiceTableItem, invoiceTable] = await Promise.all([
+						window.dbAPI.getDataFromTable(
+							"invoice_table_item",
+							product.id,
+							"stock_item_id"
+						),
+						window.dbAPI.getDataFromTable("invoice_table", tableId),
+					]);
+					if (invoiceTableItem) {
+						const updatedQuantity = invoiceTableItem.quantity + 1;
+						const updatedSubTotal = updatedQuantity * product.sales_price;
+						const deltaSubTotal = updatedSubTotal - invoiceTableItem.sub_total;
+
+						await window.dbAPI.updateDataInTable("invoice_table_item", {
+							condition: { invoice_id: tableId, stock_item_id: product.id },
+							data: {
+								stock_item_id: product.id,
+								invoice_id: tableId,
+								quantity: updatedQuantity,
+								purchase_price: product.purchase_price,
+								sales_price: product.sales_price,
+								sub_total: updatedSubTotal,
+								display_name: product.display_name,
+							},
+						});
+						newSubTotal = deltaSubTotal;
+					} else {
+						await window.dbAPI.upsertIntoTable("invoice_table_item", {
+							stock_item_id: product.id,
+							invoice_id: tableId,
+							quantity: 1,
+							purchase_price: 0,
+							sales_price: product.sales_price,
+							custom_price: 0,
+							is_print: 0,
+							sub_total: product.sales_price,
+							display_name: product.display_name,
+						});
+						newSubTotal = product.sales_price;
+					}
+					await window.dbAPI.updateDataInTable("invoice_table", {
+						id: tableId,
+						data: {
+							sub_total: invoiceTable.sub_total + newSubTotal,
+						},
+					});
 				}
 			} catch (error) {
 				showNotificationComponent("Request failed. Please try again.", "red", "", "", true);
@@ -87,7 +138,7 @@ export const useCartOperations = ({
 				setReloadInvoiceData(true);
 			}
 		},
-		[products, tableId, dispatch, setReloadInvoiceData]
+		[products, tableId, dispatch, setReloadInvoiceData, networkStatus.online]
 	);
 
 	const handleDecrement = useCallback(
@@ -116,7 +167,7 @@ export const useCartOperations = ({
 	);
 
 	const handleDelete = useCallback(
-		(productId) => {
+		async (productId) => {
 			const myCartProducts = getCartProducts();
 
 			const updatedProducts = myCartProducts.filter((item) => item.product_id !== productId);
@@ -134,7 +185,7 @@ export const useCartOperations = ({
 			localStorage.setItem(getStorageKey(), JSON.stringify(updatedProducts));
 			setLoadCartProducts(true);
 		},
-		[getCartProducts, getStorageKey, updateTableStatusIfNeeded, setLoadCartProducts]
+		[getCartProducts, getStorageKey, updateTableStatusIfNeeded, setLoadCartProducts, networkStatus.online]
 	);
 
 	const handleClearCart = useCallback(() => {

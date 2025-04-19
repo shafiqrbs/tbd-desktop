@@ -4,6 +4,7 @@ import { useScroll } from "./bakery/utils/ScrollOperations";
 import { storeEntityData } from "../../../store/core/crudSlice.js";
 import { useDispatch } from "react-redux";
 import { showNotificationComponent } from "../../core-component/showNotificationComponent.jsx";
+import { useNetwork } from "@mantine/hooks";
 
 function HeaderNavbar({
 	tables,
@@ -13,6 +14,7 @@ function HeaderNavbar({
 	setCustomerObject,
 	invoiceMode,
 }) {
+	const networkStatus = useNetwork();
 	const dispatch = useDispatch();
 	const { scrollRef, showLeftArrow, showRightArrow, handleScroll, scroll } = useScroll();
 
@@ -20,6 +22,8 @@ function HeaderNavbar({
 		const newTableId = tableId === invoice.id ? null : invoice.id;
 		setTableId(newTableId);
 		setCustomerObject(tableCustomerMap[invoice.id] || {});
+
+		console.log(tableCustomerMap[invoice.id], tableCustomerMap, invoice);
 
 		// Determine valueId dynamically
 		const valueId =
@@ -42,16 +46,25 @@ function HeaderNavbar({
 
 		// Dispatch and handle response
 		try {
-			const resultAction = await dispatch(storeEntityData(data));
+			if (networkStatus.online) {
+				const resultAction = await dispatch(storeEntityData(data));
 
-			if (resultAction.payload?.status !== 200) {
-				showNotificationComponent(
-					resultAction.payload?.message || "Error updating invoice",
-					"red",
-					"",
-					"",
-					true
-				);
+				if (resultAction.payload?.status !== 200) {
+					showNotificationComponent(
+						resultAction.payload?.message || "Error updating invoice",
+						"red",
+						"",
+						"",
+						true
+					);
+				}
+			} else {
+				await window.dbAPI.updateDataInTable("invoice_table", {
+					id: invoice.id,
+					data: {
+						is_active: 1,
+					},
+				});
 			}
 		} catch (error) {
 			showNotificationComponent("Request failed. Please try again.", "red", "", "", true);

@@ -898,5 +898,6 @@
 	"DiscountPercentValidateMessage": "Discount percent must be between 0-99",
 	"LogoutAltL": "Logout (Alt + L)",
 	"ClickRightButtonForPercentFlat": "Click right button for percent/flat",
-	"SplitPaymentActive": "Split Payment Active"
+	"SplitPaymentActive": "Split Payment Active",
+	"SplitPayment": "Split Payment"
 }

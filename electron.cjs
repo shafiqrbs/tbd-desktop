@@ -7,16 +7,25 @@ ipcMain.handle("upsert-into-table", async (event, table, data) => {
 	try {
 		return dbModule.upsertIntoTable(table, data);
 	} catch (error) {
-		console.error("Error fetching users:", error);
+		console.error(`Error upserting ${table}:`, error);
 		throw error;
 	}
 });
 
-ipcMain.handle("get-data-from-table", async (event, table, id) => {
+ipcMain.handle("update-in-table", async (event, table, values) => {
 	try {
-		return dbModule.getDataFromTable(table, id);
+		return dbModule.updateDataInTable(table, values);
 	} catch (error) {
-		console.error("Error fetching users:", error);
+		console.error(`Error updating ${table}:`, error);
+		throw error;
+	}
+});
+
+ipcMain.handle("get-data-from-table", async (event, table, id, property) => {
+	try {
+		return dbModule.getDataFromTable(table, id, property);
+	} catch (error) {
+		console.error(`Error getting data from ${table}:`, error);
 		throw error;
 	}
 });
@@ -25,7 +34,7 @@ ipcMain.handle("delete-data-from-table", async (event, table, id) => {
 	try {
 		return dbModule.deleteDataFromTable(table, id);
 	} catch (error) {
-		console.error("Error fetching users:", error);
+		console.error(`Error deleting data from ${table}:`, error);
 		throw error;
 	}
 });
@@ -34,7 +43,7 @@ ipcMain.handle("destroy-table-data", async () => {
 	try {
 		return dbModule.destroyTableData();
 	} catch (error) {
-		console.error("Error fetching users:", error);
+		console.error(`Error destroying data:`, error);
 		throw error;
 	}
 });

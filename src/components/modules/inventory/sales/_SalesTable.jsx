@@ -33,7 +33,8 @@ import {
 	deleteEntityData,
 	getIndexEntityData,
 	setDeleteMessage,
-	setFilter,setSearchKeyword,
+	setFilter,
+	setSearchKeyword,
 	showInstantEntityData,
 } from "../../../../store/core/crudSlice.js";
 import __ShortcutTable from "../../shortcut/__ShortcutTable";
@@ -114,7 +115,7 @@ function _SalesTable() {
 					{index + 1}
 				</Table.Td>
 				<Table.Td ta="left" fz="xs" width={"300"}>
-					{element.name}
+					{element.name || element.display_name || ""}
 				</Table.Td>
 				<Table.Td ta="center" fz="xs" width={"60"}>
 					{element.quantity}
@@ -197,6 +198,12 @@ function _SalesTable() {
 				}
 			} else {
 				const result = await window.dbAPI.getDataFromTable("sales");
+				result.sort((a, b) => {
+					return (
+						new Date(b.created?.split("-").reverse().join("-")) -
+						new Date(a.created?.split("-").reverse().join("-"))
+					);
+				});
 				setIndexData({
 					data: {
 						data: result,

@@ -36,6 +36,7 @@ import SelectForm from "../../../../form-builders/SelectForm.jsx";
 import TextAreaForm from "../../../../form-builders/TextAreaForm.jsx";
 import tableCss from "../../../../../assets/css/Table.module.css";
 import { DataTable } from "mantine-datatable";
+import { useNetwork } from "@mantine/hooks";
 
 function _AddCustomerFormPos(props) {
 	const {
@@ -56,6 +57,7 @@ function _AddCustomerFormPos(props) {
 	} = props;
 
 	const { t } = useTranslation();
+	const networkStatus = useNetwork();
 	const dispatch = useDispatch();
 	const { isOnline, mainAreaHeight } = useOutletContext();
 	const height = mainAreaHeight - 100; //TabList height 104
@@ -510,7 +512,7 @@ function _AddCustomerFormPos(props) {
 											fullWidth
 											size="xs"
 											color={`green.8`}
-											onClick={async() => {
+											onClick={async () => {
 												if (customerId && enableTable && tableId) {
 													updateTableCustomer(
 														tableId,
@@ -520,26 +522,35 @@ function _AddCustomerFormPos(props) {
 												}
 												setCustomerDrawer(false);
 												const data = {
-                                                    url: 'inventory/pos/inline-update',
-                                                    data: {
-                                                        invoice_id: tableId,
-                                                        field_name: 'customer_id',
-                                                        value: customerId,
-                                                    },
-													module: 'pos',
-                                                }
+													url: "inventory/pos/inline-update",
+													data: {
+														invoice_id: tableId,
+														field_name: "customer_id",
+														value: customerId,
+													},
+													module: "pos",
+												};
 
-                                                // Dispatch and handle response
-                                                try {
-                                                    const resultAction = await dispatch(storeEntityData(data));
+												// Dispatch and handle response
+												try {
+													if (networkStatus.online) {
+														await dispatch(storeEntityData(data));
+													} else {
+														await window.dbAPI.updateDataInTable(
+															"invoice_table",
+															{
+																id: tableId,
+																data: {
+																	customer_id: customerId,
+																},
+															}
+														);
+													}
 
-                                                    if (resultAction.payload?.status == 200) {
-                                                        setCustomerDrawer(false);
-                                                    }
-                                                    
-                                                } catch (error) {
-                                                    console.error('Error updating invoice:', error);
-                                                }
+													setCustomerDrawer(false);
+												} catch (error) {
+													console.error("Error updating invoice:", error);
+												}
 											}}
 											leftSection={<IconDeviceFloppy size={16} />}
 										>
