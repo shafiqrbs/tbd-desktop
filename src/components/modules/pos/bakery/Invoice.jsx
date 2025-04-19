@@ -542,9 +542,6 @@ export default function Invoice(props) {
 					});
 					resetAll();
 
-					// TODO: update tables from inv_table
-					// TODO: remove items from inv_table_items
-
 					await window.dbAPI.updateDataInTable("invoice_table", {
 						id: tableId,
 						data : {

@@ -23,8 +23,6 @@ function HeaderNavbar({
 		setTableId(newTableId);
 		setCustomerObject(tableCustomerMap[invoice.id] || {});
 
-		console.log(tableCustomerMap[invoice.id], tableCustomerMap, invoice);
-
 		// Determine valueId dynamically
 		const valueId =
 			{

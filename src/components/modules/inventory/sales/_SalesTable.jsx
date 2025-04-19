@@ -194,21 +194,16 @@ function _SalesTable() {
 				if (getIndexEntityData.rejected.match(resultAction)) {
 					console.error("Error:", resultAction);
 				} else if (getIndexEntityData.fulfilled.match(resultAction)) {
-					setIndexData(resultAction.payload);
+					setIndexData(resultAction?.payload);
 				}
 			} else {
 				const result = await window.dbAPI.getDataFromTable("sales");
-				result.sort((a, b) => {
-					return (
-						new Date(b.created?.split("-").reverse().join("-")) -
-						new Date(a.created?.split("-").reverse().join("-"))
-					);
-				});
+				result.reverse();
 				setIndexData({
 					data: {
 						data: result,
+						total: result.length,
 					},
-					total: result.total,
 				});
 			}
 		} catch (err) {
@@ -359,7 +354,6 @@ function _SalesTable() {
 												>
 													<Checkbox
 														value={item.id}
-														// checked={!!checkList?.[item.id]}
 														checked={
 															!!checkList?.[item.id] ||
 															(item?.invoice_batch_id ? true : false)
