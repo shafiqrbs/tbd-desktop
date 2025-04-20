@@ -1,5 +1,6 @@
 import { Route, Routes } from "react-router";
 import Login from "./components/Login";
+import Activate from "./components/Activate";
 import NotFound from "./components/NotFound";
 import Layout from "./components/layout/Layout";
 import VendorIndex from "./components/modules/core/vendor/VendorIndex";
@@ -14,6 +15,7 @@ import BakeryIndex from "./components/modules/pos/bakery/BakeryIndex";
 export default function AppRoute() {
 	return (
 		<Routes>
+			<Route path="/activate" element={<Activate />} />
 			<Route path="/login" element={<Login />} />
 			<Route path="/" element={<Layout />}>
 				<Route path="core">

@@ -9,6 +9,20 @@ const db = new Database(dbPath);
 
 const convertTableName = (key) => key.replace(/-/g, "_");
 
+// license activate table
+db.prepare(
+	`
+	CREATE TABLE IF NOT EXISTS license_activate (
+		id INTEGER PRIMARY KEY,
+		user_id INTEGER,
+		license_key TEXT,
+		gmail TEXT,
+		password TEXT,
+		activated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+	)
+	`
+).run();
+
 // users table
 db.prepare(
 	`
@@ -456,7 +470,7 @@ const upsertIntoTable = (table, data) => {
 
 const getDataFromTable = (table, idOrConditions, property = "id") => {
 	table = convertTableName(table);
-	const useGet = ["config_data", "users"].includes(table);
+	const useGet = ["config_data", "users", "license_activate"].includes(table); // return a single row for these tables
 
 	let stmt;
 	let result;

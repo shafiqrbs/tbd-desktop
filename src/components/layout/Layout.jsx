@@ -16,6 +16,7 @@ const Layout = () => {
 	const location = useLocation();
 	const paramPath = location.pathname;
 	const [isLoading, setIsLoading] = useState(true);
+	const [activated, setActivated] = useState(null);
 	const [user, setUser] = useState(null);
 	const { configData } = getConfigData();
 	const dispatch = useDispatch();
@@ -23,7 +24,12 @@ const Layout = () => {
 	useEffect(() => {
 		const initializeData = async () => {
 			try {
-				const user = await window.dbAPI.getDataFromTable("users");
+				const [activationData, user] = await Promise.all([
+					window.dbAPI.getDataFromTable("license_activate"),
+					window.dbAPI.getDataFromTable("users"),
+				]);
+
+				setActivated(activationData);
 				setUser(user);
 
 				if (user?.id) {
@@ -62,6 +68,10 @@ const Layout = () => {
 				<Loader size="lg" />
 			</Center>
 		);
+	}
+
+	if ((activated?.user_id !== user?.id) || !activated?.active) {
+		return <Navigate replace to="/activate" />;
 	}
 
 	if (!user?.id) {
