@@ -10,6 +10,8 @@ import {
 	IconPdf,
 	IconRestore,
 	IconSearch,
+	IconWifi,
+	IconWifiOff,
 	IconX,
 } from "@tabler/icons-react";
 import { useHotkeys } from "@mantine/hooks";
@@ -19,7 +21,7 @@ import { setFetching, setFilter, storeEntityData } from "../../../../store/core/
 import { DateInput } from "@mantine/dates";
 import __FilterPopover from "./__FilterPopover.jsx";
 
-function _SalesSearch(props) {
+function _SalesSearch({ checkList, customerId, module, forceOffline, setForceOffline }) {
 	const { t } = useTranslation();
 	const dispatch = useDispatch();
 	const navigate = useNavigate();
@@ -407,11 +409,42 @@ function _SalesSearch(props) {
 								<IconFileTypeXls style={{ width: rem(18) }} stroke={1.5} />
 							</Tooltip>
 						</ActionIcon>
+
+						{/* manual offline */}
+						<ActionIcon
+							variant="default"
+							c={"gray.8"}
+							size="lg"
+							aria-label="Offline"
+							onClick={() => {
+								setForceOffline(!forceOffline);
+							}}
+						>
+							<Tooltip
+								label={t("Offline")}
+								px={16}
+								py={2}
+								withArrow
+								position={"bottom"}
+								c={"red"}
+								bg={`red.1`}
+								transitionProps={{
+									transition: "pop-bottom-left",
+									duration: 500,
+								}}
+							>
+								{forceOffline ? (
+									<IconWifiOff style={{ width: rem(18) }} stroke={1.5} />
+								) : (
+									<IconWifi style={{ width: rem(18) }} stroke={1.5} />
+								)}
+							</Tooltip>
+						</ActionIcon>
 					</ActionIcon.Group>
 				</Grid.Col>
 				<Grid.Col span={"3"}>
 					<ActionIcon.Group mt={"1"} justify="right">
-						{Object.keys(props.checkList).length >= 1 && (
+						{Object.keys(checkList).length >= 1 && (
 							<Tooltip
 								label={t("GenerateBatchForCustomer")}
 								px={16}
@@ -431,8 +464,8 @@ function _SalesSearch(props) {
 									color="green.8"
 									onClick={() => {
 										const formValue = {};
-										formValue["customer_id"] = props.customerId;
-										formValue["sales_id"] = props.checkList;
+										formValue["customer_id"] = customerId;
+										formValue["sales_id"] = checkList;
 
 										const data = {
 											url: "inventory/invoice-batch",
@@ -454,7 +487,7 @@ function _SalesSearch(props) {
 				<FilterModel
 					filterModel={filterModel}
 					setFilterModel={setFilterModel}
-					module={props.module}
+					module={module}
 				/>
 			)}
 		</>

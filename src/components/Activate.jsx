@@ -2,7 +2,6 @@ import {
 	Box,
 	Button,
 	Container,
-	PasswordInput,
 	PinInput,
 	Text,
 	TextInput,
@@ -11,33 +10,85 @@ import {
 	Stack,
 	Group,
 	Tooltip,
+	Alert,
+    LoadingOverlay,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
-import { getHotkeyHandler } from "@mantine/hooks";
-import { IconKey, IconShieldLock, IconCheck } from "@tabler/icons-react";
+import { IconKey, IconCheck, IconInfoCircle } from "@tabler/icons-react";
+import axios from "axios";
+import { useNavigate } from "react-router";
+import { useState } from "react";
+
+const dataMap = {
+	core_customers: "customers",
+	core_users: "users",
+	core_vendors: "vendors",
+	accounting_transaction_mode: "transaction_modes",
+	config_data: "inventory_config",
+	core_products: "stock_item",
+};
 
 export default function Activate() {
+	const [spinner, setSpinner] = useState(false);
+	const [errorMessage, setErrorMessage] = useState("");
+	const navigate = useNavigate();
 	const form = useForm({
 		initialValues: {
 			licenseKey: "",
 			activeKey: "",
-			password: "",
-			confirmPassword: "",
 		},
 		validate: {
 			licenseKey: (value) => (value.length < 11 ? "License key must be 11 characters" : null),
 			activeKey: (value) =>
 				value.length < 10 ? "Activation key must be 10 characters" : null,
-			password: (value) =>
-				value.length < 6 ? "Password must be at least 6 characters" : null,
-			confirmPassword: (value, values) =>
-				value !== values.password ? "Passwords do not match" : null,
 		},
 	});
 
-	const handleSubmit = form.onSubmit((values) => {
+	const handleSubmit = form.onSubmit(async (values) => {
+		setSpinner(true);
+		setErrorMessage("");
 		console.log("Form submitted:", values);
-		// Handle activation logic here
+		try {
+			const response = await axios({
+				method: "GET",
+				url: `${import.meta.env.VITE_API_GATEWAY_URL}core/splash-info?license_key=${
+					values.licenseKey
+				}&active_key=${values.activeKey}`,
+				headers: {
+					"Content-Type": "application/json",
+				},
+			});
+
+			if (response.data.status === 200) {
+				window.dbAPI.upsertIntoTable("license_activate", {
+					license_key: values.licenseKey,
+					is_activated: 1,
+				});
+
+				const operations = Object.entries(dataMap).map(([table, property]) => {
+                    const dataList = Array.isArray(response.data.data[property])
+						? response.data.data[property]
+						: [response.data.data[property]];
+					return dataList.map((data) => {
+						return window.dbAPI.upsertIntoTable(table, data);
+					});
+				});
+
+				await Promise.all(operations);
+
+				navigate("/login", { replace: true });
+			} else {
+				console.log(response);
+				setErrorMessage(response.data.message);
+			}
+		} catch (error) {
+			setErrorMessage(
+				error?.response?.data.message || error?.message || "Account activation failed"
+			);
+			console.error(error);
+		} finally {
+			setSpinner(false);
+		}
 	});
 
 	return (
@@ -46,7 +97,12 @@ export default function Activate() {
 			mih="100vh"
 			style={{ display: "flex", alignItems: "center", backgroundColor: "#f8f9fa" }}
 		>
-			<Container size="sm" py="xl">
+			<Container size="sm" py="xl" pos="relative">
+				<LoadingOverlay
+					visible={spinner}
+					zIndex={1000}
+					overlayProps={{ radius: "sm", blur: 2 }}
+				/>
 				<Paper radius="md" p="xl" withBorder shadow="lg">
 					<Box ta="center" mb="md">
 						<img src="/tbd-logo.png" height="90px" alt="TerminalBD" />
@@ -63,6 +119,16 @@ export default function Activate() {
 						</Box>
 
 						<Box component="form" onSubmit={handleSubmit}>
+							{errorMessage && (
+								<Alert
+									variant="light"
+									color="red"
+									radius="md"
+									title={errorMessage}
+									icon={<IconInfoCircle />}
+									mb="md"
+								/>
+							)}
 							<Stack spacing="md">
 								<Tooltip
 									label={form.errors.licenseKey}
@@ -132,67 +198,6 @@ export default function Activate() {
 									</Tooltip>
 								</Box>
 
-								<Tooltip
-									label={form.errors.password}
-									px={20}
-									py={3}
-									opened={!!form.errors.password}
-									position="top-end"
-									color="red"
-									withArrow
-									offset={2}
-									transitionProps={{
-										transition: "pop-bottom-left",
-										duration: 500,
-									}}
-								>
-									<PasswordInput
-										label="New Password"
-										placeholder="Set a new password"
-										icon={<IconShieldLock size={16} />}
-										withAsterisk
-										{...form.getInputProps("password")}
-										error={!!form.errors.password}
-										size="md"
-										radius="md"
-									/>
-								</Tooltip>
-
-								<Tooltip
-									label={form.errors.confirmPassword}
-									px={20}
-									py={3}
-									opened={!!form.errors.confirmPassword}
-									position="top-end"
-									color="red"
-									withArrow
-									offset={2}
-									transitionProps={{
-										transition: "pop-bottom-left",
-										duration: 500,
-									}}
-								>
-									<PasswordInput
-										label="Confirm Password"
-										placeholder="Confirm your password"
-										icon={<IconShieldLock size={16} />}
-										withAsterisk
-										{...form.getInputProps("confirmPassword")}
-										error={!!form.errors.confirmPassword}
-										size="md"
-										radius="md"
-										onKeyDown={getHotkeyHandler([
-											[
-												"Enter",
-												() =>
-													document
-														.getElementById("activateSubmit")
-														?.click(),
-											],
-										])}
-									/>
-								</Tooltip>
-
 								<Button
 									id="activateSubmit"
 									type="submit"
@@ -201,7 +206,7 @@ export default function Activate() {
 									radius="md"
 									mt="md"
 									leftIcon={<IconCheck size={18} />}
-									gradient={{ from: "black", to: "red", deg: 45 }}
+									gradient={{ from: "green.6", to: "green.8", deg: 160 }}
 									variant="gradient"
 								>
 									Activate Account

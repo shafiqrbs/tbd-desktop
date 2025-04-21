@@ -14,10 +14,8 @@ db.prepare(
 	`
 	CREATE TABLE IF NOT EXISTS license_activate (
 		id INTEGER PRIMARY KEY,
-		user_id INTEGER,
 		license_key TEXT,
-		gmail TEXT,
-		password TEXT,
+		is_activated INTEGER,
 		activated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 	)
 	`
@@ -208,7 +206,7 @@ db.prepare(
 		quantity REAL NOT NULL,
 		purchase_price REAL NOT NULL,
 		sales_price REAL NOT NULL,
-		barcode TEXT NOT NULL,
+		barcode TEXT,
 		unit_name TEXT NOT NULL,
 		feature_image TEXT
 	);
@@ -419,7 +417,7 @@ const formatValue = (value) => {
 
 // data insertion into the table
 const upsertIntoTable = (table, data) => {
-	table = convertTableName(table);
+	try {table = convertTableName(table);
 	const keys = Object.keys(data);
 	const placeholders = keys.map(() => "?").join(", ");
 	const updatePlaceholders = keys.map((key) => `${key} = excluded.${key}`).join(", ");
@@ -465,6 +463,9 @@ const upsertIntoTable = (table, data) => {
 		if (isChanged) {
 			stmt.run(...Object.values(formattedData));
 		}
+	}} catch (e) {
+		console.log("Error in upsertIntoTable for this data:",table, data);
+		console.error(e)
 	}
 };
 

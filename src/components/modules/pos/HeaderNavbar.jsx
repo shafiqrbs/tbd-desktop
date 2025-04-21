@@ -57,10 +57,11 @@ function HeaderNavbar({
 					);
 				}
 			} else {
+				const tableInfo = await window.dbAPI.getDataFromTable("invoice_table", invoice.id);
 				await window.dbAPI.updateDataInTable("invoice_table", {
 					id: invoice.id,
 					data: {
-						is_active: 1,
+						is_active: tableInfo.is_active == 1 ? 0 : 1,
 					},
 				});
 			}

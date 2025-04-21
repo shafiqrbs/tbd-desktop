@@ -1,12 +1,6 @@
 import axios from "axios";
 
 const tableMap = {
-	"inventory/config": "config_data",
-	"inventory/stock-item": "core_products",
-	"core/customer/local-storage": "core_customers",
-	"core/vendor/local-storage": "core_vendors",
-	"core/user/local-storage": "core_users",
-	"accounting/transaction-mode/local-storage": "accounting_transaction_mode",
 	"inventory/sales": "sales",
 };
 
@@ -36,8 +30,10 @@ const invoiceTableDefaultData = [
 		discount_calculation: null,
 		discount_coupon: null,
 		remark: null,
-		created_at: "2025-03-26 08:53:12",
-		updated_at: "2025-04-09 08:01:27",
+		particular_name: "Table-1",
+		particular_slug: null,
+		customer_name: null,
+		customer_mobile: null,
 	},
 	{
 		id: 7,
@@ -64,8 +60,10 @@ const invoiceTableDefaultData = [
 		discount_calculation: null,
 		discount_coupon: null,
 		remark: null,
-		created_at: "2025-03-26 08:53:12",
-		updated_at: "2025-04-09 12:21:11",
+		particular_name: "Table-2",
+		particular_slug: null,
+		customer_name: null,
+		customer_mobile: null,
 	},
 	{
 		id: 8,
@@ -92,8 +90,10 @@ const invoiceTableDefaultData = [
 		discount_calculation: null,
 		discount_coupon: null,
 		remark: null,
-		created_at: "2025-03-26 08:53:12",
-		updated_at: "2025-04-09 08:01:27",
+		particular_name: "Table-3",
+		particular_slug: null,
+		customer_name: null,
+		customer_mobile: null,
 	},
 	{
 		id: 9,
@@ -120,8 +120,10 @@ const invoiceTableDefaultData = [
 		discount_calculation: null,
 		discount_coupon: null,
 		remark: null,
-		created_at: "2025-03-26 08:53:12",
-		updated_at: "2025-04-09 08:01:27",
+		particular_name: "Table-4",
+		particular_slug: null,
+		customer_name: null,
+		customer_mobile: null,
 	},
 ];
 
@@ -156,7 +158,9 @@ const commonDataStoreIntoLocalStorage = async (user_id) => {
 	});
 
 	await Promise.all(requests);
-	window.dbAPI.upsertIntoTable("invoice_table", invoiceTableDefaultData);
+	invoiceTableDefaultData.forEach((invoice) => {
+		window.dbAPI.upsertIntoTable("invoice_table", invoice);
+	});
 };
 
 export default commonDataStoreIntoLocalStorage;

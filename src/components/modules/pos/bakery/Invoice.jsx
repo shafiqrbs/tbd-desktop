@@ -48,7 +48,6 @@ import { useCartOperations } from "./utils/CartOperations";
 import SelectForm from "../../../form-builders/SelectForm";
 import { storeEntityData, getIndexEntityData } from "../../../../store/core/crudSlice.js";
 import AddCustomerDrawer from "../../inventory/sales/drawer-form/AddCustomerDrawer.jsx";
-import customerDataStoreIntoLocalStorage from "../../../global-hook/local-storage/customerDataStoreIntoLocalStorage.js";
 import _CommonDrawer from "./drawer/_CommonDrawer.jsx";
 import { useScroll } from "./utils/ScrollOperations";
 import { showNotificationComponent } from "../../../core-component/showNotificationComponent.jsx";
@@ -332,7 +331,6 @@ export default function Invoice(props) {
 
 	useEffect(() => {
 		const fetchCustomers = async () => {
-			await customerDataStoreIntoLocalStorage();
 			let coreCustomers = await window.dbAPI.getDataFromTable("core_customers");
 			let defaultId = defaultCustomerId;
 			if (coreCustomers && coreCustomers.length > 0) {

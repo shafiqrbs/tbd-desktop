@@ -47,6 +47,7 @@ import SalesPrintThermal from "./print-component/SalesPrintThermal.jsx";
 
 function _SalesTable() {
 	const networkStatus = useNetwork();
+	const [forceOffline, setForceOffline] = useState(!networkStatus?.online);
 	const navigate = useNavigate();
 	const printRef = useRef();
 	const dispatch = useDispatch();
@@ -188,7 +189,7 @@ function _SalesTable() {
 		};
 
 		try {
-			if (networkStatus.online) {
+			if (networkStatus.online && !forceOffline) {
 				const resultAction = await dispatch(getIndexEntityData(value));
 
 				if (getIndexEntityData.rejected.match(resultAction)) {
@@ -215,7 +216,7 @@ function _SalesTable() {
 
 	useEffect(() => {
 		fetchData();
-	}, [salesFilterData, page, networkStatus.online]);
+	}, [salesFilterData, page, networkStatus.online, forceOffline]);
 
 	const [checkList, setCheckList] = useState({});
 	const CheckItemsHandel = (e, item) => {
@@ -317,6 +318,8 @@ function _SalesTable() {
 								<Grid.Col>
 									<Stack>
 										<_SalesSearch
+											forceOffline={forceOffline} 
+											setForceOffline={setForceOffline}
 											checkList={checkList}
 											customerId={salesFilterData?.customer_id}
 										/>

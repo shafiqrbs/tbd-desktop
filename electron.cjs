@@ -104,8 +104,9 @@ app.whenReady().then(() => {
 			devTools: true,
 			sandbox: false,
 		},
+		autoHideMenuBar: true,
+		
 	});
-
 	mainWindow.webContents.session.on(
 		"select-serial-port",
 		(event, portList, webContents, callback) => {

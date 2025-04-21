@@ -24,7 +24,9 @@ export default function BakeryIndex() {
 
 	// ✅ Redux Store Data
 	const dropdownLoad = useSelector((state) => state.utilitySlice.dropdowns?.core?.dropdownLoad);
-	const categoryDropdownData = useSelector((state) => state.utilitySlice.dropdowns?.inventory?.categories);
+	const categoryDropdownData = useSelector(
+		(state) => state.utilitySlice.dropdowns?.inventory?.categories
+	);
 
 	// ✅ Local State
 	const [time, setTime] = useState(new Date().toLocaleTimeString());
@@ -54,11 +56,11 @@ export default function BakeryIndex() {
 
 	useEffect(() => {
 		async function refetchCategories() {
-			const categories = await window.dbAPI.getDataFromTable("categories") || [];
+			const categories = (await window.dbAPI.getDataFromTable("categories")) || [];
 			setCategories(categories.map(({ name, id }) => ({ label: name, value: String(id) })));
 		}
 		refetchCategories();
-	},[networkStatus.online])
+	}, [networkStatus.online]);
 
 	// ✅ Category Dropdown Data Transformation (Using `useMemo`)
 	const categoryDropdown = useMemo(() => {
@@ -262,20 +264,19 @@ export default function BakeryIndex() {
 			)}
 			{progress === 100 && (
 				<>
-					{configData?.is_pos &&
-						(JSON.parse(configData?.pos_invoice_mode) || {})?.slug && (
-							<HeaderNavbar
-								pageTitle={t("ManageCustomer")}
-								roles={t("Roles")}
-								tables={tables}
-								tableId={tableId}
-								setTables={setTables}
-								setTableId={setTableId}
-								tableCustomerMap={tableCustomerMap}
-								setCustomerObject={setCustomerObject}
-								invoiceMode={invoiceMode}
-							/>
-						)}
+					{configData?.is_pos && (
+						<HeaderNavbar
+							pageTitle={t("ManageCustomer")}
+							roles={t("Roles")}
+							tables={tables}
+							tableId={tableId}
+							setTables={setTables}
+							setTableId={setTableId}
+							tableCustomerMap={tableCustomerMap}
+							setCustomerObject={setCustomerObject}
+							invoiceMode={invoiceMode}
+						/>
+					)}
 					<Box
 						h={height + 4}
 						mt={6}

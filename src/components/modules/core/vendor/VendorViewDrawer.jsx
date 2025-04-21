@@ -5,8 +5,8 @@ import { IconX } from "@tabler/icons-react";
 
 function VendorViewDrawer(props) {
 	const { viewDrawer, setViewDrawer, vendorObject } = props;
-	const { isOnline, mainAreaHeight } = useOutletContext();
-	const { t, i18n } = useTranslation();
+	const { mainAreaHeight } = useOutletContext();
+	const { t } = useTranslation();
 	const height = mainAreaHeight; //TabList height 104
 	const closeDrawer = () => {
 		setViewDrawer(false);

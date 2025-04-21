@@ -54,11 +54,11 @@ function _GenericInvoiceForm(props) {
 		tempCardProducts?.reduce((total, item) => total + item.sub_total, 0) || 0;
 
 	const [stockProductRestore, setStockProductRestore] = useState(false);
-	useEffect(() => {
-		if (stockProductRestore) {
-			const local = productsDataStoreIntoLocalStorage();
-		}
-	}, [stockProductRestore]);
+	// useEffect(() => {
+	// 	if (stockProductRestore) {
+	// 		const local = productsDataStoreIntoLocalStorage();
+	// 	}
+	// }, [stockProductRestore]);
 
 	useEffect(() => {
 		const tempProducts = localStorage.getItem("temp-sales-products");

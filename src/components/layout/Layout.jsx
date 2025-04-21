@@ -70,7 +70,7 @@ const Layout = () => {
 		);
 	}
 
-	if ((activated?.user_id !== user?.id) || !activated?.active) {
+	if (!activated?.is_activated) {
 		return <Navigate replace to="/activate" />;
 	}
 

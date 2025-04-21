@@ -73,12 +73,12 @@ function _GenericInvoiceForm(props) {
 		0;
 
 	const [stockProductRestore, setStockProductRestore] = useState(false);
-	useEffect(() => {
-		if (stockProductRestore) {
-			const local = productsDataStoreIntoLocalStorage();
-			console.log(local);
-		}
-	}, [stockProductRestore]);
+	// useEffect(() => {
+	// 	if (stockProductRestore) {
+	// 		const local = productsDataStoreIntoLocalStorage();
+	// 		console.log(local);
+	// 	}
+	// }, [stockProductRestore]);
 
 	useEffect(() => {
 		const tempProducts = localStorage.getItem("temp-sales-products");
