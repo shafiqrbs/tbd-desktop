@@ -63,7 +63,7 @@ function MainDashboard(props) {
 								transitionProps={{ transition: "pop-bottom-left", duration: 500 }}
 							>
 								<Image
-									bg={"green.8"}
+									bg="#905a23"
 									h={60}
 									radius="sm"
 									src={pos}

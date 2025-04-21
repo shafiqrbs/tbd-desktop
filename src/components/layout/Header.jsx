@@ -244,7 +244,7 @@ export default function Header({ isOnline, configData }) {
 					</Modal.Body>
 				</Modal.Content>
 			</Modal.Root>
-			<Box bg={"white"} mb={"2"} pos={`relative`}>
+			<Box bg="#905a23" mb={"2"} pos={`relative`}>
 				<Grid columns={24} gutter={{ base: 2 }} justify="space-between">
 					<Grid.Col span={3}>
 						{configData?.domain?.company_name === "Sandra" ? (
@@ -255,6 +255,7 @@ export default function Header({ isOnline, configData }) {
 									alignItems: "center",
 									paddingLeft: 16,
 								}}
+								className="brand-logo"
 							>
 								<Anchor
 									target="_blank"
@@ -274,7 +275,7 @@ export default function Header({ isOnline, configData }) {
 						) : (
 							<NavLink
 								href="/"
-								c={"red"}
+								c={"white"}
 								fw={"800"}
 								component="button"
 								label={
@@ -285,6 +286,7 @@ export default function Header({ isOnline, configData }) {
 								onClick={() => {
 									navigate("/");
 								}}
+								className="brand-logo"
 							/>
 						)}
 					</Grid.Col>
@@ -301,12 +303,12 @@ export default function Header({ isOnline, configData }) {
 							<HoverCard.Target>
 								<a href="#" className={classes.link}>
 									<Center inline>
-										<Box component="span" mr={"xs"} c={"green.8"} fw={"800"}>
+										<Box component="span" mr={"xs"} c={"white"} fw={"800"}>
 											{t("Shortcut")}
 										</Box>
 										<IconChevronDown
 											style={{ width: rem(16), height: rem(16) }}
-											color={"green"}
+											color={"white"}
 										/>
 									</Center>
 								</a>
@@ -354,7 +356,7 @@ export default function Header({ isOnline, configData }) {
 						direction="row"
 						wrap="wrap"
 					>
-						<Group>
+						<Group bg="#905a23">
 							<Flex
 								justify="center"
 								align="center"
@@ -362,9 +364,10 @@ export default function Header({ isOnline, configData }) {
 								wrap="wrap"
 								mih={42}
 								w={"100%"}
-								border={"red"}
+								border={"#684119"}
 							>
 								<Button
+									bg="white"
 									leftSection={
 										<>
 											<IconSearch size={16} c={"red.5"} />
@@ -389,7 +392,7 @@ export default function Header({ isOnline, configData }) {
 									}
 									w={`100%`}
 									justify="space-between"
-									style={{ border: `2px solid var(--mantine-color-red-8)` }}
+									style={{ border: `2px solid #684119` }}
 									color={`gray`}
 									onClick={open}
 									className="no-focus-outline"
@@ -467,7 +470,7 @@ export default function Header({ isOnline, configData }) {
 									mt={"6"}
 									onClick={toggle}
 									variant="subtle"
-									color={`red.4`}
+									color={`white`}
 								>
 									{fullscreen ? (
 										<IconWindowMinimize size={24} />
@@ -481,7 +484,7 @@ export default function Header({ isOnline, configData }) {
 									onClick={() => logout()}
 									variant="subtle"
 									mt={"6"}
-									color={`gray.6`}
+									color={`white`}
 								>
 									<IconLogout size={24} />
 								</ActionIcon>
