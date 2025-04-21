@@ -3,9 +3,9 @@ import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import { getLoadingProgress } from "../../../global-hook/loading-progress/getLoadingProgress.js";
 import getConfigData from "../../../global-hook/config-data/getConfigData.js";
-import _GenericInvoiceForm from "./_GenericInvoiceForm.jsx";
 import _WholeSaleGenericInvoiceForm from "./whole-sale/_GenericInvoiceForm.jsx";
 import _SalesPurchaseHeaderNavbar from "../../domain/configuration/_SalesPurchaseHeaderNavbar.jsx";
+import _GenericPosForm from "./_GenericPosForm.jsx";
 
 function SalesInvoice() {
 	const { t } = useTranslation();
@@ -37,7 +37,7 @@ function SalesInvoice() {
 							<Box p={"8"}>
 								{insertType === "create" &&
 									configData?.business_model?.slug === "general" && (
-										<_GenericInvoiceForm
+										<_GenericPosForm
 											allowZeroPercentage={configData?.zero_stock}
 											currencySymbol={configData?.currency?.symbol}
 											domainId={configData?.domain_id}
@@ -47,7 +47,7 @@ function SalesInvoice() {
 										/>
 									)}
 								{insertType === "create" &&
-									configData?.business_model?.slug === "Distribution" && (
+									configData?.business_model?.slug === "distribution" && (
 										<_WholeSaleGenericInvoiceForm
 											allowZeroPercentage={configData?.zero_stock}
 											currencySymbol={configData?.currency?.symbol}

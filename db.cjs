@@ -396,12 +396,26 @@ db.prepare(
 ).run();
 
 // temp sales table
-// db.prepare(
-// 	`
-// 	CREATE TABLE IF NOT EXISTS temp_sales_products (
-
-// 	)`
-// ).run();
+db.prepare(
+	`
+	CREATE TABLE IF NOT EXISTS temp_sales_products (
+		id INTEGER PRIMARY KEY,
+		product_id INTEGER,
+		display_name TEXT NOT NULL,
+		sales_price REAL NOT NULL,
+		price REAL NOT NULL,
+		percent REAL NOT NULL,
+		stock REAL NOT NULL,
+		quantity REAL NOT NULL,
+		unit_name TEXT NOT NULL,
+		purchase_price REAL NOT NULL,
+		sub_total REAL NOT NULL,
+		unit_id INTEGER,
+		warehouse_id INTEGER,
+		warehouse_name TEXT,
+		bonus_quantity REAL
+	)`
+).run();
 
 const formatValue = (value) => {
 	if (value === undefined || value === null) return null;

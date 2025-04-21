@@ -19,7 +19,7 @@ const SelectForm = forwardRef((props, ref) => {
 		tooltip,
 		mt,
 		id,
-		dropdownValue,
+		dropdownValue = [],
 		searchable,
 		value,
 		changeValue,

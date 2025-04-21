@@ -32,7 +32,6 @@ import InputButtonForm from "../../../../form-builders/InputButtonForm";
 import InputNumberForm from "../../../../form-builders/InputNumberForm";
 import { DataTable } from "mantine-datatable";
 import tableCss from "../../../../../assets/css/Table.module.css";
-import productsDataStoreIntoLocalStorage from "../../../../global-hook/local-storage/productsDataStoreIntoLocalStorage.js";
 // import AddProductDrawer from "../../drawer-form/AddProductDrawer.jsx";
 
 function _GenericInvoiceForm(props) {
@@ -61,33 +60,38 @@ function _GenericInvoiceForm(props) {
 	// }, [stockProductRestore]);
 
 	useEffect(() => {
-		const tempProducts = localStorage.getItem("temp-sales-products");
-		setTempCardProducts(tempProducts ? JSON.parse(tempProducts) : []);
-		setLoadCardProducts(false);
+		async function getTempProducts() {
+			const tempProducts = await window.dbAPI.getDataFromTable("temp_sales_products");
+			setTempCardProducts(tempProducts || []);
+			setLoadCardProducts(false);
+		}
+		getTempProducts();
 	}, [loadCardProducts]);
 
 	useEffect(() => {
-		if (searchValue.length > 0) {
-			const storedProducts = localStorage.getItem("core-products");
-			const localProducts = storedProducts ? JSON.parse(storedProducts) : [];
-			const lowerCaseSearchTerm = searchValue.toLowerCase();
-			const fieldsToSearch = ["product_name"];
-			const productFilterData = localProducts.filter((product) =>
-				fieldsToSearch.some(
-					(field) =>
-						product[field] &&
-						String(product[field]).toLowerCase().includes(lowerCaseSearchTerm)
-				)
-			);
-			const formattedProductData = productFilterData.map((type) => ({
-				label: type.product_name,
-				value: String(type.id),
-			}));
+		async function fetchData() {
+			if (searchValue.length > 0) {
+				const localProducts = await window.dbAPI.getDataFromTable("core_products");
+				const lowerCaseSearchTerm = searchValue.toLowerCase();
+				const fieldsToSearch = ["product_name"];
+				const productFilterData = localProducts.filter((product) =>
+					fieldsToSearch.some(
+						(field) =>
+							product[field] &&
+							String(product[field]).toLowerCase().includes(lowerCaseSearchTerm)
+					)
+				);
+				const formattedProductData = productFilterData.map((type) => ({
+					label: type.product_name,
+					value: String(type.id),
+				}));
 
-			setProductDropdown(formattedProductData);
-		} else {
-			setProductDropdown([]);
+				setProductDropdown(formattedProductData);
+			} else {
+				setProductDropdown([]);
+			}
 		}
+		fetchData();
 	}, [searchValue]);
 
 	function handleAddProductByProductId(values, myCardProducts, localProducts) {
@@ -137,8 +141,12 @@ function _GenericInvoiceForm(props) {
 		}
 	}
 
-	function updateLocalStorageAndResetForm(addProducts) {
-		localStorage.setItem("temp-sales-products", JSON.stringify(addProducts));
+	async function updateLocalStorageAndResetForm(addProducts) {
+		await Promise.all(
+			addProducts.map(async (product) => {
+				await window.dbAPI.upsertIntoTable("temp_sales_products", product);
+			})
+		);
 		setSearchValue("");
 		form.reset();
 		setLoadCardProducts(true);
@@ -212,26 +220,29 @@ function _GenericInvoiceForm(props) {
 	const [selectProductDetails, setSelectProductDetails] = useState("");
 
 	useEffect(() => {
-		const storedProducts = localStorage.getItem("core-products");
-		const localProducts = storedProducts ? JSON.parse(storedProducts) : [];
+		const getLocalProducts = async () => {
+			const localProducts = await window.dbAPI.getDataFromTable("core_products");
 
-		const filteredProducts = localProducts.filter(
-			(product) => product.id === Number(form.values.product_id)
-		);
+			const filteredProducts = localProducts.filter(
+				(product) => product.id === Number(form.values.product_id)
+			);
 
-		if (filteredProducts.length > 0) {
-			const selectedProduct = filteredProducts[0];
+			if (filteredProducts.length > 0) {
+				const selectedProduct = filteredProducts[0];
 
-			setSelectProductDetails(selectedProduct);
+				setSelectProductDetails(selectedProduct);
 
-			form.setFieldValue("price", selectedProduct.sales_price);
-			form.setFieldValue("sales_price", selectedProduct.sales_price);
-			document.getElementById("quantity").focus();
-		} else {
-			setSelectProductDetails(null);
-			form.setFieldValue("price", "");
-			form.setFieldValue("sales_price", "");
-		}
+				form.setFieldValue("price", selectedProduct.sales_price);
+				form.setFieldValue("sales_price", selectedProduct.sales_price);
+				document.getElementById("quantity").focus();
+			} else {
+				setSelectProductDetails(null);
+				form.setFieldValue("price", "");
+				form.setFieldValue("sales_price", "");
+			}
+		};
+
+		getLocalProducts();
 	}, [form.values.product_id]);
 
 	useEffect(() => {
@@ -334,22 +345,16 @@ function _GenericInvoiceForm(props) {
 					<Box bg={"white"} p={"xs"} className={"borderRadiusAll"}>
 						<Box>
 							<form
-								onSubmit={form.onSubmit((values) => {
+								onSubmit={form.onSubmit(async(values) => {
 									if (!values.barcode && !values.product_id) {
 										form.setFieldError("barcode", true);
 										form.setFieldError("product_id", true);
 										setTimeout(() => {}, 1000);
 									} else {
-										const cardProducts =
-											localStorage.getItem("temp-sales-products");
-										const myCardProducts = cardProducts
-											? JSON.parse(cardProducts)
-											: [];
-										const storedProducts =
-											localStorage.getItem("core-products");
-										const localProducts = storedProducts
-											? JSON.parse(storedProducts)
-											: [];
+										const cardProducts = await window.dbAPI.getDataFromTable("temp_sales_products");
+										const myCardProducts = cardProducts ? cardProducts : [];
+										const storedProducts = await window.dbAPI.getDataFromTable("core_products");
+										const localProducts = storedProducts ? storedProducts : [];
 
 										if (values.product_id && !values.barcode) {
 											if (!allowZeroPercentage) {
@@ -633,15 +638,11 @@ function _GenericInvoiceForm(props) {
 												item.quantity
 											);
 
-											const handlQuantityChange = (e) => {
+											const handlQuantityChange = async (e) => {
 												const editedQuantity = e.currentTarget.value;
 												setEditedQuantity(editedQuantity);
 
-												const tempCardProducts =
-													localStorage.getItem("temp-sales-products");
-												const cardProducts = tempCardProducts
-													? JSON.parse(tempCardProducts)
-													: [];
+												const cardProducts = await window.dbAPI.getDataFromTable("temp_sales_products");
 
 												const updatedProducts = cardProducts.map(
 													(product) => {
@@ -660,10 +661,11 @@ function _GenericInvoiceForm(props) {
 													}
 												);
 
-												localStorage.setItem(
-													"temp-sales-products",
-													JSON.stringify(updatedProducts)
-												);
+												await Promise.all(
+													updatedProducts.map((product) =>
+														window.dbAPI.upsertIntoTable("temp_sales_products", product)
+													)
+												)
 												setLoadCardProducts(true);
 											};
 
@@ -713,12 +715,8 @@ function _GenericInvoiceForm(props) {
 											};
 
 											useEffect(() => {
-												const timeoutId = setTimeout(() => {
-													const tempCardProducts =
-														localStorage.getItem("temp-sales-products");
-													const cardProducts = tempCardProducts
-														? JSON.parse(tempCardProducts)
-														: [];
+												const timeoutId = setTimeout(async() => {
+													const cardProducts = window.dbAPI.getDataFromTable("temp_sales_products") || [];
 													const updatedProducts = cardProducts.map(
 														(product) => {
 															if (
@@ -737,10 +735,11 @@ function _GenericInvoiceForm(props) {
 														}
 													);
 
-													localStorage.setItem(
-														"temp-sales-products",
-														JSON.stringify(updatedProducts)
-													);
+													const promises = updatedProducts.map(async (product) => {
+														await window.dbAPI.upsertIntoTable("temp_sales_products", product);
+													});
+
+													await Promise.all(promises);
 													setLoadCardProducts(true);
 												}, 1000);
 
@@ -775,15 +774,12 @@ function _GenericInvoiceForm(props) {
 											const [editedPercent, setEditedPercent] = useState(
 												item.percent
 											);
-											const handlePercentChange = (e) => {
+											const handlePercentChange = async (e) => {
 												const editedPercent = e.currentTarget.value;
 												setEditedPercent(editedPercent);
 
-												const tempCardProducts =
-													localStorage.getItem("temp-sales-products");
-												const cardProducts = tempCardProducts
-													? JSON.parse(tempCardProducts)
-													: [];
+												const tempCardProducts = await window.dbAPI.getDataFromTable("temp_sales_products");
+												const cardProducts = tempCardProducts || [];
 
 												if (
 													e.currentTarget.value &&
@@ -813,10 +809,16 @@ function _GenericInvoiceForm(props) {
 														}
 													);
 
-													localStorage.setItem(
-														"temp-sales-products",
-														JSON.stringify(updatedProducts)
+													const promises = updatedProducts.map(
+														async (product) => {
+															await window.dbAPI.upsertIntoTable(
+																"temp_sales_products",
+																product
+															);
+														}
 													);
+
+													await Promise.all(promises);
 													setLoadCardProducts(true);
 												}
 											};
@@ -892,26 +894,22 @@ function _GenericInvoiceForm(props) {
 													size="sm"
 													variant="subtle"
 													color="red"
-													onClick={() => {
-														const dataString =
-															localStorage.getItem(
-																"temp-sales-products"
+													onClick={async () => {
+														const tempCardProducts =
+															await window.dbAPI.getDataFromTable(
+																"temp_sales_products"
 															);
-														let data = dataString
-															? JSON.parse(dataString)
-															: [];
+														const cardProducts = tempCardProducts || [];
 
-														data = data.filter(
+														const updatedProducts = cardProducts.filter(
 															(d) => d.product_id !== item.product_id
 														);
 
-														const updatedDataString =
-															JSON.stringify(data);
+														const promises = updatedProducts.map(async (product) => {
+															window.dbAPI.upsertIntoTable("temp_sales_products", product);
+														});
 
-														localStorage.setItem(
-															"temp-sales-products",
-															updatedDataString
-														);
+														await Promise.all(promises);
 														setLoadCardProducts(true);
 													}}
 												>
@@ -937,15 +935,6 @@ function _GenericInvoiceForm(props) {
 					</Box>
 				</Grid.Col>
 			</Grid>
-			{/* {productDrawer && (
-				<AddProductDrawer
-					productDrawer={productDrawer}
-					setProductDrawer={setProductDrawer}
-					setStockProductRestore={setStockProductRestore}
-					focusField={"product_id"}
-					fieldPrefix="sales_"
-				/>
-			)} */}
 		</Box>
 	);
 }
