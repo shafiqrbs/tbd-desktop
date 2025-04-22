@@ -21,6 +21,7 @@ import {
 	Flex,
 	Grid,
 	Stack,
+	Drawer,
 } from "@mantine/core";
 
 import { useDisclosure, useFullscreen, useHotkeys } from "@mantine/hooks";
@@ -33,6 +34,8 @@ import {
 	IconWindowMinimize,
 	IconWifiOff,
 	IconWifi,
+	IconRefresh,
+	IconRefreshAlert,
 } from "@tabler/icons-react";
 import { Link, useNavigate } from "react-router";
 import classes from "./../../assets/css/Header.module.css";
@@ -52,12 +55,15 @@ const languages = [
 	{ label: "BN", value: "bn", flag: flagBD },
 ];
 
+const syncData = ["Sales", "Purchase", "Product", "Customer"];
+
 export default function Header({ isOnline, configData }) {
 	const [opened, { open, close }] = useDisclosure(false);
 	const { t, i18n } = useTranslation();
 	const navigate = useNavigate();
 	const dispatch = useDispatch();
 	const { toggle, fullscreen } = useFullscreen();
+	const [syncPanelOpen, setSyncPanelOpen] = useState(false);
 	const [languageOpened, setLanguageOpened] = useState(false);
 	const [configDataSpot, setConfigData] = useState(null);
 	const [languageSelected, setLanguageSelected] = useState(
@@ -104,6 +110,10 @@ export default function Header({ isOnline, configData }) {
 		navigate("/login");
 	}
 	const list = getActions().reduce((acc, group) => [...acc, ...group.actions], []);
+
+	function toggleSyncPanel() {
+		setSyncPanelOpen(!syncPanelOpen);
+	}
 
 	useHotkeys(
 		[
@@ -420,6 +430,17 @@ export default function Header({ isOnline, configData }) {
 								withArrow
 								arrowPosition="center"
 							>
+								<Tooltip label="Sync Data" bg={`red.5`} withArrow>
+									<ActionIcon
+										mt={"7"}
+										onClick={toggleSyncPanel}
+										variant="filled"
+										color={`white`}
+										bg={`green.8`}
+									>
+										<IconRefresh size={20} />
+									</ActionIcon>
+								</Tooltip>
 								<Menu.Target>
 									<UnstyledButton
 										p={2}
@@ -511,6 +532,34 @@ export default function Header({ isOnline, configData }) {
 					</Grid.Col>
 				</Grid>
 			</Box>
+			{/* ----------- sync information ----------- */}
+			<Drawer
+				position="right"
+				opened={syncPanelOpen}
+				onClose={() => setSyncPanelOpen(false)}
+				title="Syncing Information"
+			>
+				<Divider />
+				{/* Drawer content */}
+
+				<Box mt={20}>
+					{syncData.map((item, index) => (
+						<Flex
+							key={index}
+							gap="xs"
+							justify="space-between"
+							align="center"
+							w={`100%`}
+							mb={14}
+						>
+							<Text size="18px">{item}</Text>
+							<ActionIcon className="sync-button" variant="filled" radius="xl" color="green">
+								<IconRefreshAlert className="sync-icon" color="white" size="18px" />
+							</ActionIcon>
+						</Flex>
+					))}
+				</Box>
+			</Drawer>
 		</>
 	);
 }

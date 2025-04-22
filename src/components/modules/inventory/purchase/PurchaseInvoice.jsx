@@ -32,7 +32,7 @@ function PurchaseInvoice() {
 								allowZeroPercentage={configData?.zero_stock}
 								currencySymbol={configData?.currency?.symbol}
 							/>
-							<Box p={"8"}>
+							<Box p="8">
 								{
 									// configData?.business_model?.slug === 'general' &&
 									<_GenericInvoiceForm
@@ -42,6 +42,7 @@ function PurchaseInvoice() {
 											configData?.is_purchase_by_purchase_price
 										}
 										isWarehouse={configData?.sku_warehouse}
+										isSMSActive={configData?.is_active_sms}
 									/>
 								}
 							</Box>

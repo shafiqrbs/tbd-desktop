@@ -1,17 +1,29 @@
-import { Group, Menu, rem, ActionIcon, Text } from "@mantine/core";
+import {
+	Group,
+	Menu,
+	rem,
+	ActionIcon,
+	Text,
+} from "@mantine/core";
 import { useTranslation } from "react-i18next";
 import classes from "../../../../assets/css/HeaderSearch.module.css";
-import { IconInfoCircle, IconSettings, IconTable } from "@tabler/icons-react";
+import {
+	IconInfoCircle,
+	IconSettings,
+	IconTable,
+} from "@tabler/icons-react";
 import { useLocation, useNavigate } from "react-router";
 
-function _SalesPurchaseHeaderNavbar({ pageTitle }) {
+function _SalesPurchaseHeaderNavbar(props) {
 	const { t } = useTranslation();
 	const links = [
+		{ link: "/inventory/invoice-batch", label: t("InvoiceBatch") },
 		{ link: "/inventory/sales", label: t("Sales") },
 		{ link: "/inventory/sales-invoice", label: t("NewSales") },
 		{ link: "/inventory/purchase", label: t("Purchase") },
 		{ link: "/inventory/purchase-invoice", label: t("NewPurchase") },
 	];
+	const { pageTitle } = props;
 	const navigate = useNavigate();
 	const location = useLocation();
 

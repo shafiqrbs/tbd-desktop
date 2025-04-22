@@ -417,6 +417,24 @@ db.prepare(
 	)`
 ).run();
 
+// temp purchase table
+db.prepare(
+	`
+	CREATE TABLE IF NOT EXISTS temp_purchase_products (
+		id INTEGER PRIMARY KEY,
+		product_id INTEGER,
+		display_name TEXT,
+		quantity REAL,
+		unit_name TEXT,
+		purchase_price REAL,
+		sub_total REAL,
+		sales_price REAL,
+		warehouse_id INTEGER,
+		warehouse_name TEXT,
+		bonus_quantity REAL
+	)`
+).run();
+
 const formatValue = (value) => {
 	if (value === undefined || value === null) return null;
 	try {
