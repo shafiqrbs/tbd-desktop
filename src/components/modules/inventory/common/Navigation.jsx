@@ -13,7 +13,7 @@ import { useNavigate, useOutletContext } from "react-router";
 
 export default function Navigation() {
   const { t } = useTranslation();
-  const { isOnline, mainAreaHeight } = useOutletContext();
+  const { mainAreaHeight } = useOutletContext();
   const height = mainAreaHeight - 20;
   const navigate = useNavigate();
   return (

@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useOutletContext } from "react-router";
-import { Button, rem, Flex, Grid, Box, ScrollArea, Text, Title, Stack } from "@mantine/core";
+import { Button, rem, Flex, Grid, Box, ScrollArea, Text, Title, Stack, LoadingOverlay } from "@mantine/core";
 import { useTranslation } from "react-i18next";
-import { IconCheck, IconDeviceFloppy } from "@tabler/icons-react";
+import { IconCheck, IconDeviceFloppy, IconWifiOff } from "@tabler/icons-react";
 import { useHotkeys } from "@mantine/hooks";
 import { useDispatch } from "react-redux";
 import { hasLength, useForm } from "@mantine/form";
@@ -17,6 +17,7 @@ import TextAreaForm from "../../../form-builders/TextAreaForm";
 import PhoneNumber from "../../../form-builders/PhoneNumberInput.jsx";
 import Shortcut from "../../shortcut/Shortcut.jsx";
 import vendorDataStoreIntoLocalStorage from "../../../global-hook/local-storage/vendorDataStoreIntoLocalStorage.js";
+import OfflineOverlay from "../../../core-component/OfflineOverlay.jsx";
 
 function VendorForm(props) {
 	const { customerDropDownData } = props;
@@ -187,7 +188,8 @@ function VendorForm(props) {
 										</Grid.Col>
 									</Grid>
 								</Box>
-								<Box px="xs" className={"borderRadiusAll"}>
+								<Box pos="relative" px="xs" className={"borderRadiusAll"}>
+									<OfflineOverlay />
 									<ScrollArea
 										h={height}
 										scrollbarSize={2}

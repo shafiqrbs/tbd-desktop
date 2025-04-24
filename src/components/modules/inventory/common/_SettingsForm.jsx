@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { data, useOutletContext } from "react-router";
+import { useOutletContext } from "react-router";
 import {
   Button,
   rem,

@@ -1,8 +1,7 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { useOutletContext } from "react-router";
 import {
   Button,
-  rem,
   Flex,
   Grid,
   Box,
@@ -15,18 +14,13 @@ import {
 } from "@mantine/core";
 import { useTranslation } from "react-i18next";
 import {
-  IconCheck,
   IconDeviceFloppy,
-  IconMessage,
   IconRefreshDot,
-  IconUserCircle,
   IconX,
-  IconXboxX,
 } from "@tabler/icons-react";
-import { useDispatch } from "react-redux";
 import tableCss from "../../../../../assets/css/Table.module.css";
 import { DataTable } from "mantine-datatable";
-import { hasLength, useForm } from "@mantine/form";
+import { useForm } from "@mantine/form";
 import getConfigData from "../../../../global-hook/config-data/getConfigData.js";
 import { IconMinus, IconPlus } from "@tabler/icons-react";
 import TextAreaForm from "../../../../form-builders/TextAreaForm.jsx";
@@ -34,14 +28,12 @@ import TextAreaForm from "../../../../form-builders/TextAreaForm.jsx";
 export default function __AdditionalItems(props) {
   const { closeDrawer, getAdditionalItem } = props;
   const { t } = useTranslation();
-  const dispatch = useDispatch();
   const { isOnline, mainAreaHeight } = useOutletContext();
   const height = mainAreaHeight - 100; //TabList height 104
   const {configData} = getConfigData();
 
   const additionalItemsForm = useForm({});
   const [saveCreateLoading, setSaveCreateLoading] = useState(false);
-  const [refreshCustomerDropdown, setRefreshCustomerDropdown] = useState(false);
   const [disabled, setDisabled] = useState(false);
 
   const form = useForm({

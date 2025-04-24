@@ -51,7 +51,7 @@ import AddCustomerDrawer from "../../inventory/sales/drawer-form/AddCustomerDraw
 import _CommonDrawer from "./drawer/_CommonDrawer.jsx";
 import { useScroll } from "./utils/ScrollOperations";
 import { showNotificationComponent } from "../../../core-component/showNotificationComponent.jsx";
-import { useNetwork } from "@mantine/hooks";
+
 import { formatDate } from "../../../../lib/index.js";
 
 export default function Invoice(props) {
@@ -77,7 +77,6 @@ export default function Invoice(props) {
 		setInvoiceData,
 	} = props;
 
-	const networkStatus = useNetwork();
 	const dispatch = useDispatch();
 	const { t } = useTranslation();
 	const { isOnline, mainAreaHeight } = useOutletContext();
@@ -219,7 +218,7 @@ export default function Invoice(props) {
 
 		// Dispatch and handle response
 		try {
-			if (networkStatus.online) {
+			if (isOnline) {
 				const resultAction = await dispatch(storeEntityData(data));
 
 				if (resultAction.payload?.status !== 200) {
@@ -501,7 +500,7 @@ export default function Invoice(props) {
 		const fetchData = async () => {
 			setIsDisabled(true);
 			try {
-				if (networkStatus.online) {
+				if (isOnline) {
 					const resultAction = await dispatch(
 						getIndexEntityData({
 							url: "inventory/pos/sales-complete/" + invoiceData.id,
@@ -1375,7 +1374,7 @@ export default function Invoice(props) {
 															);
 
 															try {
-																if (networkStatus.online) {
+																if (isOnline) {
 																	const resultAction =
 																		await dispatch(
 																			storeEntityData(data)
@@ -1451,7 +1450,7 @@ export default function Invoice(props) {
 													};
 													// Dispatch and handle response
 													try {
-														if (networkStatus.online) {
+														if (isOnline) {
 															const resultAction = await dispatch(
 																storeEntityData(data)
 															);
@@ -1532,7 +1531,7 @@ export default function Invoice(props) {
 
 												// Dispatch and handle response
 												try {
-													if (networkStatus.online) {
+													if (isOnline) {
 														const resultAction = await dispatch(
 															storeEntityData(data)
 														);
@@ -1663,7 +1662,7 @@ export default function Invoice(props) {
 													}));
 												}
 
-												if (!networkStatus.online) {
+												if (!isOnline) {
 													await window.dbAPI.updateDataInTable(
 														"invoice_table",
 														{

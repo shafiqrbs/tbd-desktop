@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNetwork } from "@mantine/hooks";
+
 import { useOutletContext } from "react-router";
 import { Box, Progress } from "@mantine/core";
 import { useTranslation } from "react-i18next";
@@ -14,8 +14,7 @@ import getConfigData from "../../../global-hook/config-data/getConfigData.js";
 
 export default function BakeryIndex() {
 	const [categories, setCategories] = useState([]);
-	const networkStatus = useNetwork();
-	const { mainAreaHeight } = useOutletContext();
+	const {isOnline, mainAreaHeight } = useOutletContext();
 	const height = mainAreaHeight - 130;
 	const { t } = useTranslation();
 	const dispatch = useDispatch();
@@ -60,7 +59,7 @@ export default function BakeryIndex() {
 			setCategories(categories.map(({ name, id }) => ({ label: name, value: String(id) })));
 		}
 		refetchCategories();
-	}, [networkStatus.online]);
+	}, [isOnline]);
 
 	// ✅ Category Dropdown Data Transformation (Using `useMemo`)
 	const categoryDropdown = useMemo(() => {
@@ -81,7 +80,7 @@ export default function BakeryIndex() {
 	// ✅ Optimized Data Fetching
 	useEffect(() => {
 		const fetchData = async () => {
-			if (networkStatus.online) {
+			if (isOnline) {
 				try {
 					const resultAction = await dispatch(
 						getIndexEntityData({
@@ -106,13 +105,13 @@ export default function BakeryIndex() {
 			}
 		};
 		fetchData();
-	}, [networkStatus.online, dispatch]);
+	}, [isOnline, dispatch]);
 
 	useEffect(() => {
 		if (tableId === null) return;
 		const fetchData = async () => {
 			try {
-				if (networkStatus.online) {
+				if (isOnline) {
 					const resultAction = await dispatch(
 						getIndexEntityData({
 							url: "inventory/pos/invoice-details",
@@ -144,7 +143,7 @@ export default function BakeryIndex() {
 			}
 		};
 		fetchData();
-	}, [dispatch, tableId, reloadInvoiceData, networkStatus.online]);
+	}, [dispatch, tableId, reloadInvoiceData, isOnline]);
 
 	// ✅ Memoized Active Table Extraction
 	const tableIdMemoized = useMemo(() => {

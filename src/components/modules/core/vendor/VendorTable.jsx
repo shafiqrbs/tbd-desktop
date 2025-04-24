@@ -19,13 +19,12 @@ import { deleteEntityData } from "../../../../store/core/crudSlice";
 import tableCss from "../../../../assets/css/Table.module.css";
 import VendorViewDrawer from "./VendorViewDrawer.jsx";
 import { notifications } from "@mantine/notifications";
-import { useNetwork } from "@mantine/hooks";
+
 
 function VendorTable() {
-	const networkStatus = useNetwork();
+	const { isOnline, mainAreaHeight} = useOutletContext();
 	const dispatch = useDispatch();
 	const { t } = useTranslation();
-	const { mainAreaHeight } = useOutletContext();
 	const height = mainAreaHeight - 98; //TabList height 104
 
 	const perPage = 50;
@@ -70,7 +69,7 @@ function VendorTable() {
 		};
 
 		try {
-			if (networkStatus.online) {
+			if (isOnline) {
 				const resultAction = await dispatch(getIndexEntityData(value));
 				setIndexData(resultAction.payload);
 			} else {
@@ -113,7 +112,7 @@ function VendorTable() {
 
 	useEffect(() => {
 		fetchData();
-	}, [dispatch, searchKeyword, filters, page, networkStatus.online]);
+	}, [dispatch, searchKeyword, filters, page, isOnline]);
 
 	useEffect(() => {
 		if (fetchingReload) {
@@ -244,34 +243,36 @@ function VendorTable() {
 											</ActionIcon>
 										</Menu.Target>
 										<Menu.Dropdown>
-											<Menu.Item
-												onClick={() => {
-													dispatch(
-														setInsertType({
-															module: "core",
-															value: "update",
-														})
-													);
-													dispatch(
-														editEntityData({
-															url: `core/vendor/${data.id}`,
-															module: "core",
-														})
-													);
-													dispatch(
-														setFormLoading({
-															module: "core",
-															value: true,
-														})
-													);
-													navigate(`/core/vendor/${data.id}`);
-												}}
-												target="_blank"
-												component="a"
-												w={"200"}
-											>
-												{t("Edit")}
-											</Menu.Item>
+											{isOnline && (
+												<Menu.Item
+													onClick={() => {
+														dispatch(
+															setInsertType({
+																module: "core",
+																value: "update",
+															})
+														);
+														dispatch(
+															editEntityData({
+																url: `core/vendor/${data.id}`,
+																module: "core",
+															})
+														);
+														dispatch(
+															setFormLoading({
+																module: "core",
+																value: true,
+															})
+														);
+														navigate(`/core/vendor/${data.id}`);
+													}}
+													target="_blank"
+													component="a"
+													w={"200"}
+												>
+													{t("Edit")}
+												</Menu.Item>
+											)}
 
 											<Menu.Item
 												onClick={() => {
@@ -307,54 +308,59 @@ function VendorTable() {
 											>
 												{t("Show")}
 											</Menu.Item>
-											<Menu.Item
-												target="_blank"
-												component="a"
-												w={"200"}
-												mt={"2"}
-												bg={"red.1"}
-												c={"red.6"}
-												onClick={() => {
-													modals.openConfirmModal({
-														title: (
-															<Text size="md">
-																{" "}
-																{t("FormConfirmationTitle")}
-															</Text>
-														),
-														children: (
-															<Text size="sm">
-																{" "}
-																{t("FormConfirmationMessage")}
-															</Text>
-														),
-														labels: {
-															confirm: "Confirm",
-															cancel: "Cancel",
-														},
-														confirmProps: { color: "red.6" },
-														onCancel: () => console.warn("Cancel"),
-														onConfirm: () => {
-															dispatch(
-																deleteEntityData(
-																	`core/vendor/${data.id}`
-																)
-															);
-															window.dbAPI.deleteDataFromTable(
-																"core-vendors",
-																data.id
-															);
-														},
-													});
-												}}
-												rightSection={
-													<IconTrashX
-														style={{ width: rem(14), height: rem(14) }}
-													/>
-												}
-											>
-												{t("Delete")}
-											</Menu.Item>
+											{isOnline && (
+												<Menu.Item
+													target="_blank"
+													component="a"
+													w={"200"}
+													mt={"2"}
+													bg={"red.1"}
+													c={"red.6"}
+													onClick={() => {
+														modals.openConfirmModal({
+															title: (
+																<Text size="md">
+																	{" "}
+																	{t("FormConfirmationTitle")}
+																</Text>
+															),
+															children: (
+																<Text size="sm">
+																	{" "}
+																	{t("FormConfirmationMessage")}
+																</Text>
+															),
+															labels: {
+																confirm: "Confirm",
+																cancel: "Cancel",
+															},
+															confirmProps: { color: "red.6" },
+															onCancel: () => console.warn("Cancel"),
+															onConfirm: () => {
+																dispatch(
+																	deleteEntityData(
+																		`core/vendor/${data.id}`
+																	)
+																);
+																window.dbAPI.deleteDataFromTable(
+																	"core-vendors",
+																	data.id
+																);
+															},
+														});
+													}}
+													rightSection={
+														<IconTrashX
+															style={{
+																width: rem(14),
+																height: rem(14),
+															}}
+														/>
+													}
+												>
+													{t("Delete")}
+												</Menu.Item>
+											)}
 										</Menu.Dropdown>
 									</Menu>
 								</Group>

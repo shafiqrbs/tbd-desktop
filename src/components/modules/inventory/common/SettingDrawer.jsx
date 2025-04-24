@@ -1,15 +1,12 @@
-import React from "react";
 import { useOutletContext } from "react-router";
-import { ActionIcon, Box, ScrollArea, Drawer, Text, Flex } from "@mantine/core";
-import { useTranslation } from "react-i18next";
+import { ActionIcon, Box, ScrollArea, Drawer, Flex } from "@mantine/core";
 
 import { IconX } from "@tabler/icons-react";
 import _SettingsForm from "./_SettingsForm.jsx";
 
 function SettingDrawer(props) {
   const { settingDrawer, setSettingDrawer, module } = props;
-  const { isOnline, mainAreaHeight } = useOutletContext();
-  const { t, i18n } = useTranslation();
+  const { mainAreaHeight } = useOutletContext();
   const height = mainAreaHeight; //TabList height 104
   const closeDrawer = () => {
     setSettingDrawer(false);

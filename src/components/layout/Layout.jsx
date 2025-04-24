@@ -9,9 +9,11 @@ import { useNetwork } from "@mantine/hooks";
 import getConfigData from "../global-hook/config-data/getConfigData";
 import { useDispatch } from "react-redux";
 import { setMenu } from "../../store/core/crudSlice";
+import { notifications } from "@mantine/notifications";
 
 const Layout = () => {
 	const networkStatus = useNetwork();
+	const [isOnline, setIsOnline] = useState(networkStatus.online);
 	const { height } = useViewportSize();
 	const location = useLocation();
 	const paramPath = location.pathname;
@@ -62,6 +64,32 @@ const Layout = () => {
 		initializeData();
 	}, []);
 
+	useEffect(() => {
+		if(!networkStatus.online && isOnline) {
+			setIsOnline(false);
+		}
+	}, [networkStatus.online])
+
+	const toggleNetwork = () => {
+		if(!networkStatus.online) {
+			notifications.show({
+				title: "Network Status",
+				message: "⚠️ No internet connection, check your connection",
+				color: "red",
+				autoClose: 3000,
+			});
+			return setIsOnline(false);
+		}
+
+		notifications.show({
+			title: "Network Status",
+			message: !isOnline ? "Internet connection is restored" : "App is now in offline mode",
+			color: !isOnline ? "teal" : "red",
+			autoClose: 3000,
+		});
+		setIsOnline(prev => !prev);
+	}
+
 	if (isLoading) {
 		return (
 			<Center h="100vh">
@@ -86,11 +114,11 @@ const Layout = () => {
 	return (
 		<AppShell padding="0">
 			<AppShell.Header height={headerHeight} bg="gray.0">
-				<Header isOnline={networkStatus.online} configData={configData} />
+				<Header isOnline={isOnline} toggleNetwork={toggleNetwork} configData={configData} />
 			</AppShell.Header>
 			<AppShell.Main>
 				{paramPath !== "/" ? (
-					<Outlet context={{ isOnline: networkStatus.online, mainAreaHeight }} />
+					<Outlet context={{ isOnline, toggleNetwork, mainAreaHeight }} />
 				) : (
 					<MainDashboard height={mainAreaHeight} configData={configData} />
 				)}

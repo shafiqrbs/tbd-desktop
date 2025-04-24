@@ -6,7 +6,6 @@ import {
 	Text,
 	SimpleGrid,
 	ThemeIcon,
-	Anchor,
 	Divider,
 	Center,
 	Box,
@@ -17,11 +16,11 @@ import {
 	Kbd,
 	Menu,
 	Modal,
-	NavLink,
 	Flex,
 	Grid,
 	Stack,
 	Drawer,
+	Paper,
 } from "@mantine/core";
 
 import { useDisclosure, useFullscreen, useHotkeys } from "@mantine/hooks";
@@ -35,7 +34,6 @@ import {
 	IconWifiOff,
 	IconWifi,
 	IconRefresh,
-	IconRefreshAlert,
 } from "@tabler/icons-react";
 import { Link, useNavigate } from "react-router";
 import classes from "./../../assets/css/Header.module.css";
@@ -57,7 +55,7 @@ const languages = [
 
 const syncData = ["Sales", "Purchase", "Product", "Customer"];
 
-export default function Header({ isOnline, configData }) {
+export default function Header({ isOnline, toggleNetwork, configData }) {
 	const [opened, { open, close }] = useDisclosure(false);
 	const { t, i18n } = useTranslation();
 	const navigate = useNavigate();
@@ -267,37 +265,26 @@ export default function Header({ isOnline, configData }) {
 								}}
 								className="brand-logo"
 							>
-								<Anchor
-									target="_blank"
-									underline="never"
+								<Box
 									onClick={() => {
 										navigate("/");
 									}}
-									onAuxClick={(e) => {
-										if (e.button === 1) {
-											window.open("/", "_blank");
-										}
-									}}
 								>
 									<Image mah={40} radius="md" src={Sandra_Logo} pl={6}></Image>
-								</Anchor>
+								</Box>
 							</div>
 						) : (
-							<NavLink
-								href="/"
+							<Box
 								c={"white"}
 								fw={"800"}
 								component="button"
-								label={
-									configData && configData?.domain
-										? configData.domain?.company_name
-										: ""
-								}
-								onClick={() => {
-									navigate("/");
-								}}
 								className="brand-logo"
-							/>
+								onClick={() => navigate("/")}
+							>
+								{configData && configData?.domain
+									? configData.domain?.company_name
+									: ""}
+							</Box>
 						)}
 					</Grid.Col>
 					<Grid.Col span={3} justify="flex-end" align={"center"} mt={"xs"}>
@@ -432,11 +419,12 @@ export default function Header({ isOnline, configData }) {
 							>
 								<Tooltip label="Sync Data" bg={`red.5`} withArrow>
 									<ActionIcon
+										disabled={!isOnline}
 										mt={"7"}
 										onClick={toggleSyncPanel}
 										variant="filled"
 										color={`white`}
-										bg={`green.8`}
+										bg={isOnline ? "green.8" : "gray.1"}
 									>
 										<IconRefresh size={20} />
 									</ActionIcon>
@@ -520,6 +508,7 @@ export default function Header({ isOnline, configData }) {
 									variant="filled"
 									radius="xl"
 									color={isOnline ? "green.5" : "red.5"}
+									onClick={toggleNetwork}
 								>
 									{isOnline ? (
 										<IconWifi color={"white"} size={24} />
@@ -537,28 +526,40 @@ export default function Header({ isOnline, configData }) {
 				position="right"
 				opened={syncPanelOpen}
 				onClose={() => setSyncPanelOpen(false)}
+				padding="lg"
+				size="md"
+				overlayProps={{
+					backgroundOpacity: 0.55,
+				}}
 				title="Syncing Information"
+				styles={{
+					title: { fontWeight: 600, fontSize: rem(20), color: "#626262" },
+				}}
 			>
-				<Divider />
-				{/* Drawer content */}
+				<Divider mb="md" />
 
-				<Box mt={20}>
+				<Stack gap="md">
 					{syncData.map((item, index) => (
-						<Flex
-							key={index}
-							gap="xs"
-							justify="space-between"
-							align="center"
-							w={`100%`}
-							mb={14}
-						>
-							<Text size="18px">{item}</Text>
-							<ActionIcon className="sync-button" variant="filled" radius="xl" color="green">
-								<IconRefreshAlert className="sync-icon" color="white" size="18px" />
-							</ActionIcon>
-						</Flex>
+						<Paper key={index} p="md" radius="md" withBorder shadow="sm">
+							<Group justify="space-between" wrap="nowrap">
+								<Text fw={500}>{item}</Text>
+								<ActionIcon
+									variant="filled"
+									radius="xl"
+									color="teal"
+									size="28px"
+									className="sync-button"
+								>
+									<IconRefresh className="sync-icon" size={20} />
+								</ActionIcon>
+							</Group>
+						</Paper>
 					))}
-				</Box>
+				</Stack>
+
+				<Text size="xs" c="dimmed" mt="xl" ta="center">
+					Last synchronized: Today at 14:35
+				</Text>
 			</Drawer>
 		</>
 	);

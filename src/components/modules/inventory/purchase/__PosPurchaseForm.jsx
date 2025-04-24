@@ -21,7 +21,7 @@ export default function __PosPurchaseForm(props) {
 
 	//common hooks
 	const { t } = useTranslation();
-	const { isOnline, mainAreaHeight } = useOutletContext();
+	const { mainAreaHeight } = useOutletContext();
 	const height = mainAreaHeight - 170;
 	const [fetching] = useState(false);
 	const dispatch = useDispatch();

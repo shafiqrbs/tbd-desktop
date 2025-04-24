@@ -4,7 +4,8 @@ import { useScroll } from "./bakery/utils/ScrollOperations";
 import { storeEntityData } from "../../../store/core/crudSlice.js";
 import { useDispatch } from "react-redux";
 import { showNotificationComponent } from "../../core-component/showNotificationComponent.jsx";
-import { useNetwork } from "@mantine/hooks";
+import { useOutletContext } from "react-router";
+
 
 function HeaderNavbar({
 	tables,
@@ -14,7 +15,7 @@ function HeaderNavbar({
 	setCustomerObject,
 	invoiceMode,
 }) {
-	const networkStatus = useNetwork();
+	const { isOnline } = useOutletContext();
 	const dispatch = useDispatch();
 	const { scrollRef, showLeftArrow, showRightArrow, handleScroll, scroll } = useScroll();
 
@@ -44,7 +45,7 @@ function HeaderNavbar({
 
 		// Dispatch and handle response
 		try {
-			if (networkStatus.online) {
+			if (isOnline) {
 				const resultAction = await dispatch(storeEntityData(data));
 
 				if (resultAction.payload?.status !== 200) {

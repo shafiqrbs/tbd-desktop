@@ -36,7 +36,7 @@ import SelectForm from "../../../../form-builders/SelectForm.jsx";
 import TextAreaForm from "../../../../form-builders/TextAreaForm.jsx";
 import tableCss from "../../../../../assets/css/Table.module.css";
 import { DataTable } from "mantine-datatable";
-import { useNetwork } from "@mantine/hooks";
+
 
 function _AddCustomerFormPos(props) {
 	const {
@@ -57,7 +57,6 @@ function _AddCustomerFormPos(props) {
 	} = props;
 
 	const { t } = useTranslation();
-	const networkStatus = useNetwork();
 	const dispatch = useDispatch();
 	const { isOnline, mainAreaHeight } = useOutletContext();
 	const height = mainAreaHeight - 100; //TabList height 104
@@ -533,7 +532,7 @@ function _AddCustomerFormPos(props) {
 
 												// Dispatch and handle response
 												try {
-													if (networkStatus.online) {
+													if (isOnline) {
 														await dispatch(storeEntityData(data));
 													} else {
 														await window.dbAPI.updateDataInTable(

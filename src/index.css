@@ -263,6 +263,15 @@ input[type=radio]:checked+label>img {
   background-color: #905a23 !important;
 }
 
+.brand-logo {
+  background: #905a23 !important;
+  height: 100% !important;
+  padding-inline: 20px;
+  text-wrap: nowrap;
+  font-size: 14px;
+  border: none;
+  cursor: pointer;
+}
 .brand-logo:hover {
   background: #684119 !important;
 }

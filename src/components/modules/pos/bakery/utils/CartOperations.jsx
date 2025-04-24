@@ -4,7 +4,8 @@ import { useTranslation } from "react-i18next";
 import { storeEntityData } from "../../../../../store/core/crudSlice";
 import { useDispatch } from "react-redux";
 import { showNotificationComponent } from "../../../../core-component/showNotificationComponent";
-import { useNetwork } from "@mantine/hooks";
+import { useOutletContext } from "react-router";
+
 
 export const useCartOperations = ({
 	enableTable,
@@ -17,7 +18,7 @@ export const useCartOperations = ({
 	setTables,
 	setReloadInvoiceData,
 }) => {
-	const networkStatus = useNetwork();
+	const { isOnline } = useOutletContext();
 	const { t } = useTranslation();
 	const dispatch = useDispatch();
 	const getStorageKey = useCallback(() => {
@@ -70,7 +71,7 @@ export const useCartOperations = ({
 				module: "pos",
 			};
 			try {
-				if (networkStatus.online) {
+				if (isOnline) {
 					const resultAction = await dispatch(storeEntityData(data));
 
 					if (resultAction.payload?.status !== 200) {
@@ -138,7 +139,7 @@ export const useCartOperations = ({
 				setReloadInvoiceData(true);
 			}
 		},
-		[products, tableId, dispatch, setReloadInvoiceData, networkStatus.online]
+		[products, tableId, dispatch, setReloadInvoiceData, isOnline]
 	);
 
 	const handleDecrement = useCallback(
@@ -185,7 +186,7 @@ export const useCartOperations = ({
 			localStorage.setItem(getStorageKey(), JSON.stringify(updatedProducts));
 			setLoadCartProducts(true);
 		},
-		[getCartProducts, getStorageKey, updateTableStatusIfNeeded, setLoadCartProducts, networkStatus.online]
+		[getCartProducts, getStorageKey, updateTableStatusIfNeeded, setLoadCartProducts, isOnline]
 	);
 
 	const handleClearCart = useCallback(() => {

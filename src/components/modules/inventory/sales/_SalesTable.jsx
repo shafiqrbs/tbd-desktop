@@ -28,7 +28,7 @@ import {
 } from "@tabler/icons-react";
 import { DataTable } from "mantine-datatable";
 import { useDispatch, useSelector } from "react-redux";
-import { useHotkeys, useNetwork } from "@mantine/hooks";
+import { useHotkeys } from "@mantine/hooks";
 import {
 	deleteEntityData,
 	getIndexEntityData,
@@ -46,13 +46,11 @@ import { showNotificationComponent } from "../../../core-component/showNotificat
 import SalesPrintThermal from "./print-component/SalesPrintThermal.jsx";
 
 function _SalesTable() {
-	const networkStatus = useNetwork();
-	const [forceOffline, setForceOffline] = useState(!networkStatus?.online);
 	const navigate = useNavigate();
 	const printRef = useRef();
 	const dispatch = useDispatch();
 	const { t } = useTranslation();
-	const { mainAreaHeight } = useOutletContext();
+	const {isOnline, mainAreaHeight } = useOutletContext();
 	const tableHeight = mainAreaHeight - 106; //TabList height 104
 	const height = mainAreaHeight - 304; //TabList height 104
 
@@ -88,7 +86,7 @@ function _SalesTable() {
 	useEffect(() => {
 		setSalesViewData(indexData?.data?.data[0]);
 		setSelectedRow(indexData?.data?.data[0]?.invoice);
-	}, [indexData?.data, networkStatus?.online]);
+	}, [indexData?.data, isOnline]);
 
 	useHotkeys(
 		[
@@ -102,7 +100,7 @@ function _SalesTable() {
 		[]
 	);
 
-	const salesItems = networkStatus.online
+	const salesItems = isOnline
 		? salesViewData?.sales_items
 		: Array.isArray(salesViewData?.sales_items)
 		? salesViewData?.sales_items
@@ -189,7 +187,7 @@ function _SalesTable() {
 		};
 
 		try {
-			if (networkStatus.online && !forceOffline) {
+			if (isOnline) {
 				const resultAction = await dispatch(getIndexEntityData(value));
 
 				if (getIndexEntityData.rejected.match(resultAction)) {
@@ -216,7 +214,7 @@ function _SalesTable() {
 
 	useEffect(() => {
 		fetchData();
-	}, [salesFilterData, page, networkStatus.online, forceOffline]);
+	}, [salesFilterData, page, isOnline]);
 
 	const [checkList, setCheckList] = useState({});
 	const CheckItemsHandel = (e, item) => {
@@ -318,8 +316,6 @@ function _SalesTable() {
 								<Grid.Col>
 									<Stack>
 										<_SalesSearch
-											forceOffline={forceOffline} 
-											setForceOffline={setForceOffline}
 											checkList={checkList}
 											customerId={salesFilterData?.customer_id}
 										/>
