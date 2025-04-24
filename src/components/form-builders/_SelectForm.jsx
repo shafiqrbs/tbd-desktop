@@ -1,9 +1,8 @@
-import { React, forwardRef } from "react";
+import { forwardRef } from "react";
 import {
     Tooltip,
     Select
 } from "@mantine/core";
-import { getHotkeyHandler } from "@mantine/hooks";
 
 function _SelectForm(props, ref) {
     const {

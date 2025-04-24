@@ -82,7 +82,6 @@ export default function __PosCustomerSection(props) {
                       label=""
                       placeholder={t("Jhon Dee")}
                       required={false}
-                      nextField={""}
                       name={"customer_id"}
                       form={form}
                       dropdownValue={customersDropdownData}
@@ -301,7 +300,6 @@ export default function __PosCustomerSection(props) {
                   label={t("")}
                   placeholder={t("Email")}
                   required={false}
-                  nextField={""}
                   name={"email"}
                   form={form}
                   id={"email"}

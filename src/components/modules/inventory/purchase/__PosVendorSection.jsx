@@ -79,7 +79,6 @@ export default function __PosVendorSection(props) {
 											label=""
 											placeholder={t("Jhon Dee")}
 											required={false}
-											nextField={""}
 											name={"vendor_id"}
 											form={form}
 											dropdownValue={vendorsDropdownData}
@@ -300,7 +299,6 @@ export default function __PosVendorSection(props) {
 									label={t("")}
 									placeholder={t("Email")}
 									required={false}
-									nextField={""}
 									name={"email"}
 									form={form}
 									id={"email"}

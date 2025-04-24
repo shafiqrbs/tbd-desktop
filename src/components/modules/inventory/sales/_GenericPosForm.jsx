@@ -59,7 +59,7 @@ function _GenericPosForm(props) {
 
 	//common hooks and variables
 	const { t } = useTranslation();
-	const { isOnline, mainAreaHeight } = useOutletContext();
+	const { mainAreaHeight } = useOutletContext();
 	const height = mainAreaHeight - 360;
 
 	//segmented control
@@ -992,7 +992,6 @@ function _GenericPosForm(props) {
 												label=""
 												placeholder={t("Barcode")}
 												required={true}
-												nextField={""}
 												form={form}
 												name={"barcode"}
 												id={"barcode"}
@@ -1017,7 +1016,6 @@ function _GenericPosForm(props) {
 															label=""
 															placeholder={t("Price")}
 															required={false}
-															nextField={""}
 															name={"multi_price"}
 															form={form}
 															dropdownValue={[
@@ -1090,7 +1088,6 @@ function _GenericPosForm(props) {
 															label=""
 															placeholder={t("Unit")}
 															required={false}
-															nextField={""}
 															name={"unit_id"}
 															form={form}
 															dropdownValue={["pcs", "kg"]}

@@ -9,7 +9,6 @@ import { IconPercentage, IconSum, IconX } from "@tabler/icons-react";
 import { useOutletContext } from "react-router";
 import __PosInvoiceSection from "./__PosInvoiceSection.jsx";
 import { getHotkeyHandler, useToggle } from "@mantine/hooks";
-import customerDataStoreIntoLocalStorage from "../../../global-hook/local-storage/customerDataStoreIntoLocalStorage.js";
 import { useDispatch } from "react-redux";
 import { notifications } from "@mantine/notifications";
 import { IconCheck } from "@tabler/icons-react";
@@ -27,7 +26,7 @@ export default function __PosSalesForm(props) {
 
   //common hooks
   const { t } = useTranslation();
-  const { isOnline, mainAreaHeight } = useOutletContext();
+  const { mainAreaHeight } = useOutletContext();
   const height = mainAreaHeight - 170;
   const [fetching, setFetching] = useState(false);
   const dispatch = useDispatch();
@@ -64,9 +63,7 @@ export default function __PosSalesForm(props) {
   // setting defualt customer
   useEffect(() => {
     const fetchCustomers = async () => {
-      await customerDataStoreIntoLocalStorage();
-      let coreCustomers = localStorage.getItem("core-customers");
-      coreCustomers = coreCustomers ? JSON.parse(coreCustomers) : [];
+      const coreCustomers = await window.dbAPI.getDataFromTable("core-customers");
       let defaultId = defaultCustomerId;
       if (coreCustomers && coreCustomers.length > 0) {
         const transformedData = coreCustomers.map((type) => {
@@ -158,10 +155,9 @@ export default function __PosSalesForm(props) {
   return (
     <>
       <form
-        onSubmit={form.onSubmit((values) => {
-          const tempProducts = localStorage.getItem("temp-sales-products");
-          let items = tempProducts ? JSON.parse(tempProducts) : [];
-          let createdBy = JSON.parse(localStorage.getItem("user"));
+        onSubmit={form.onSubmit(async(values) => {
+          const items = await window.dbAPI.getDataFromTable("temp_sales_products");
+          let createdBy = await window.dbAPI.getData("users");
 
           let transformedArray = items.map((product) => {
             return {
@@ -382,7 +378,7 @@ export default function __PosSalesForm(props) {
                       item.quantity
                     );
 
-                    const handleQuantityChange = (e) => {
+                    const handleQuantityChange = async(e) => {
                       const editedQuantity = e.currentTarget.value;
                       setEditedQuantity(editedQuantity);
 
@@ -404,9 +400,9 @@ export default function __PosSalesForm(props) {
                         return product;
                       });
 
-                      localStorage.setItem(
-                        "temp-sales-products",
-                        JSON.stringify(updatedProducts)
+                      await window.dbAPI.upsertIntoTable(
+                        "temp_sales_products",
+                        updatedProducts
                       );
                       setLoadCardProducts(true);
                     };
@@ -457,13 +453,8 @@ export default function __PosSalesForm(props) {
                     };
 
                     useEffect(() => {
-                      const timeoutId = setTimeout(() => {
-                        const tempCardProducts = localStorage.getItem(
-                          "temp-sales-products"
-                        );
-                        const cardProducts = tempCardProducts
-                          ? JSON.parse(tempCardProducts)
-                          : [];
+                      const timeoutId = setTimeout(async() => {
+                        const cardProducts = await window.dbAPI.getDataFromTable("temp_sales_products") || [];
                         const updatedProducts = cardProducts.map((product) => {
                           if (product.product_id === item.product_id) {
                             return {
@@ -475,9 +466,9 @@ export default function __PosSalesForm(props) {
                           return product;
                         });
 
-                        localStorage.setItem(
-                          "temp-sales-products",
-                          JSON.stringify(updatedProducts)
+                        await window.dbAPI.upsertIntoTable(
+                          "temp_sales_products",
+                          updatedProducts
                         );
                         setLoadCardProducts(true);
                       }, 1000);
@@ -510,16 +501,13 @@ export default function __PosSalesForm(props) {
                     const [editedPercent, setEditedPercent] = useState(
                       item.percent
                     );
-                    const handlePercentChange = (e) => {
+                    const handlePercentChange = async(e) => {
                       const editedPercent = e.currentTarget.value;
                       setEditedPercent(editedPercent);
 
-                      const tempCardProducts = localStorage.getItem(
-                        "temp-sales-products"
-                      );
-                      const cardProducts = tempCardProducts
-                        ? JSON.parse(tempCardProducts)
-                        : [];
+                      const cardProducts = await window.dbAPI.getDataFromTable(
+                        "temp_sales_products"
+                      ) || [];
 
                       if (e.currentTarget.value && e.currentTarget.value >= 0) {
                         const updatedProducts = cardProducts.map((product) => {
@@ -538,9 +526,9 @@ export default function __PosSalesForm(props) {
                           return product;
                         });
 
-                        localStorage.setItem(
-                          "temp-sales-products",
-                          JSON.stringify(updatedProducts)
+                        await window.dbAPI.upsertIntoTable(
+                          "temp_sales_products",
+                          updatedProducts
                         );
                         setLoadCardProducts(true);
                       }
@@ -609,9 +597,9 @@ export default function __PosSalesForm(props) {
                         variant="outline"
                         radius="xl"
                         color="red"
-                        onClick={() => {
-                          const dataString = localStorage.getItem(
-                            "temp-sales-products"
+                        onClick={async() => {
+                          const dataString = await window.dbAPI.getDataFromTable(
+                            "temp_sales_products"
                           );
                           let data = dataString ? JSON.parse(dataString) : [];
 

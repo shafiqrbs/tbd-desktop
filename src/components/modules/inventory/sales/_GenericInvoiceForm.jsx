@@ -478,7 +478,6 @@ function _GenericInvoiceForm(props) {
 													label=""
 													placeholder={t("Barcode")}
 													required={true}
-													nextField={""}
 													form={form}
 													name={"barcode"}
 													id={"barcode"}
@@ -1143,7 +1142,6 @@ function _GenericInvoiceForm(props) {
 													label=""
 													placeholder={t("Barcode")}
 													required={true}
-													nextField={""}
 													form={form}
 													name={"barcode"}
 													id={"barcode"}

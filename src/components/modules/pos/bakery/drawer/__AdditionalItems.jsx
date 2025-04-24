@@ -243,7 +243,6 @@ export default function __AdditionalItems(props) {
                         label={t("")}
                         placeholder={t("Comment")}
                         // required={true}
-                        nextField={""}
                         form={form}
                         name={"comment"}
                         id={"comment"}

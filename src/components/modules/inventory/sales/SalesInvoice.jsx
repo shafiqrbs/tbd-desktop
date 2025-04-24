@@ -9,7 +9,7 @@ import _GenericPosForm from "./_GenericPosForm.jsx";
 
 function SalesInvoice() {
 	const { t } = useTranslation();
-	const insertType = useSelector((state) => state.crudSlice.data?.sales?.insertType || "create");
+	const insertType = useSelector((state) => state.crudSlice?.data?.sales?.insertType || "create");
 	const progress = getLoadingProgress();
 	const { configData } = getConfigData();
 	return (

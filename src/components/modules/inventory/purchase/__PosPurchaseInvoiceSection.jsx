@@ -55,29 +55,32 @@ export default function __PosPurchaseInvoiceSection(props) {
 	//common hooks
 	const { isOnline } = useOutletContext();
 	const { t } = useTranslation();
-	const [transactionModeData, setTransactionModeData] = useState([]);
+	const [
+		transactionModeData, setTransactionModeData] = useState([]);
 
 	useEffect(() => {
 		async function fetchTransactionData() {
 			const data = await window.dbAPI.getDataFromTable("accounting_transaction_mode");
 			setTransactionModeData(data);
+
 		}
 		fetchTransactionData();
 	}, []);
 
-	useEffect(() => {
-		if (transactionModeData && transactionModeData.length > 0) {
-			for (let mode of transactionModeData) {
-				if (mode.is_selected) {
-					form.setFieldValue(
-						"transaction_mode_id",
-						form.values.transaction_mode_id ? form.values.transaction_mode_id : mode.id
-					);
-					break;
-				}
-			}
-		}
-	}, [transactionModeData, form]);
+	// useEffect(() => {
+	// 	if (transactionModeData.length > 0) {
+	// 		for (let mode of transactionModeData) {
+	// 			if (mode.is_selected) {
+	// 				form.setFieldValue(
+	// 					"transaction_mode_id",
+	// 					form.values.transaction_mode_id ? form.values.transaction_mode_id : mode.id
+	// 				);
+	// 				break;
+	// 			}
+	// 		}
+	// 	}
+	// }, [transactionModeData, form]);
+
 	// transaction modes hover hook
 	const [hoveredModeId, setHoveredModeId] = useState(false);
 

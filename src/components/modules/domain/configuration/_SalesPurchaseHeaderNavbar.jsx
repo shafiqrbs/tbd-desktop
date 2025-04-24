@@ -12,12 +12,11 @@ import {
 	IconSettings,
 	IconTable,
 } from "@tabler/icons-react";
-import { useLocation, useNavigate } from "react-router";
+import { NavLink, useLocation, useNavigate } from "react-router";
 
 function _SalesPurchaseHeaderNavbar(props) {
 	const { t } = useTranslation();
 	const links = [
-		{ link: "/inventory/invoice-batch", label: t("InvoiceBatch") },
 		{ link: "/inventory/sales", label: t("Sales") },
 		{ link: "/inventory/sales-invoice", label: t("NewSales") },
 		{ link: "/inventory/purchase", label: t("Purchase") },
@@ -28,17 +27,14 @@ function _SalesPurchaseHeaderNavbar(props) {
 	const location = useLocation();
 
 	const items = links.map((link) => (
-		<a
+		<NavLink
 			key={link.label}
-			href={link.link}
+			// onClick={() => navigate(link.link)}
+			to={link.link}
 			className={location.pathname == link.link ? classes.active : classes.link}
-			onClick={(event) => {
-				event.preventDefault();
-				navigate(link.link);
-			}}
 		>
 			{link.label}
-		</a>
+		</NavLink>
 	));
 	return (
 		<>

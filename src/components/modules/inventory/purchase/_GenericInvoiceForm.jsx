@@ -57,7 +57,7 @@ function _GenericInvoiceForm(props) {
 
 	//common hooks and variables
 	const { t } = useTranslation();
-	const { isOnline, mainAreaHeight } = useOutletContext();
+	const { mainAreaHeight } = useOutletContext();
 	const height = mainAreaHeight - 360;
 
 	//segmented control
@@ -97,37 +97,37 @@ function _GenericInvoiceForm(props) {
 	const [productDropdown, setProductDropdown] = useState([]);
 
 	//product dropdown update based on searchValue
-	useEffect(() => {
-		const fetchProductDropdown = async () => {
-			if (searchValue.length > 0) {
-				const localProducts = await window.dbAPI.getDataFromTable("core_products");
+	// useEffect(() => {
+	// 	const fetchProductDropdown = async () => {
+	// 		if (searchValue.length > 0) {
+	// 			const localProducts = await window.dbAPI.getDataFromTable("core_products");
 
-				// Filter products where product_nature is not 'raw-materials'
-				const filteredProducts = localProducts.filter(
-					(product) => product.product_nature !== "raw-materials"
-				);
+	// 			// Filter products where product_nature is not 'raw-materials'
+	// 			const filteredProducts = localProducts.filter(
+	// 				(product) => product.product_nature !== "raw-materials"
+	// 			);
 
-				const lowerCaseSearchTerm = searchValue.toLowerCase();
-				const fieldsToSearch = ["product_name"];
-				const productFilterData = filteredProducts.filter((product) =>
-					fieldsToSearch.some(
-						(field) =>
-							product[field] &&
-							String(product[field]).toLowerCase().includes(lowerCaseSearchTerm)
-					)
-				);
-				const formattedProductData = productFilterData.map((type) => ({
-					label: type.product_name,
-					value: String(type.id),
-				}));
+	// 			const lowerCaseSearchTerm = searchValue.toLowerCase();
+	// 			const fieldsToSearch = ["product_name"];
+	// 			const productFilterData = filteredProducts.filter((product) =>
+	// 				fieldsToSearch.some(
+	// 					(field) =>
+	// 						product[field] &&
+	// 						String(product[field]).toLowerCase().includes(lowerCaseSearchTerm)
+	// 				)
+	// 			);
+	// 			const formattedProductData = productFilterData.map((type) => ({
+	// 				label: type.product_name,
+	// 				value: String(type.id),
+	// 			}));
 
-				setProductDropdown(formattedProductData);
-			} else {
-				setProductDropdown([]);
-			}
-		};
-		fetchProductDropdown();
-	}, [searchValue]);
+	// 			setProductDropdown(formattedProductData);
+	// 		} else {
+	// 			setProductDropdown([]);
+	// 		}
+	// 	};
+	// 	fetchProductDropdown();
+	// }, [searchValue]);
 
 	//input group currency to show in input right section
 	const inputGroupCurrency = (
@@ -241,7 +241,7 @@ function _GenericInvoiceForm(props) {
 
 	//selected product group text to show in input
 	const inputGroupText = (
-		<Text style={{ textAlign: "right", width: "100%", paddingRight: 16 }} color={"gray"}>
+		<Text style={{ textAlign: "right", width: "100%", paddingRight: 16 }} c={"gray"}>
 			{selectProductDetails && selectProductDetails.unit_name}
 		</Text>
 	);
@@ -352,12 +352,14 @@ function _GenericInvoiceForm(props) {
 				if (categoryData) {
 					return (
 						product.product_nature !== "raw-materials" &&
-						product.category_id === Number(categoryData) &&
+						product.category_id == Number(categoryData) &&
 						product.purchase_price !== 0
 					);
 				}
 				return product.product_nature !== "raw-materials";
 			});
+
+			// console.log(filteredProducts);
 
 			setProducts(filteredProducts);
 
@@ -592,7 +594,6 @@ function _GenericInvoiceForm(props) {
 														<Group
 															justify={"flex-end"}
 															spacing="xs"
-															noWrap
 															pl={"sm"}
 															ml={"sm"}
 														>
@@ -669,7 +670,6 @@ function _GenericInvoiceForm(props) {
 																	);
 																}}
 																required={false}
-																nextField={"credit_limit"}
 																name={"quantity"}
 																id={"quantity"}
 															/>
@@ -826,7 +826,6 @@ function _GenericInvoiceForm(props) {
 											label=""
 											placeholder={t("Vendor")}
 											required={false}
-											nextField={"warehouse_id"}
 											name={"vendor_id"}
 											form={form}
 											dropdownValue={vendorsDropdownData}
@@ -844,7 +843,6 @@ function _GenericInvoiceForm(props) {
 												label=""
 												placeholder={t("Warehouse")}
 												required={false}
-												nextField={"category_id"}
 												name={"warehouse_id"}
 												form={form}
 												dropdownValue={warehouseDropdownData}
@@ -862,7 +860,6 @@ function _GenericInvoiceForm(props) {
 											label={""}
 											placeholder={t("ChooseCategory")}
 											required={true}
-											nextField={"product_id"}
 											name={"category_id"}
 											form={form}
 											dropdownValue={getSettingCategoryDropdownData()}
@@ -889,7 +886,6 @@ function _GenericInvoiceForm(props) {
 															label={""}
 															placeholder={t("ChooseProduct")}
 															required={true}
-															nextField={"quantity"}
 															name={"product_id"}
 															form={form}
 															dropdownValue={productDropdown}
@@ -951,7 +947,6 @@ function _GenericInvoiceForm(props) {
 												label=""
 												placeholder={t("Barcode")}
 												required={true}
-												nextField={""}
 												form={form}
 												name={"barcode"}
 												id={"barcode"}
@@ -976,7 +971,6 @@ function _GenericInvoiceForm(props) {
 															label=""
 															placeholder={t("Price")}
 															required={false}
-															nextField={"price"}
 															name={"multi_price"}
 															form={form}
 															dropdownValue={[
@@ -997,7 +991,6 @@ function _GenericInvoiceForm(props) {
 														<InputButtonForm
 															type="number"
 															tooltip="purchase_price"
-															nextField={"price"}
 															label=""
 															placeholder={t("Price")}
 															required={true}
@@ -1023,7 +1016,6 @@ function _GenericInvoiceForm(props) {
 															label=""
 															placeholder={t("PurchasePrice")}
 															required={true}
-															nextField={"unit_id"}
 															form={form}
 															name={"purchase_price"}
 															id={"purchase_price"}
@@ -1052,7 +1044,6 @@ function _GenericInvoiceForm(props) {
 															label=""
 															placeholder={t("Unit")}
 															required={false}
-															nextField={"quantity"}
 															name={"unit_id"}
 															form={form}
 															dropdownValue={["pcs", "kg"]}
@@ -1070,7 +1061,6 @@ function _GenericInvoiceForm(props) {
 															label=""
 															placeholder={t("Quantity")}
 															required={true}
-															nextField={"bonus_quantity"}
 															form={form}
 															name={"quantity"}
 															id={"quantity"}
@@ -1091,7 +1081,6 @@ function _GenericInvoiceForm(props) {
 															label=""
 															placeholder={t("BonusQuantity")}
 															required={true}
-															nextField={"percent"}
 															form={form}
 															name={"bonus_quantity"}
 															id={"bonus_quantity"}
@@ -1116,7 +1105,6 @@ function _GenericInvoiceForm(props) {
 															label=""
 															placeholder={t("Percent")}
 															required={true}
-															nextField={"EntityFormSubmit"}
 															form={form}
 															name={"percent"}
 															id={"percent"}
@@ -1142,7 +1130,6 @@ function _GenericInvoiceForm(props) {
 																label=""
 																placeholder={t("SubTotal")}
 																required={true}
-																nextField={"EntityFormSubmit"}
 																form={form}
 																name={"sub_total"}
 																id={"sub_total"}

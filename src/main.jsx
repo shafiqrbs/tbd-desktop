@@ -5,7 +5,7 @@ import App from "./App.jsx";
 
 import { MantineProvider, createTheme } from "@mantine/core";
 import { Notifications } from "@mantine/notifications";
-import { BrowserRouter, HashRouter } from "react-router";
+import { HashRouter } from "react-router";
 import "./i18n.js";
 import "@mantine/core/styles.css";
 import "@mantine/dates/styles.css";
@@ -18,15 +18,13 @@ const theme = createTheme({
 	fontFamily: "Open Sans, sans-serif",
 });
 
-const Router = import.meta.env.MODE === "development" ? BrowserRouter : HashRouter;
-
 createRoot(document.getElementById("root")).render(
 	<StrictMode>
-		<Router>
+		<HashRouter>
 			<MantineProvider theme={theme} withGlobalStyles withNormalizeCSS>
 				<Notifications />
 				<App />
 			</MantineProvider>
-		</Router>
+		</HashRouter>
 	</StrictMode>
 );

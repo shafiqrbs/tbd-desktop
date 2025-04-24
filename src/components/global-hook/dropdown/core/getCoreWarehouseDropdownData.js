@@ -9,7 +9,9 @@ const getCoreWarehouseDropdownData = () => {
 	useEffect(() => {
 		const value = {
 			url: "core/select/warehouse",
-			param: { "dropdown-type": "warehouse" },
+			params: { "dropdown-type": "warehouse" },
+			module: "core",
+			dropdownType: "warehouse",
 		};
 		dispatch(coreSettingDropdown(value));
 	}, [dispatch]);

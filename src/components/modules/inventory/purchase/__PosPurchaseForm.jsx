@@ -191,7 +191,6 @@ export default function __PosPurchaseForm(props) {
 						data: formValue,
 						module: "purchase",
 					};
-					console.log(formValue);
 					dispatch(storeEntityData(data));
 					notifications.show({
 						color: "teal",
@@ -203,7 +202,7 @@ export default function __PosPurchaseForm(props) {
 					});
 
 					setTimeout(() => {
-            window.dbAPI.destroyTableData("temp_purchase_products");
+            			window.dbAPI.destroyTableData("temp_purchase_products");
 						form.reset();
 						setVendorData(null);
 						setOrderProcess(null);
@@ -393,7 +392,7 @@ export default function __PosPurchaseForm(props) {
 										return item.sub_total && Number(item.sub_total).toFixed(2);
 									},
 									footer: (
-										<Group spacing="xs" textAlign={"right"}>
+										<Group spacing="xs">
 											<Group spacing="xs">
 												<IconSum size="1.25em" />
 											</Group>
