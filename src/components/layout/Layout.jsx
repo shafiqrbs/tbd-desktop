@@ -18,7 +18,7 @@ const Layout = () => {
 	const location = useLocation();
 	const paramPath = location.pathname;
 	const [isLoading, setIsLoading] = useState(true);
-	const [activated, setActivated] = useState(null);
+	const [activated, setActivated] = useState({ is_activated: false });
 	const [user, setUser] = useState(null);
 	const { configData } = getConfigData();
 	const dispatch = useDispatch();
@@ -43,11 +43,7 @@ const Layout = () => {
 									module: "core",
 									value: {
 										...configRes,
-										business_model: JSON.parse(
-											configRes.business_model || "{}"
-										),
-										currency: JSON.parse(configRes.currency || "{}"),
-										domain: JSON.parse(configRes.domain || "{}"),
+										data: JSON.parse(configRes.data || "{}"),
 									},
 								})
 							);
@@ -65,13 +61,13 @@ const Layout = () => {
 	}, []);
 
 	useEffect(() => {
-		if(!networkStatus.online && isOnline) {
+		if (!networkStatus.online && isOnline) {
 			setIsOnline(false);
 		}
-	}, [networkStatus.online])
+	}, [networkStatus.online]);
 
 	const toggleNetwork = () => {
-		if(!networkStatus.online) {
+		if (!networkStatus.online) {
 			notifications.show({
 				title: "Network Status",
 				message: "⚠️ No internet connection, check your connection",
@@ -87,8 +83,8 @@ const Layout = () => {
 			color: !isOnline ? "teal" : "red",
 			autoClose: 3000,
 		});
-		setIsOnline(prev => !prev);
-	}
+		setIsOnline((prev) => !prev);
+	};
 
 	if (isLoading) {
 		return (
@@ -118,7 +114,7 @@ const Layout = () => {
 			</AppShell.Header>
 			<AppShell.Main>
 				{paramPath !== "/" ? (
-					<Outlet context={{ isOnline, toggleNetwork, mainAreaHeight }} />
+					<Outlet context={{ isOnline, toggleNetwork, mainAreaHeight, activated }} />
 				) : (
 					<MainDashboard height={mainAreaHeight} configData={configData} />
 				)}

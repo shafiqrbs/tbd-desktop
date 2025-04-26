@@ -17,7 +17,7 @@ const getConfigData = () => {
 				})
 			);
 		} else {
-			return storedConfigData;
+			return JSON.parse(storedConfigData?.data || "{}");
 		}
 	};
 
@@ -25,7 +25,7 @@ const getConfigData = () => {
 		fetchData();
 	}, []);
 
-	return { configData, fetchData };
+	return { configData: configData.data, fetchData };
 };
 
 export default getConfigData;

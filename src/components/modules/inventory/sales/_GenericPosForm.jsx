@@ -749,7 +749,7 @@ function _GenericPosForm(props) {
 																		quantity &&
 																		Number(quantity) > 0
 																	) {
-																		const cardProducts = await window.dbAPI.getData("temp_sales_products");
+																		const cardProducts = await window.dbAPI.getDataFromTable("temp_sales_products");
                                                                         const myCardProducts = cardProducts || [];
 
 																		const productToAdd = {

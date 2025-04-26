@@ -42,11 +42,9 @@ function SpotLightSearchModal({ onClose }) {
 			if (storedConfigData && Object.keys(storedConfigData).length > 0) {
 				const items = {
 					...storedConfigData,
-					business_model: JSON.parse(storedConfigData.business_model || "{}"),
-					currency: JSON.parse(storedConfigData.currency || "{}"),
-					domain: JSON.parse(storedConfigData.domain || "{}"),
+					data: JSON.parse(storedConfigData.data || "{}"),
 				};
-				setConfigData(items);
+				setConfigData(items.data);
 				setVisible(false);
 				dispatch(setMenu({ module: "core", value: items }));
 			} else {
@@ -58,7 +56,7 @@ function SpotLightSearchModal({ onClose }) {
 
 	useEffect(() => {
 		if (configData.length) {
-			setConfigData(configData);
+			setConfigData(configData.data);
 			setVisible(false);
 		}
 	}, [configData]);
@@ -76,7 +74,6 @@ function SpotLightSearchModal({ onClose }) {
 
 	const getActions = useCallback(() => {
 		if (!configDataSpot) return [];
-
 		const actions = getSpotlightDropdownData(t, configDataSpot);
 		let index = 0;
 
@@ -170,6 +167,8 @@ function SpotLightSearchModal({ onClose }) {
 		}
 	};
 	const [hoveredIndex, setHoveredIndex] = useState(null);
+
+	console.log(filteredItems);
 
 	return (
 		<>

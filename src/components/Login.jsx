@@ -13,18 +13,19 @@ import {
 	rem,
 	Box,
 	Loader,
+	Flex,
 } from "@mantine/core";
 import LoginPage from "./../assets/css/LoginPage.module.css";
 import classes from "./../assets/css/AuthenticationImage.module.css";
 import { getHotkeyHandler, useHotkeys } from "@mantine/hooks";
-import { IconInfoCircle, IconLogin, IconArrowLeft } from "@tabler/icons-react";
+import { IconInfoCircle, IconLogin, IconArrowLeft, IconRefresh } from "@tabler/icons-react";
 import { isNotEmpty, useForm } from "@mantine/form";
-import { useNavigate } from "react-router";
+import { Navigate, useNavigate } from "react-router";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import axios from "axios";
-import commonDataStoreIntoLocalStorage from "./global-hook/local-storage/commonDataStoreIntoLocalStorage.js";
 import orderProcessDropdownLocalDataStore from "./global-hook/local-storage/orderProcessDropdownLocalDataStore.js";
+import commonDataStoreIntoLocalStorage from "./global-hook/local-storage/commonDataStoreIntoLocalStorage.js";
 
 export default function Login() {
 	const [user, setUser] = useState(null);
@@ -35,6 +36,7 @@ export default function Login() {
 
 	const [spinner, setSpinner] = useState(false);
 	const [errorMessage, setErrorMessage] = useState("");
+	const [activated, setActivated] = useState({ is_activated: false });
 
 	useEffect(() => {
 		const checkAuth = async () => {
@@ -53,6 +55,15 @@ export default function Login() {
 		checkAuth();
 	}, [navigate]);
 
+	useEffect(() => {
+		async function checkActivation() {
+			const activationData = await window.dbAPI.getDataFromTable("license_activate");
+			setActivated(activationData);
+		}
+
+		checkActivation();
+	}, []);
+
 	useHotkeys([["alt+n", () => document.getElementById("Username")?.focus()]], []);
 
 	const form = useForm({
@@ -69,6 +80,10 @@ export default function Login() {
 				<Loader size="lg" />
 			</Center>
 		);
+	}
+
+	if (!activated?.is_activated) {
+		return <Navigate replace to="/activate" />;
 	}
 
 	// if already authenticated, don't render the login form
@@ -186,6 +201,8 @@ export default function Login() {
 								<Box ml={5}>Back to the sign-up page</Box>
 							</Center>
 						</Anchor>
+					</Group>
+					<Flex gap="6px">
 						<Button
 							fullWidth
 							mt="xl"
@@ -199,7 +216,22 @@ export default function Login() {
 						>
 							{spinner ? <Loader color="white" type="dots" size={30} /> : "Login"}
 						</Button>
-					</Group>
+						<Button
+							fullWidth
+							mt="xl"
+							bg="red.9"
+							size="md"
+							type="button"
+							className={LoginPage.control}
+							rightSection={<IconRefresh />}
+							onClick={async () => {
+								await window.dbAPI.deleteDataFromTable("license_activate");
+								navigate("/activate");
+							}}
+						>
+							Reset
+						</Button>
+					</Flex>
 				</Paper>
 			</Box>
 			<Box className={classes.wrapperImage} />

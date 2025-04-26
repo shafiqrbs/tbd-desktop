@@ -64,128 +64,7 @@ db.prepare(
 	`
 	CREATE TABLE IF NOT EXISTS config_data (
 		id INTEGER PRIMARY KEY,
-		domain_id INTEGER,
-		printer TEXT,
-		address TEXT,
-		path TEXT,
-		unit_commission TEXT,
-		border_color TEXT,
-		is_stock_history INTEGER,
-		business_model_id INTEGER,
-		print_footer_text TEXT,
-		invoice_comment TEXT,
-		vat_percent REAL,
-		ait_percent REAL,
-		font_size_label REAL,
-		font_size_value REAL,
-		vat_reg_no TEXT,
-		multi_company INTEGER,
-		vat_enable INTEGER,
-		bonus_from_stock INTEGER,
-		condition_sales INTEGER,
-		is_marketing_executive INTEGER,
-		pos_print INTEGER,
-		fuel_station INTEGER,
-		zero_stock INTEGER,
-		system_reset INTEGER,
-		tlo_commission INTEGER,
-		sr_commission INTEGER,
-		sales_return INTEGER,
-		store_ledger INTEGER,
-		invoice_width REAL,
-		print_top_margin REAL,
-		print_margin_bottom REAL,
-		header_left_width REAL,
-		header_right_width REAL,
-		print_margin_report_top REAL,
-		is_print_header INTEGER,
-		is_invoice_title INTEGER,
-		print_outstanding INTEGER,
-		is_print_footer INTEGER,
-		invoice_prefix TEXT,
-		invoice_process TEXT,
-		customer_prefix TEXT,
-		production_type TEXT,
-		invoice_type TEXT,
-		border_width REAL,
-		body_font_size REAL,
-		sidebar_font_size REAL,
-		invoice_font_size REAL,
-		print_left_margin REAL,
-		invoice_height REAL,
-		left_top_margin REAL,
-		is_unit_price INTEGER,
-		body_top_margin REAL,
-		sidebar_width REAL,
-		body_width REAL,
-		invoice_print_logo INTEGER,
-		barcode_print INTEGER,
-		custom_invoice INTEGER,
-		pos_invoice_position INTEGER,
-		multi_kitchen INTEGER,
-		payment_split INTEGER,
-		item_addons INTEGER,
-		cash_on_delivery INTEGER,
-		custom_invoice_print INTEGER,
-		show_stock INTEGER,
-		is_powered INTEGER,
-		remove_image INTEGER,
-		sku_category INTEGER,
-		sku_color INTEGER,
-		sku_size INTEGER,
-		sku_wearhouse INTEGER,
-		currency_id INTEGER,
-		sku_brand INTEGER,
-		sku_model INTEGER,
-		barcode_price_hide INTEGER,
-		barcode_color INTEGER,
-		barcode_size INTEGER,
-		barcode_brand INTEGER,
-		vat_mode INTEGER,
-		shop_name TEXT,
-		created_at TEXT,
-		updated_at TEXT,
-		is_active_sms INTEGER,
-		is_zero_receive_allow INTEGER,
-		is_purchase_by_purchase_price INTEGER,
-		ait_enable INTEGER,
-		zakat_enable INTEGER,
-		zakat_percent REAL,
-		country_id INTEGER,
-		stock_item INTEGER,
-		is_description INTEGER,
-		due_sales_without_customer INTEGER,
-		vat_integration INTEGER,
-		is_brand INTEGER,
-		is_color INTEGER,
-		is_size INTEGER,
-		is_grade INTEGER,
-		is_model INTEGER,
-		is_multi_price INTEGER,
-		is_measurement INTEGER,
-		is_product_gallery INTEGER,
-		is_batch_invoice INTEGER,
-		is_provision INTEGER,
-		is_sku INTEGER,
-		is_sales_auto_approved INTEGER,
-		is_purchase_auto_approved INTEGER,
-		is_online INTEGER,
-		is_pos INTEGER,
-		is_table_pos INTEGER,
-		is_pay_first INTEGER,
-		raw_materials INTEGER,
-		stockable INTEGER,
-		post_production INTEGER,
-		mid_production INTEGER,
-		pre_production INTEGER,
-		sku_warehouse INTEGER,
-		pos_invoice_mode_id INTEGER,
-		child_domain_exists INTEGER,
-
-		domain TEXT,
-		currency TEXT,
-		business_model TEXT,
-		pos_invoice_mode TEXT
+		data TEXT
 	);
 	`
 ).run();
@@ -446,60 +325,66 @@ const formatValue = (value) => {
 	}
 	return value;
 };
-
+const getTableColumns = (table) => {
+	const columns = db.prepare(`PRAGMA table_info(${table})`).all();
+	return columns.map((col) => col.name);
+};
 // data insertion into the table
 const upsertIntoTable = (table, data) => {
-	try {table = convertTableName(table);
-	const keys = Object.keys(data);
-	const placeholders = keys.map(() => "?").join(", ");
-	const updatePlaceholders = keys.map((key) => `${key} = excluded.${key}`).join(", ");
+	try {
+		table = convertTableName(table);
+		const columns = getTableColumns(table);
 
-	// convert objects/arrays to JSON strings
-	const formattedData = keys.reduce((acc, key) => {
-		acc[key] = formatValue(data[key]);
-		return acc;
-	}, {});
+		const validData = Object.keys(data)
+			.filter((key) => columns.includes(key))
+			.reduce((obj, key) => {
+				obj[key] = formatValue(data[key]);
+				return obj;
+			}, {});
 
-	const stmt = db.prepare(
-		`INSERT INTO ${table} (${keys.join(", ")}) 
-		 VALUES (${placeholders})
-		 ON CONFLICT(id) DO UPDATE SET ${updatePlaceholders}`
-	);
+		const keys = Object.keys(validData);
+		const placeholders = keys.map(() => "?").join(", ");
+		const updatePlaceholders = keys.map((key) => `${key} = excluded.${key}`).join(", ");
 
-	// check if row exists by ID
-	const existingRow = db.prepare(`SELECT id FROM ${table} WHERE id = ?`).get(data.id);
+		const stmt = db.prepare(
+			`INSERT INTO ${table} (${keys.join(", ")}) 
+			VALUES (${placeholders})
+			ON CONFLICT(id) DO UPDATE SET ${updatePlaceholders}`
+		);
 
-	if (!existingRow) {
-		// insert new row if not found
-		stmt.run(...Object.values(formattedData));
-	} else {
-		// update only if data is different
-		const existingData = db.prepare(`SELECT * FROM ${table} WHERE id = ?`).get(data.id);
+		const existingRow = db.prepare(`SELECT id FROM ${table} WHERE id = ?`).get(validData.id);
 
-		const isChanged = keys.some((key) => {
-			// compare stored JSON string vs new value
-			const existingValue =
-				typeof existingData[key] === "string" && existingData[key].startsWith("{")
-					? JSON.parse(existingData[key])
-					: existingData[key];
+		if (!existingRow) {
+			stmt.run(...Object.values(validData));
+		} else {
+			const existingData = db
+				.prepare(`SELECT * FROM ${table} WHERE id = ?`)
+				.get(validData.id);
 
-			const newValue =
-				typeof formattedData[key] === "string" && formattedData[key].startsWith("{")
-					? JSON.parse(formattedData[key])
-					: formattedData[key];
+			const isChanged = keys.some((key) => {
+				const existingValue =
+					typeof existingData[key] === "string" && existingData[key].startsWith("{")
+						? JSON.parse(existingData[key])
+						: existingData[key];
 
-			return JSON.stringify(existingValue) !== JSON.stringify(newValue);
-		});
+				const newValue =
+					typeof validData[key] === "string" && validData[key].startsWith("{")
+						? JSON.parse(validData[key])
+						: validData[key];
 
-		// update row if data is different
-		if (isChanged) {
-			stmt.run(...Object.values(formattedData));
+				return JSON.stringify(existingValue) !== JSON.stringify(newValue);
+			});
+
+			if (isChanged) {
+				stmt.run(...Object.values(validData));
+			}
 		}
-	}} catch (e) {
-		console.log("Error in upsertIntoTable for this data:",table, data);
-		console.error(e)
+	} catch (e) {
+		console.log("Error in upsertIntoTable for this data:", table, data);
+		console.error(e);
 	}
 };
+
 
 const getDataFromTable = (table, idOrConditions, property = "id") => {
 	table = convertTableName(table);
@@ -554,7 +439,7 @@ const updateDataInTable = (table, { id, data, condition = {}, property = "id" })
 	stmt.run(...setValues, ...whereValues);
 };
 
-const deleteDataFromTable = (table, id) => {
+const deleteDataFromTable = (table, id = 1) => {
 	table = convertTableName(table);
 	const stmt = db.prepare(`DELETE FROM ${table} WHERE id = ?`);
 	stmt.run(id);

@@ -11,22 +11,23 @@ import {
 	Group,
 	Tooltip,
 	Alert,
-    LoadingOverlay,
+	LoadingOverlay,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { IconKey, IconCheck, IconInfoCircle } from "@tabler/icons-react";
 import axios from "axios";
 import { useNavigate } from "react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+// import commonDataStoreIntoLocalStorage from "./global-hook/local-storage/commonDataStoreIntoLocalStorage";
 
-const dataMap = {
-	core_customers: "customers",
-	core_users: "users",
-	core_vendors: "vendors",
-	accounting_transaction_mode: "transaction_modes",
-	config_data: "inventory_config",
-	core_products: "stock_item",
-};
+// const dataMap = {
+// 	core_customers: "customers",
+// 	core_users: "users",
+// 	core_vendors: "vendors",
+// 	accounting_transaction_mode: "transaction_modes",
+// 	config_data: "inventory_config",
+// 	core_products: "stock_item",
+// };
 
 export default function Activate() {
 	const [spinner, setSpinner] = useState(false);
@@ -47,7 +48,7 @@ export default function Activate() {
 	const handleSubmit = form.onSubmit(async (values) => {
 		setSpinner(true);
 		setErrorMessage("");
-		console.log("Form submitted:", values);
+
 		try {
 			const response = await axios({
 				method: "GET",
@@ -65,16 +66,25 @@ export default function Activate() {
 					is_activated: 1,
 				});
 
-				const operations = Object.entries(dataMap).map(([table, property]) => {
-                    const dataList = Array.isArray(response.data.data[property])
-						? response.data.data[property]
-						: [response.data.data[property]];
-					return dataList.map((data) => {
-						return window.dbAPI.upsertIntoTable(table, data);
-					});
-				});
+				// const operations = Object.entries(dataMap).map(([table, property]) => {
+				// 	const dataList = Array.isArray(response.data.data[property])
+				// 		? response.data.data[property]
+				// 		: [response.data.data[property]];
 
-				await Promise.all(operations);
+				// 	return dataList.map((data) => {
+				// 		if (table === "config_data") {
+				// 			console.log(dataList, data)
+				// 			data = {
+				// 				data: JSON.stringify(data),
+				// 			};
+				// 			console.log((data));
+				// 		}
+				// 		return window.dbAPI.upsertIntoTable(table, data);
+				// 	});
+				// });
+
+				// await Promise.all(operations);
+				// await commonDataStoreIntoLocalStorage(response.data?.data?.domain_config?.id)
 
 				navigate("/login", { replace: true });
 			} else {
@@ -91,6 +101,16 @@ export default function Activate() {
 		}
 	});
 
+	useEffect(() => {
+		const checkActivation = async () => {
+			const activationData = await window.dbAPI.getDataFromTable("license_activate");
+			if (activationData?.is_activated) {
+				navigate("/", { replace: true });
+			}
+		};
+		checkActivation();
+	}, [navigate]);
+
 	return (
 		<Box
 			component="section"
@@ -105,7 +125,7 @@ export default function Activate() {
 				/>
 				<Paper radius="md" p="xl" withBorder shadow="lg">
 					<Box ta="center" mb="md">
-						<img src="/tbd-logo.png" height="90px" alt="TerminalBD" />
+						<img src="./sandra.jpg" height="90px" alt="Sandra" />
 					</Box>
 
 					<Stack spacing="lg">

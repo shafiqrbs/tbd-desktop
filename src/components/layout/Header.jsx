@@ -34,6 +34,7 @@ import {
 	IconWifiOff,
 	IconWifi,
 	IconRefresh,
+	IconPrinter,
 } from "@tabler/icons-react";
 import { Link, useNavigate } from "react-router";
 import classes from "./../../assets/css/Header.module.css";
@@ -57,6 +58,7 @@ const syncData = ["Sales", "Purchase", "Product", "Customer"];
 
 export default function Header({ isOnline, toggleNetwork, configData }) {
 	const [opened, { open, close }] = useDisclosure(false);
+	const [openedPrinter, { open: openPrinter, close: closePrinter }] = useDisclosure(false);
 	const { t, i18n } = useTranslation();
 	const navigate = useNavigate();
 	const dispatch = useDispatch();
@@ -429,6 +431,16 @@ export default function Header({ isOnline, toggleNetwork, configData }) {
 										<IconRefresh size={20} />
 									</ActionIcon>
 								</Tooltip>
+								<Tooltip label="Pos printer setup" bg={`red.5`} withArrow>
+									<ActionIcon
+										mt={"7"}
+										onClick={openPrinter}
+										variant="transparent"
+										color={`white`}
+									>
+										<IconPrinter size={20} />
+									</ActionIcon>
+								</Tooltip>
 								<Menu.Target>
 									<UnstyledButton
 										p={2}
@@ -521,6 +533,10 @@ export default function Header({ isOnline, toggleNetwork, configData }) {
 					</Grid.Col>
 				</Grid>
 			</Box>
+			{/* ---------- printer modal ------- */}
+			<Modal opened={openedPrinter} onClose={closePrinter} title="Setup Printer">
+				<h1>Hello world</h1>
+			</Modal>
 			{/* ----------- sync information ----------- */}
 			<Drawer
 				position="right"
