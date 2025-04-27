@@ -21,6 +21,8 @@ import {
 	Stack,
 	Drawer,
 	Paper,
+	Select,
+	TextInput,
 } from "@mantine/core";
 
 import { useDisclosure, useFullscreen, useHotkeys } from "@mantine/hooks";
@@ -41,20 +43,12 @@ import classes from "./../../assets/css/Header.module.css";
 import LanguagePickerStyle from "./../../assets/css/LanguagePicker.module.css";
 import "@mantine/spotlight/styles.css";
 import { useEffect, useState } from "react";
-import flagBD from "../../assets/images/flags/bd.svg";
-import flagGB from "../../assets/images/flags/gb.svg";
 import { useTranslation } from "react-i18next";
 import SpotLightSearchModal from "../modules/modals/SpotLightSearchModal.jsx";
 import { useDispatch } from "react-redux";
 import shortcutDropdownData from "../global-hook/shortcut-dropdown/shortcutDropdownData.js";
 import Sandra_Logo from "../../assets/images/sandra_logo.jpeg";
-
-const languages = [
-	{ label: "EN", value: "en", flag: flagGB },
-	{ label: "BN", value: "bn", flag: flagBD },
-];
-
-const syncData = ["Sales", "Purchase", "Product", "Customer"];
+import { characterSets, languages, syncData } from "../../constants";
 
 export default function Header({ isOnline, toggleNetwork, configData }) {
 	const [opened, { open, close }] = useDisclosure(false);
@@ -69,6 +63,11 @@ export default function Header({ isOnline, toggleNetwork, configData }) {
 	const [languageSelected, setLanguageSelected] = useState(
 		languages.find((item) => item.value === i18n.language)
 	);
+	const [printerSetup, setPrinterSetup] = useState({
+		printerName: "",
+		characterSet: "PC437_USA",
+		lineCharacter: "-",
+	});
 
 	useEffect(() => {
 		const checkConfigData = async () => {
@@ -84,6 +83,23 @@ export default function Header({ isOnline, toggleNetwork, configData }) {
 
 		return () => clearTimeout(timeoutId);
 	}, [navigate]);
+
+	useEffect(() => {
+		const checkPrinterData = async () => {
+			const storedPrinterData = await window.dbAPI.getDataFromTable("printer");
+			if (storedPrinterData) {
+				setPrinterSetup({
+					printerName: storedPrinterData.printer_name || "",
+					characterSet: storedPrinterData.character_set || "PC437_USA",
+					lineCharacter: storedPrinterData.line_character || "-",
+				});
+			}
+		};
+
+		if (openedPrinter) {
+			checkPrinterData();
+		}
+	}, [openedPrinter]);
 
 	const getActions = () => {
 		const actions = shortcutDropdownData(t, configDataSpot);
@@ -137,6 +153,21 @@ export default function Header({ isOnline, toggleNetwork, configData }) {
 		],
 		[]
 	);
+
+	const handlePrinterSetup = async (e) => {
+		e.preventDefault();
+		try {
+			await window.dbAPI.upsertIntoTable("printer", {
+				id: 1,
+				printer_name: printerSetup.printerName,
+				line_character: printerSetup.lineCharacter,
+				character_set: printerSetup.characterSet,
+			});
+			closePrinter();
+		} catch (error) {
+			console.error("Error in handlePrinterSetup:", error);
+		}
+	};
 
 	const shortcuts = (
 		<Stack spacing="xs">
@@ -535,7 +566,53 @@ export default function Header({ isOnline, toggleNetwork, configData }) {
 			</Box>
 			{/* ---------- printer modal ------- */}
 			<Modal opened={openedPrinter} onClose={closePrinter} title="Setup Printer">
-				<h1>Hello world</h1>
+				<form onSubmit={handlePrinterSetup}>
+					<TextInput
+						mb={10}
+						required
+						label={t("Printer Name")}
+						value={printerSetup.printerName}
+						onChange={(e) =>
+							setPrinterSetup({
+								...printerSetup,
+								printerName: e.target.value,
+							})
+						}
+						placeholder="RT378"
+					/>
+					<Select
+						mb={10}
+						required
+						label={t("Character Set")}
+						value={printerSetup.characterSet}
+						onChange={(e) =>
+							setPrinterSetup({
+								...printerSetup,
+								characterSet: e,
+							})
+						}
+						data={characterSets}
+						placeholder="PC437_USA"
+					/>
+					<TextInput
+						mb={10}
+						required
+						label={t("Line Characters")}
+						value={printerSetup.lineCharacter}
+						onChange={(e) => {
+							if (e.target.value.length <= 1) {
+								setPrinterSetup({
+									...printerSetup,
+									lineCharacter: e.target.value,
+								});
+							}
+						}}
+						placeholder="="
+					/>
+					<Button type="submit" fullWidth>
+						{t("Save Settings")}
+					</Button>
+				</form>
 			</Modal>
 			{/* ----------- sync information ----------- */}
 			<Drawer

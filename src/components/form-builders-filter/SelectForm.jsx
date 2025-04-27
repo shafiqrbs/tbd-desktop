@@ -1,4 +1,3 @@
-import React from "react";
 import { Select } from "@mantine/core";
 import { useDispatch, useSelector } from "react-redux";
 

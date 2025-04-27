@@ -318,6 +318,19 @@ db.prepare(
 	)`
 ).run();
 
+// printer table
+db.prepare(
+	`
+	CREATE TABLE IF NOT EXISTS printer (
+		id INTEGER PRIMARY KEY,
+		printer_name TEXT NOT NULL,
+		line_character TEXT DEFAULT '-',
+		character_set TEXT DEFAULT 'SLOVENIA',
+		created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+		updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+	)`
+).run();
+
 const formatValue = (value) => {
 	if (value === undefined || value === null) return null;
 	try {
@@ -391,7 +404,7 @@ const upsertIntoTable = (table, data) => {
 
 const getDataFromTable = (table, idOrConditions, property = "id") => {
 	table = convertTableName(table);
-	const useGet = ["config_data", "users", "license_activate"].includes(table); // return a single row for these tables
+	const useGet = ["config_data", "users", "license_activate", "printer"].includes(table); // return a single row for these tables
 
 	let stmt;
 	let result;

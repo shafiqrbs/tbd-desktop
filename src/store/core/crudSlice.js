@@ -236,7 +236,6 @@ const crudSlice = createSlice({
 		},
 		setMenu: (state, action) => {
 			const { module, value } = action.payload;
-			if (module === "core")console.log(value)
 			state.data[module].menu = value;
 		},
 		setValidation: (state, action) => {
@@ -327,7 +326,6 @@ const crudSlice = createSlice({
 				state.data[module].validation = false;
 				state.data[module].validationMessage = [];
 			} else {
-				console.log(data);
 				state.data[module].validation = true;
 				state.data[module].validationMessage = data.errors;
 			}

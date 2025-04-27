@@ -1,18 +1,18 @@
 const ThermalPrinter = require("node-thermal-printer").printer;
 const PrinterTypes = require("node-thermal-printer").types;
 
-const printer = new ThermalPrinter({
-	type: PrinterTypes.EPSON, // Printer type: 'star' or 'epson'
-	interface: "//localhost//RP328", // Printer interface
-	characterSet: "PC437_USA", // Printer character set - default: SLOVENIA
-	lineCharacter: "-", // Set character for lines - default: "-"
-	width: 64,
-	options: {
-		timeout: 5000,
-	},
-});
+const thermalPrint = ({ configData, salesItems, salesViewData, setup }) => {
+	const printer = new ThermalPrinter({
+		type: PrinterTypes.EPSON, // Printer type: 'star' or 'epson'
+		interface: `//localhost//${setup.printer_name}`, // Printer interface
+		characterSet: setup.character_set, // Printer character set - default: SLOVENIA
+		lineCharacter: setup.line_character, // Set character for lines - default: "-"
+		width: 64,
+		options: {
+			timeout: 5000,
+		},
+	});
 
-const thermalPrint = ({ configData, salesItems, salesViewData }) => {
 	printer.bold(true);
 	printer.setTextSize(1, 1);
 	printer.alignCenter();
