@@ -14,7 +14,9 @@ import {
 	Box,
 	Loader,
 	Flex,
+	Text,
 } from "@mantine/core";
+import { modals } from "@mantine/modals";
 import LoginPage from "./../assets/css/LoginPage.module.css";
 import classes from "./../assets/css/AuthenticationImage.module.css";
 import { getHotkeyHandler, useHotkeys } from "@mantine/hooks";
@@ -125,6 +127,25 @@ export default function Login() {
 		}
 	}
 
+	const openResetModal = () => {
+		modals.openConfirmModal({
+			title: "Reset local data?",
+			children: (
+				<Text size="sm">
+					Are you sure you want to reset your local data? This action is destructive and you
+					will lose all of your local data which aren&apos;t synced yet. The app will be closed after reset.
+				</Text>
+			),
+			labels: { confirm: "Reset now", cancel: "No don't reset it" },
+			confirmProps: { color: "red" },
+			onCancel: () => console.log("Cancel"),
+			onConfirm: async () => {
+				await window.dbAPI.resetDatabase();
+				navigate("/activate");
+			},
+		});
+	};
+
 	return (
 		<div className={classes.wrapper}>
 			<Box component="form" onSubmit={form.onSubmit(login)}>
@@ -224,10 +245,7 @@ export default function Login() {
 							type="button"
 							className={LoginPage.control}
 							rightSection={<IconRefresh />}
-							onClick={async () => {
-								await window.dbAPI.deleteDataFromTable("license_activate");
-								navigate("/activate");
-							}}
+							onClick={openResetModal}
 						>
 							Reset
 						</Button>

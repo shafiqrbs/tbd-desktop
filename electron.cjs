@@ -39,11 +39,20 @@ ipcMain.handle("delete-data-from-table", async (event, table, id) => {
 	}
 });
 
-ipcMain.handle("destroy-table-data", async () => {
+ipcMain.handle("destroy-table-data", async (event, table) => {
 	try {
-		return dbModule.destroyTableData();
+		return dbModule.destroyTableData(table);
 	} catch (error) {
 		console.error(`Error destroying data:`, error);
+		throw error;
+	}
+});
+
+ipcMain.handle("reset-database", async () => {
+	try {
+		return dbModule.resetDatabase();
+	} catch (error) {
+		console.error(`Error resetting data`);
 		throw error;
 	}
 });

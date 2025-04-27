@@ -18,9 +18,13 @@ try {
 		deleteDataFromTable: (table, id) => {
 			return ipcRenderer.invoke("delete-data-from-table", table, id);
 		},
-		destroyTableData: () => {
+		destroyTableData: (table) => {
 			console.log("Calling destroyTableData...");
-			return ipcRenderer.invoke("destroy-table-data");
+			return ipcRenderer.invoke("destroy-table-data", table);
+		},
+		resetDatabase: () => {
+			console.log("Calling resetDatabase...");
+			return ipcRenderer.invoke("reset-database");
 		},
 	});
 	console.info("dbAPI exposed successfully");

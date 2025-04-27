@@ -1,10 +1,13 @@
+const fs = require("fs");
 const path = require("path");
 const { app } = require("electron");
 const Database = require("better-sqlite3");
 
 // Create/open the database in the user's data directory
-const dbPath = path.join(app.getPath("userData"), "electro.db");
+const userDataPath = app.getPath("userData");
+const dbPath = path.join(userDataPath, "electro.db");
 console.log(`Local database path: ${dbPath}`);
+
 const db = new Database(dbPath);
 
 const convertTableName = (key) => key.replace(/-/g, "_");
@@ -75,6 +78,7 @@ db.prepare(
 	CREATE TABLE IF NOT EXISTS core_products (
 		id INTEGER PRIMARY KEY,
 		vendor_id INTEGER,
+		stock_id INTEGER,
 		product_name TEXT NOT NULL,
 		name TEXT NOT NULL,
 		product_nature TEXT NOT NULL,
@@ -385,7 +389,6 @@ const upsertIntoTable = (table, data) => {
 	}
 };
 
-
 const getDataFromTable = (table, idOrConditions, property = "id") => {
 	table = convertTableName(table);
 	const useGet = ["config_data", "users", "license_activate"].includes(table); // return a single row for these tables
@@ -450,10 +453,20 @@ const destroyTableData = (table = "users") => {
 	stmt.run();
 };
 
+const resetDatabase = async () => {
+	try {
+		await fs.rm(userDataPath, { recursive: true, force: true });
+		app.quit();
+	} catch (error) {
+		console.error("Error in resetDatabase:", error);
+	}
+};
+
 module.exports = {
 	upsertIntoTable,
 	getDataFromTable,
 	updateDataInTable,
 	deleteDataFromTable,
 	destroyTableData,
+	resetDatabase,
 };
