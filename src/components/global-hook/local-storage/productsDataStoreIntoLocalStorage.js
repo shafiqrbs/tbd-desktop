@@ -2,8 +2,8 @@ import axios from "axios";
 
 const productsDataStoreIntoLocalStorage = async () => {
 	try {
-		const user = await window.dbAPI.getData("user");
-		const userId = user ? JSON.parse(user).id : null;
+		const user = await window.dbAPI.getDataFromTable("users");
+		const userId = user ? user.id : null;
 
 		const response = await axios.get(
 			`${import.meta.env.VITE_API_GATEWAY_URL}inventory/stock-item`,

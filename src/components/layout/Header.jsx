@@ -609,7 +609,7 @@ export default function Header({ isOnline, toggleNetwork, configData }) {
 						}}
 						placeholder="="
 					/>
-					<Button type="submit" fullWidth>
+					<Button type="submit" fullWidth bg={"red.5"}>
 						{t("Save Settings")}
 					</Button>
 				</form>

@@ -41,6 +41,6 @@ const languages = [
 	{ label: "BN", value: "bn", flag: flagBD },
 ];
 
-const syncData = ["Sales", "Purchase", "Product", "Customer"];
+const syncData = ["Sales", "Purchases", "Products", "Customers", "Vendors"];
 
 export { characterSets, languages, syncData };

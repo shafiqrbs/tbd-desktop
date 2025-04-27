@@ -291,7 +291,7 @@ function _PurchaseTable() {
 													component="a"
 													size="sm"
 													variant="subtle"
-													color="red.6"
+													c="red.6"
 													onClick={(e) => {
 														e.preventDefault();
 														setLoading(true);

@@ -1,10 +1,9 @@
-import React from "react";
 import { useTranslation } from "react-i18next";
 import InputForm from "../../../form-builders-filter/InputForm.jsx";
 import { useHotkeys } from "@mantine/hooks";
 
 function WarehouseFilterForm(props) {
-	const { t, i18n } = useTranslation();
+	const { t } = useTranslation();
 
 	useHotkeys(
 		[

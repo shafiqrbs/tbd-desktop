@@ -7,3 +7,7 @@ export const formatDate = (date) => {
 	const formattedDateWithDash = formattedDate.replace(/\//g, "-");
 	return formattedDateWithDash; // 13-04-2025
 }
+
+export const generateInvoiceId = () => {
+	return Date.now().toString().slice(1, 13);
+}

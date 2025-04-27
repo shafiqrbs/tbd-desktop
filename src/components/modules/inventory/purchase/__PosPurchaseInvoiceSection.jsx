@@ -83,11 +83,9 @@ export default function __PosPurchaseInvoiceSection(props) {
 
 	// transaction modes hover hook
 	const [hoveredModeId, setHoveredModeId] = useState(false);
-
+	const warehosueData = getCoreWarehouseDropdownData();
 	//default customer id hook
 	const [defaultVendorId, setDefaultVendorId] = useState(null);
-
-	let warehouseDropdownData = getCoreWarehouseDropdownData();
 	const [warehouseData, setWarehouseData] = useState(null);
 
 	// get default customer id
@@ -185,7 +183,7 @@ export default function __PosPurchaseInvoiceSection(props) {
 																		src={
 																			isOnline
 																				? mode.path
-																				: "/images/transaction-mode-offline.jpg"
+																				: `/transactions/${mode.name}.jpg`
 																		}
 																		alt={mode.method_name}
 																	/>
@@ -233,7 +231,7 @@ export default function __PosPurchaseInvoiceSection(props) {
 										nextField={"category_id"}
 										name={"warehouse_id"}
 										form={form}
-										dropdownValue={warehouseDropdownData}
+										dropdownValue={warehosueData}
 										id={"warehouse_id"}
 										mt={1}
 										searchable={true}

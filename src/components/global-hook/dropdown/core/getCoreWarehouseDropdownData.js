@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { coreSettingDropdown } from "../../../../store/core/utilitySlice.js";
+import { getDropdownData } from "../../../../store/core/utilitySlice.js";
 
 const getCoreWarehouseDropdownData = () => {
 	const dispatch = useDispatch();
@@ -13,10 +13,10 @@ const getCoreWarehouseDropdownData = () => {
 			module: "core",
 			dropdownType: "warehouse",
 		};
-		dispatch(coreSettingDropdown(value));
+		dispatch(getDropdownData(value));
 	}, [dispatch]);
 
-	const dropdownData = useSelector((state) => state?.utilitySlice?.coreWarehouseDropdownData);
+	const dropdownData = useSelector((state) => state?.utilitySlice?.dropdowns?.core?.warehouse);
 
 	useEffect(() => {
 		if (dropdownData && dropdownData.length > 0) {

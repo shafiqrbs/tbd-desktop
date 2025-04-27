@@ -15,8 +15,8 @@ try {
 		updateDataInTable: (table, values) => {
 			return ipcRenderer.invoke("update-in-table", table, values);
 		},
-		deleteDataFromTable: (table, id) => {
-			return ipcRenderer.invoke("delete-data-from-table", table, id);
+		deleteDataFromTable: (table, id, property) => {
+			return ipcRenderer.invoke("delete-data-from-table", table, id, property);
 		},
 		destroyTableData: (table) => {
 			console.log("Calling destroyTableData...");

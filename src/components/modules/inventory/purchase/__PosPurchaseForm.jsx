@@ -14,6 +14,7 @@ import { notifications } from "@mantine/notifications";
 import { IconCheck } from "@tabler/icons-react";
 import { rem } from "@mantine/core";
 import { storeEntityData } from "../../../../store/core/crudSlice.js";
+import { formatDate, generateInvoiceId } from "../../../../lib/index.js";
 
 export default function __PosPurchaseForm(props) {
 	const { isSMSActive, currencySymbol, tempCardProducts, setLoadCardProducts, isWarehouse } =
@@ -21,10 +22,36 @@ export default function __PosPurchaseForm(props) {
 
 	//common hooks
 	const { t } = useTranslation();
-	const { mainAreaHeight } = useOutletContext();
+	const { isOnline, mainAreaHeight } = useOutletContext();
 	const height = mainAreaHeight - 170;
 	const [fetching] = useState(false);
 	const dispatch = useDispatch();
+	const [defaultCustomerId, setDefaultCustomerId] = useState(null);
+	const [customersDropdownData, setCustomersDropdownData] = useState([]);
+
+	// setting defualt customer
+	useEffect(() => {
+		const fetchCustomers = async () => {
+			const coreCustomers = await window.dbAPI.getDataFromTable("core-customers");
+			let defaultId = defaultCustomerId;
+			if (coreCustomers && coreCustomers.length > 0) {
+				const transformedData = coreCustomers.map((type) => {
+					if (type.name === "Default") {
+						defaultId = type.id;
+					}
+					return {
+						label: type.mobile + " -- " + type.name,
+						value: String(type.id),
+					};
+				});
+
+				setCustomersDropdownData(transformedData);
+				setDefaultCustomerId(defaultId);
+			}
+		};
+
+		fetchCustomers();
+	}, []);
 
 	// form
 	const form = useForm({
@@ -39,10 +66,7 @@ export default function __PosPurchaseForm(props) {
 			mobile: "",
 			email: "",
 			warehouse_id: "",
-		},
-		validate: {
-			transaction_mode_id: isNotEmpty(),
-		},
+		}
 	});
 
 	//calculate subTotal amount
@@ -137,7 +161,7 @@ export default function __PosPurchaseForm(props) {
 	return (
 		<>
 			<form
-				onSubmit={form.onSubmit(async (values) => {
+				onSubmit={form.onSubmit(async () => {
 					const items = await window.dbAPI.getDataFromTable("temp_purchase_products");
 					const createdBy = await window.dbAPI.getDataFromTable("users");
 					let transformedArray = items.map((product) => {
@@ -168,6 +192,18 @@ export default function __PosPurchaseForm(props) {
 						formValue["vendor_mobile"] = form.values.mobile;
 						formValue["vendor_email"] = form.values.email;
 					}
+
+					formValue["customer_id"] = form.values.customer_id
+						? form.values.customer_id
+						: defaultCustomerId;
+
+					// Include manual customer input fields if no customer is selected
+					if (!form.values.customer_id || form.values.customer_id == defaultCustomerId) {
+						formValue["customer_name"] = form.values.name;
+						formValue["customer_mobile"] = form.values.mobile;
+						formValue["customer_email"] = form.values.email;
+					}
+
 					formValue["vendor_id"] = form.values.vendor_id;
 					formValue["sub_total"] = purchaseSubTotalAmount;
 					formValue["transaction_mode_id"] = form.values.transaction_mode_id;
@@ -191,7 +227,45 @@ export default function __PosPurchaseForm(props) {
 						data: formValue,
 						module: "purchase",
 					};
-					dispatch(storeEntityData(data));
+
+					if (!form.values.transaction_mode_id) {
+						form.setFieldError(
+							"transaction_mode_id",
+							t("Please select a payment method")
+						);
+
+						notifications.show({
+							color: "red",
+							title: t("Payment Required"),
+							message: t("Please select a payment method"),
+							loading: false,
+							autoClose: 1500,
+						});
+
+						return;
+					}
+
+					if(isOnline) {
+						dispatch(storeEntityData(data));
+					} else {
+
+						const purchaseData = {
+							...formValue,
+							created: formatDate(new Date()),
+							invoice: generateInvoiceId(),
+							customerId: formValue.customer_id,
+							customerName: formValue.customer_name,
+							customerMobile: formValue.customer_mobile,
+							createdById: formValue.created_by_id,
+							salesById: formValue.sales_by_id,
+							purchase_items: JSON.stringify(items),
+						};
+						// TODO: work from here tomorrow
+						console.log(purchaseData);
+						return;
+						await window.dbAPI.upsertIntoTable("purchase", purchaseData);
+					}
+
 					notifications.show({
 						color: "teal",
 						title: t("CreateSuccessfully"),
@@ -266,7 +340,7 @@ export default function __PosPurchaseForm(props) {
 											item.quantity
 										);
 
-										const handlQuantityChange = async(e) => {
+										const handleQuantityChange = async(e) => {
 											const editedQuantity = e.currentTarget.value;
 											setEditedQuantity(editedQuantity);
 
@@ -287,7 +361,7 @@ export default function __PosPurchaseForm(props) {
 												return product;
 											});
 
-											await window.dbAPI.upsertDataIntoTable(
+											await window.dbAPI.upsertIntoTable(
 												"temp_purchase_products",
 												updatedProducts
 											);
@@ -302,7 +376,7 @@ export default function __PosPurchaseForm(props) {
 													label=""
 													size="xs"
 													value={editedQuantity}
-													onChange={handlQuantityChange}
+													onChange={handleQuantityChange}
 													onKeyDown={getHotkeyHandler([
 														[
 															"Enter",
@@ -358,7 +432,7 @@ export default function __PosPurchaseForm(props) {
 													}
 												);
 
-												await window.dbAPI.upsertDataIntoTable(
+												await window.dbAPI.upsertIntoTable(
 													"temp_purchase_products",
 													updatedProducts
 												);
@@ -423,7 +497,7 @@ export default function __PosPurchaseForm(props) {
 
 													const updatedDataString = JSON.stringify(data);
 
-													await window.dbAPI.upsertDataIntoTable(
+													await window.dbAPI.upsertIntoTable(
 														"temp_purchase_products",
 														updatedDataString
 													);

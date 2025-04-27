@@ -30,9 +30,9 @@ ipcMain.handle("get-data-from-table", async (event, table, id, property) => {
 	}
 });
 
-ipcMain.handle("delete-data-from-table", async (event, table, id) => {
+ipcMain.handle("delete-data-from-table", async (event, table, id, property) => {
 	try {
-		return dbModule.deleteDataFromTable(table, id);
+		return dbModule.deleteDataFromTable(table, id, property);
 	} catch (error) {
 		console.error(`Error deleting data from ${table}:`, error);
 		throw error;

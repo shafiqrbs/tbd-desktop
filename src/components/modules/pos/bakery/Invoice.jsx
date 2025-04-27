@@ -52,7 +52,7 @@ import _CommonDrawer from "./drawer/_CommonDrawer.jsx";
 import { useScroll } from "./utils/ScrollOperations";
 import { showNotificationComponent } from "../../../core-component/showNotificationComponent.jsx";
 
-import { formatDate } from "../../../../lib/index.js";
+import { formatDate, generateInvoiceId } from "../../../../lib/index.js";
 
 export default function Invoice(props) {
 	const {
@@ -516,7 +516,7 @@ export default function Invoice(props) {
 				} else {
 					const customerInfo = customersDropdownData.find((data) => data.value == invoiceData.customer_id); 
 					await window.dbAPI.upsertIntoTable("sales", {
-						invoice: Date.now().toString().slice(1, 13),
+						invoice: generateInvoiceId(),
 						sub_total: invoiceData.sub_total,
 						total: invoiceData.total ?? invoiceData.sub_total,
 						approved_by_id: invoiceData.created_by_id,
@@ -1071,7 +1071,7 @@ export default function Invoice(props) {
 																	src={
 																		isOnline
 																			? mode.path
-																			: `/transactions/${mode.name}.jpg`
+																			: `./transactions/${mode.name}.jpg`
 																	}
 																	fallbackSrc={`https://placehold.co/120x80/FFFFFF/2f9e44`}
 																/>

@@ -237,7 +237,7 @@ export default function __SplitPayment(props) {
                                     src={
                                       isOnline
                                         ? mode.path
-                                        : `/transactions/${mode.name}.jpg`
+                                        : `./transactions/${mode.name}.jpg`
                                     }
                                     fallbackSrc={`https://placehold.co/120x80/FFFFFF/2f9e44?text=${encodeURIComponent(
                                       mode.name

@@ -182,7 +182,7 @@ db.prepare(
 	`
 	CREATE TABLE IF NOT EXISTS sales (
 		id INTEGER PRIMARY KEY,
-		created TEXT,
+		created DATE DEFAULT CURRENT_DATE,
 		invoice TEXT,
 		sub_total REAL,
 		total REAL,
@@ -208,6 +208,35 @@ db.prepare(
 		customer_group TEXT,
 		balance REAL,
 		sales_items TEXT
+	);
+  	`
+).run();
+
+// purchase table
+db.prepare(
+	`
+	CREATE TABLE IF NOT EXISTS purchase (
+		id INTEGER PRIMARY KEY,
+		created DATE DEFAULT CURRENT_DATE,
+		invoice TEXT,
+		sub_total REAL,
+		total REAL,
+		payment REAL,
+		discount REAL,
+		discount_calculation REAL,
+		discount_type TEXT,
+		approved_by_id INTEGER,
+		customerId INTEGER,
+		customerName TEXT,
+		customerMobile TEXT,
+		createdByUser TEXT,
+		createdByName TEXT,
+		createdById INTEGER,
+		process TEXT,
+		mode_name TEXT,
+		customer_address TEXT,
+		balance REAL,
+		purchase_items TEXT
 	);
   	`
 ).run();
@@ -455,9 +484,9 @@ const updateDataInTable = (table, { id, data, condition = {}, property = "id" })
 	stmt.run(...setValues, ...whereValues);
 };
 
-const deleteDataFromTable = (table, id = 1) => {
+const deleteDataFromTable = (table, id = 1, property = "id") => {
 	table = convertTableName(table);
-	const stmt = db.prepare(`DELETE FROM ${table} WHERE id = ?`);
+	const stmt = db.prepare(`DELETE FROM ${table} WHERE ${property} = ?`);
 	stmt.run(id);
 };
 

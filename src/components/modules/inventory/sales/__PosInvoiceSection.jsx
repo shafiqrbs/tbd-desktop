@@ -218,7 +218,7 @@ export default function __PosInvoiceSection(props) {
 																		src={
 																			isOnline
 																				? mode.path
-																				: "/images/transaction-mode-offline.jpg"
+																				: `./transactions/${mode.name}.jpg`
 																		}
 																		alt={mode.method_name}
 																	/>

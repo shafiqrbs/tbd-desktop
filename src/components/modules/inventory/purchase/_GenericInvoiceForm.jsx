@@ -765,9 +765,13 @@ function _GenericInvoiceForm(props) {
 																		);
 
 																		// Update localStorage and reset form values
-																		await window.dbAPI.upsertIntoTable(
-																			"temp_purchase_products",
-																			myCardProducts
+																		await Promise.all(
+																			myCardProducts.map((product) =>
+																				window.dbAPI.upsertIntoTable(
+																					"temp_purchase_products",
+																					product
+																				)
+																			)
 																		);
 
 																		// Show success notification
