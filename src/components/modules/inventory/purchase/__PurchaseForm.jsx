@@ -579,8 +579,17 @@ function __PurchaseForm(props) {
 																		<Center
 																			fz={"xs"}
 																			className={"textColor"}
+																			style={{
+																				whiteSpace:
+																					"nowrap",
+																				overflow: "hidden",
+																			}}
 																		>
-																			{mode.authorized_name}
+																			{
+																				mode?.name?.split(
+																					" "
+																				)[0]
+																			}
 																		</Center>
 																	</label>
 																</Tooltip>

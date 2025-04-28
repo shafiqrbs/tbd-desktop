@@ -125,7 +125,9 @@ export default function Header({ isOnline, toggleNetwork, configData }) {
 		await window.dbAPI.destroyTableData();
 		navigate("/login");
 	}
-	const list = getActions().reduce((acc, group) => [...acc, ...group.actions], []);
+	const list = getActions().reduce((acc, group) => {
+		return [...acc, ...group.actions];
+	}, []);
 
 	function toggleSyncPanel() {
 		setSyncPanelOpen(!syncPanelOpen);
@@ -168,7 +170,7 @@ export default function Header({ isOnline, toggleNetwork, configData }) {
 			console.error("Error in handlePrinterSetup:", error);
 		}
 	};
-
+	
 	const shortcuts = (
 		<Stack spacing="xs">
 			{list

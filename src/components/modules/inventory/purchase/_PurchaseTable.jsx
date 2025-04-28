@@ -51,7 +51,7 @@ function _PurchaseTable() {
 	const printRef = useRef();
 	const dispatch = useDispatch();
 	const { t } = useTranslation();
-	const { mainAreaHeight } = useOutletContext();
+	const { isOnline, mainAreaHeight } = useOutletContext();
 	const tableHeight = mainAreaHeight - 106; //TabList height 104
 	const height = mainAreaHeight - 282; //TabList height 104
 
@@ -86,13 +86,16 @@ function _PurchaseTable() {
 	const rows =
 		purchaseViewData &&
 		purchaseViewData.purchase_items &&
-		purchaseViewData.purchase_items.map((element, index) => (
+		(typeof purchaseViewData.purchase_items === "string"
+			? JSON.parse(purchaseViewData.purchase_items)
+			: purchaseViewData.purchase_items
+		).map((element, index) => (
 			<Table.Tr key={`${element.name}-${index}`}>
 				<Table.Td fz="xs" width={"20"}>
 					{index + 1}
 				</Table.Td>
 				<Table.Td ta="left" fz="xs" width={"300"}>
-					{element.item_name}
+					{element?.item_name || element.display_name}
 				</Table.Td>
 				{isWarehouse == 1 && (
 					<Table.Td ta="center" fz="xs" width={"60"}>
@@ -143,12 +146,18 @@ function _PurchaseTable() {
 		};
 
 		try {
-			const resultAction = await dispatch(getIndexEntityData(value));
+			if(isOnline) {
+				const resultAction = await dispatch(getIndexEntityData(value));
 
-			if (getIndexEntityData.rejected.match(resultAction)) {
-				console.error("Error:", resultAction);
-			} else if (getIndexEntityData.fulfilled.match(resultAction)) {
-				setIndexData(resultAction.payload?.data);
+				if (getIndexEntityData.rejected.match(resultAction)) {
+					console.error("Error:", resultAction);
+				} else if (getIndexEntityData.fulfilled.match(resultAction)) {
+					setIndexData(resultAction.payload?.data);
+				}
+			} else {
+				const purchaseData = await window.dbAPI.getDataFromTable("purchase");
+				purchaseData.reverse();
+				setIndexData({ data: purchaseData, total: purchaseData.length});
 			}
 		} catch (err) {
 			console.error("Unexpected error:", err);
@@ -160,7 +169,7 @@ function _PurchaseTable() {
 	// useEffect now only calls fetchData based on dependencies
 	useEffect(() => {
 		fetchData();
-	}, [purchaseFilterData, page]);
+	}, [purchaseFilterData, page, isOnline]);
 
 	useEffect(() => {
 		dispatch(
@@ -362,7 +371,7 @@ function _PurchaseTable() {
 																		{t("Approve")}
 																	</Menu.Item>
 
-																	<Menu.Item
+																	{/* <Menu.Item
 																		onClick={() => {
 																			navigate(
 																				`/inventory/purchase/edit/${data.id}`
@@ -381,7 +390,7 @@ function _PurchaseTable() {
 																		}
 																	>
 																		{t("Edit")}
-																	</Menu.Item>
+																	</Menu.Item> */}
 																</>
 															)}
 
@@ -407,7 +416,7 @@ function _PurchaseTable() {
 																{t("Show")}
 															</Menu.Item>
 
-															{!data.approved_by_id && (
+															{!data.approved_by_id && isOnline && (
 																<Menu.Item
 																	target="_blank"
 																	component="a"
@@ -449,6 +458,10 @@ function _PurchaseTable() {
 																							"inventory/purchase/" +
 																								data.id
 																						)
+																					);
+																					window.dbAPI.deleteDataFromTable(
+																						"purchase",
+																						data.id
 																					);
 																				}
 																			},
@@ -794,7 +807,7 @@ function _PurchaseTable() {
 								>
 									{t("Pos")}
 								</Button>
-								{!purchaseViewData?.approved_by_id && (
+								{!purchaseViewData?.approved_by_id && isOnline && (
 									<Button
 										onClick={() => {
 											navigate(

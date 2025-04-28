@@ -19,7 +19,7 @@ const Layout = () => {
 	const paramPath = location.pathname;
 	const [isLoading, setIsLoading] = useState(true);
 	const [activated, setActivated] = useState({ is_activated: false });
-	const [user, setUser] = useState(null);
+	const [user, setUser] = useState({});
 	const { configData } = getConfigData();
 	const dispatch = useDispatch();
 
@@ -114,7 +114,7 @@ const Layout = () => {
 			</AppShell.Header>
 			<AppShell.Main>
 				{paramPath !== "/" ? (
-					<Outlet context={{ isOnline, toggleNetwork, mainAreaHeight, activated }} />
+					<Outlet context={{ isOnline, toggleNetwork, mainAreaHeight, user }} />
 				) : (
 					<MainDashboard height={mainAreaHeight} configData={configData} />
 				)}

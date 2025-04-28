@@ -88,7 +88,6 @@ export default function Activate() {
 
 				navigate("/login", { replace: true });
 			} else {
-				console.log(response);
 				setErrorMessage(response.data.message);
 			}
 		} catch (error) {

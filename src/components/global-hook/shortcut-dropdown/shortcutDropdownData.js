@@ -2,16 +2,13 @@ import { IconCode } from "@tabler/icons-react";
 
 const shortcutDropdownData = (t, configData) => {
 	configData = {
-		...configData,
-		domain: JSON.parse(configData?.domain || "{}"),
-		business_model: JSON.parse(configData?.business_model || "{}"),
-		currency: JSON.parse(configData?.currency || "{}"),
+		data: JSON.parse(configData?.data || "{}"),
 	};
 
-	return [
+	const data = [
 		{
 			group: "Core",
-			actions: configData?.domain?.modules?.includes("core")
+			actions: configData?.data?.domain?.modules?.includes("core")
 				? [
 						{
 							id: "customer",
@@ -24,7 +21,7 @@ const shortcutDropdownData = (t, configData) => {
 		},
 		{
 			group: "Procurement",
-			actions: configData?.domain?.modules?.includes("procurement")
+			actions: configData?.data?.domain?.modules?.includes("procurement")
 				? [
 						{
 							id: "requisition",
@@ -43,7 +40,7 @@ const shortcutDropdownData = (t, configData) => {
 		},
 		{
 			group: "Sales & Purchase",
-			actions: configData?.domain?.modules?.includes("sales-purchase")
+			actions: configData?.data?.domain?.modules?.includes("sales-purchase")
 				? [
 						{
 							id: "sales",
@@ -85,5 +82,7 @@ const shortcutDropdownData = (t, configData) => {
 				: [],
 		},
 	];
+
+	return data;
 };
 export default shortcutDropdownData;

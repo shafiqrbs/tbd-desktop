@@ -692,15 +692,19 @@ function __SalesForm(props) {
 																		src={
 																			isOnline
 																				? mode.path
-																				: "/images/transaction-mode-offline.jpg"
+																				: `./transactions/${mode.name}.jpg`
 																		}
 																		alt={mode.method_name}
 																	/>
 																	<Center
 																		fz={"xs"}
 																		className={"textColor"}
+																		style={{
+																			whiteSpace: "nowrap",
+																			overflow: "hidden",
+																		}}
 																	>
-																		{mode.authorized_name}
+																		{mode?.name?.split(" ")[0]}
 																	</Center>
 																</label>
 															</Tooltip>

@@ -27,7 +27,7 @@ export default function __PosSalesForm(props) {
 
 	//common hooks
 	const { t } = useTranslation();
-	const { isOnline, mainAreaHeight } = useOutletContext();
+	const { isOnline, mainAreaHeight, user } = useOutletContext();
 	const height = mainAreaHeight - 170;
 	const [fetching, setFetching] = useState(false);
 	const dispatch = useDispatch();
@@ -59,8 +59,8 @@ export default function __PosSalesForm(props) {
 	const [customerData, setCustomerData] = useState(null);
 	//default customer hook
 	const [defaultCustomerId, setDefaultCustomerId] = useState(null);
-	
-	// setting defualt customer
+
+	// setting default customer
 	useEffect(() => {
 		const fetchCustomers = async () => {
 			const coreCustomers = await window.dbAPI.getDataFromTable("core-customers");
@@ -271,6 +271,15 @@ export default function __PosSalesForm(props) {
 							const customerInfo = customersDropdownData.find(
 								(data) => data.value == formValue.customer_id
 							);
+
+							const [coreUser, paymentMode] = await Promise.all([
+								window.dbAPI.getDataFromTable("core_users", formValue.sales_by_id),
+								window.dbAPI.getDataFromTable(
+									"accounting_transaction_mode",
+									formValue.transaction_mode_id
+								),
+							]);
+
 							const salesData = {
 								...formValue,
 								created: formatDate(new Date()),
@@ -280,7 +289,13 @@ export default function __PosSalesForm(props) {
 								customerName: customerInfo.label.split(" -- ")[1],
 								customerMobile: customerInfo.label.split(" -- ")[0],
 								createdById: formValue.created_by_id,
+								mode_name: paymentMode.name,
 								salesById: formValue.sales_by_id,
+								salesByUser: coreUser.username,
+								salesByName: coreUser.name,
+								createdByUser: user?.username,
+								createdByName: user?.name,
+
 							};
 
 							await window.dbAPI.upsertIntoTable("sales", salesData);
@@ -389,11 +404,10 @@ export default function __PosSalesForm(props) {
 											const editedQuantity = e.currentTarget.value;
 											setEditedQuantity(editedQuantity);
 
-											const tempCardProducts =
-												localStorage.getItem("temp-sales-products");
-											const cardProducts = tempCardProducts
-												? JSON.parse(tempCardProducts)
-												: [];
+											const cardProducts =
+												await window.dbAPI.getDataFromTable(
+													"temp_sales_products"
+												);
 
 											const updatedProducts = cardProducts.map((product) => {
 												if (product.product_id === item.product_id) {
@@ -408,9 +422,13 @@ export default function __PosSalesForm(props) {
 												return product;
 											});
 
-											await window.dbAPI.upsertIntoTable(
-												"temp_sales_products",
-												updatedProducts
+											await Promise.all(
+												updatedProducts.map((product) => {
+													window.dbAPI.upsertIntoTable(
+														"temp_purchase_products",
+														product
+													);
+												})
 											);
 											setLoadCardProducts(true);
 										};
@@ -426,7 +444,7 @@ export default function __PosSalesForm(props) {
 													onKeyDown={getHotkeyHandler([
 														[
 															"Enter",
-															(e) => {
+															() => {
 																document
 																	.getElementById(
 																		"inline-update-quantity-" +
@@ -484,10 +502,15 @@ export default function __PosSalesForm(props) {
 													}
 												);
 
-												await window.dbAPI.upsertIntoTable(
-													"temp_sales_products",
-													updatedProducts
+												await Promise.all(
+													updatedProducts.map((product) => {
+														window.dbAPI.upsertIntoTable(
+															"temp_purchase_products",
+															product
+														);
+													})
 												);
+
 												setLoadCardProducts(true);
 											}, 1000);
 
@@ -554,9 +577,13 @@ export default function __PosSalesForm(props) {
 													}
 												);
 
-												await window.dbAPI.upsertIntoTable(
-													"temp_sales_products",
-													updatedProducts
+												await Promise.all(
+													updatedProducts.map((product) => {
+														window.dbAPI.upsertIntoTable(
+															"temp_purchase_products",
+															product
+														);
+													})
 												);
 												setLoadCardProducts(true);
 											}

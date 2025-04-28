@@ -278,6 +278,7 @@ db.prepare(
 	)`
 ).run();
 
+// categories table
 db.prepare(
 	`
 	CREATE TABLE IF NOT EXISTS categories (

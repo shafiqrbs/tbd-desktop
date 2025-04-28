@@ -1,5 +1,4 @@
 const getSpotlightDropdownData = (t, configData) => {
-  console.log(configData);
   return [
     {
       group: "Core",

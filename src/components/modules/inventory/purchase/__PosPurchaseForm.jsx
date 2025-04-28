@@ -1,4 +1,4 @@
-import { isNotEmpty, useForm } from "@mantine/form";
+import { useForm } from "@mantine/form";
 import { useEffect, useState } from "react";
 import __PosVendorSection from "./__PosVendorSection";
 import { Box, Text, ActionIcon, Group, TextInput } from "@mantine/core";
@@ -22,7 +22,7 @@ export default function __PosPurchaseForm(props) {
 
 	//common hooks
 	const { t } = useTranslation();
-	const { isOnline, mainAreaHeight } = useOutletContext();
+	const { isOnline, mainAreaHeight, user } = useOutletContext();
 	const height = mainAreaHeight - 170;
 	const [fetching] = useState(false);
 	const dispatch = useDispatch();
@@ -245,9 +245,10 @@ export default function __PosPurchaseForm(props) {
 						return;
 					}
 
-					if(isOnline) {
+					if (isOnline) {
 						dispatch(storeEntityData(data));
 					} else {
+						const paymentModes = await window.dbAPI.getDataFromTable("accounting_transaction_mode", formValue.transaction_mode_id)
 
 						const purchaseData = {
 							...formValue,
@@ -258,11 +259,13 @@ export default function __PosPurchaseForm(props) {
 							customerMobile: formValue.customer_mobile,
 							createdById: formValue.created_by_id,
 							salesById: formValue.sales_by_id,
+							items: undefined,
+							mode_name: paymentModes.name,
 							purchase_items: JSON.stringify(items),
+							createdByUser: user?.username,
+							createdByName: user?.name
 						};
-						// TODO: work from here tomorrow
-						console.log(purchaseData);
-						return;
+
 						await window.dbAPI.upsertIntoTable("purchase", purchaseData);
 					}
 
@@ -276,7 +279,7 @@ export default function __PosPurchaseForm(props) {
 					});
 
 					setTimeout(() => {
-            			window.dbAPI.destroyTableData("temp_purchase_products");
+						window.dbAPI.destroyTableData("temp_purchase_products");
 						form.reset();
 						setVendorData(null);
 						setOrderProcess(null);
@@ -340,13 +343,14 @@ export default function __PosPurchaseForm(props) {
 											item.quantity
 										);
 
-										const handleQuantityChange = async(e) => {
+										const handleQuantityChange = async (e) => {
 											const editedQuantity = e.currentTarget.value;
 											setEditedQuantity(editedQuantity);
 
-											const cardProducts = await window.dbAPI.getDataFromTable(
-												"temp_purchase_products"
-											);
+											const cardProducts =
+												await window.dbAPI.getDataFromTable(
+													"temp_purchase_products"
+												);
 
 											const updatedProducts = cardProducts.map((product) => {
 												if (product.product_id === item.product_id) {
@@ -361,9 +365,13 @@ export default function __PosPurchaseForm(props) {
 												return product;
 											});
 
-											await window.dbAPI.upsertIntoTable(
-												"temp_purchase_products",
-												updatedProducts
+											await Promise.all(
+												updatedProducts.map((product) => {
+													window.dbAPI.upsertIntoTable(
+														"temp_purchase_products",
+														product
+													);
+												})
 											);
 
 											setLoadCardProducts(true);
@@ -413,8 +421,11 @@ export default function __PosPurchaseForm(props) {
 											setEditedPurchasePrice(newSalesPrice);
 										};
 										useEffect(() => {
-											const timeoutId = setTimeout(async() => {
-												const cardProducts = await window.dbAPI.getDataFromTable("temp_purchase_products");
+											const timeoutId = setTimeout(async () => {
+												const cardProducts =
+													await window.dbAPI.getDataFromTable(
+														"temp_purchase_products"
+													);
 												const updatedProducts = cardProducts.map(
 													(product) => {
 														if (
@@ -432,10 +443,15 @@ export default function __PosPurchaseForm(props) {
 													}
 												);
 
-												await window.dbAPI.upsertIntoTable(
-													"temp_purchase_products",
-													updatedProducts
+												await Promise.all(
+													updatedProducts.map((product) => {
+														window.dbAPI.upsertIntoTable(
+															"temp_purchase_products",
+															product
+														);
+													})
 												);
+
 												setLoadCardProducts(true);
 											}, 1000);
 
@@ -484,22 +500,14 @@ export default function __PosPurchaseForm(props) {
 										<Group gap={4} justify="right" wrap="nowrap">
 											<ActionIcon
 												size="sm"
-												variant="subtle"
+												variant="outline"
+												radius="xl"
 												color="red"
-												onClick={async() => {
-													let data = await window.dbAPI.getDataFromTable(
-														"temp_purchase_products"
-													);
-
-													data = data.filter(
-														(d) => d.product_id !== item.product_id
-													);
-
-													const updatedDataString = JSON.stringify(data);
-
-													await window.dbAPI.upsertIntoTable(
+												onClick={async () => {
+													await window.dbAPI.deleteDataFromTable(
 														"temp_purchase_products",
-														updatedDataString
+														item.product_id,
+														"product_id"
 													);
 													setLoadCardProducts(true);
 												}}

@@ -560,7 +560,7 @@ function _SalesTable() {
 																	</Menu.Item>
 																)}
 															{!data.invoice_batch_id &&
-																!data.approved_by_id && (
+																!data.approved_by_id && isOnline && (
 																	<Menu.Item
 																		onClick={() => {
 																			navigate(
@@ -589,7 +589,7 @@ function _SalesTable() {
 																{t("Show")}
 															</Menu.Item>
 															{!data.invoice_batch_id &&
-																!data.approved_by_id && (
+																!data.approved_by_id && isOnline && (
 																	<Menu.Item
 																		onClick={() => {
 																			modals.openConfirmModal(
@@ -990,7 +990,7 @@ function _SalesTable() {
 									salesViewData={salesViewData}
 									salesItems={salesItems}
 								/>
-								{!checked && (
+								{!checked && isOnline && (
 									<Button
 										onClick={() =>
 											navigate(`/inventory/sales/edit/${salesViewData?.id}`)
