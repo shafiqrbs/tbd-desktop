@@ -863,6 +863,10 @@ export default function NewSales(props) {
                                                                             onClick={async () => {
                                                                                 handleDecrement(data.id)
                                                                             }}
+                                                                            disabled={invoiceData?.invoice_items?.find(
+                                                                                (item) => item.product_id === data.id
+                                                                            )?.quantity == 1}
+
                                                                         >
                                                                             <IconMinus height={"12"} width={"12"}/>
                                                                         </ActionIcon>

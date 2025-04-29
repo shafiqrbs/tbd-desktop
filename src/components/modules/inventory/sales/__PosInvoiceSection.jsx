@@ -61,7 +61,7 @@ export default function __PosInvoiceSection(props) {
 	const { t } = useTranslation();
 	const [defaultCustomerId, setDefaultCustomerId] = useState(null);
 	const [transactionModeData, setTransactionModeData] = useState([]);
-  const [orderProcessData, setOrderProcessData] = useState([]);
+	const [orderProcessData, setOrderProcessData] = useState([]);
 
 	useEffect(() => {
 		async function fetchTransactionModeData() {
@@ -71,13 +71,13 @@ export default function __PosInvoiceSection(props) {
 		fetchTransactionModeData();
 	}, []);
 
-  useEffect(() => {
-    async function fetchOrderProcessData() {
-      const data = await window.dbAPI.getDataFromTable("order_process");
-      setOrderProcessData(data);
-    }
-    fetchOrderProcessData();
-  }, []);
+	useEffect(() => {
+		async function fetchOrderProcessData() {
+			const data = await window.dbAPI.getDataFromTable("order_process");
+			setOrderProcessData(data);
+		}
+		fetchOrderProcessData();
+	}, []);
 
 	// useEffect(() => {
 	// 	if (transactionModeData && transactionModeData.length > 0) {
@@ -284,7 +284,7 @@ export default function __PosInvoiceSection(props) {
 									required={false}
 									name={"order_process"}
 									form={form}
-									dropdownValue={orderProcessData.map(item => item.label)}
+									dropdownValue={orderProcessData.map((item) => item.label)}
 									id={"order_process"}
 									nextField={"narration"}
 									searchable={false}

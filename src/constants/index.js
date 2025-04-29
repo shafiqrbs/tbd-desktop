@@ -1,7 +1,7 @@
 import flagBD from "../assets/images/flags/bd.svg";
 import flagGB from "../assets/images/flags/gb.svg";
 
-const characterSets = [
+const CHARACTER_SET = [
 	"PC437_USA",
 	"PC850_MULTILINGUAL",
 	"PC860_PORTUGUESE",
@@ -35,12 +35,16 @@ const characterSets = [
 	"WPC1258_VIETNAMESE",
 	"KZ1048_KAZAKHSTAN",
 ];
+const LINE_CHARACTER = [
+	{ label: "---------------------------------", value: "-" },
+	{ label: "=====================", value: "=" },
+];
 
-const languages = [
+const LANGUAGES = [
 	{ label: "EN", value: "en", flag: flagGB },
 	{ label: "BN", value: "bn", flag: flagBD },
 ];
 
-const syncData = ["Sales", "Purchases", "Products", "Customers", "Vendors"];
+const SYNC_DATA = ["Sales", "Purchases", "Products", "Customers", "Vendors"];
 
-export { characterSets, languages, syncData };
+export { LANGUAGES, CHARACTER_SET, SYNC_DATA, LINE_CHARACTER };

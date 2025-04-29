@@ -17,7 +17,17 @@ export default function SalesPrintThermal({ salesViewData, salesItems }) {
 				color: "red",
 			})
 		}
-		await window.deviceAPI.thermalPrint({ configData, salesItems, salesViewData, setup });
+		const status = await window.deviceAPI.thermalPrint({ configData, salesItems, salesViewData, setup });
+		
+		if (!status?.success) {
+			notifications.show({
+				color: "red",
+				title: "Printing Failed",
+				message: status.message,
+				icon: <IconReceipt />,
+				style: { backgroundColor: "#f1f1f1" },
+			});
+		}
 	};
 
 	return (

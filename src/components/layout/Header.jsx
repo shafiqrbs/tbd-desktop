@@ -48,7 +48,7 @@ import SpotLightSearchModal from "../modules/modals/SpotLightSearchModal.jsx";
 import { useDispatch } from "react-redux";
 import shortcutDropdownData from "../global-hook/shortcut-dropdown/shortcutDropdownData.js";
 import Sandra_Logo from "../../assets/images/sandra_logo.jpeg";
-import { characterSets, languages, syncData } from "../../constants";
+import { CHARACTER_SET, LANGUAGES, SYNC_DATA, LINE_CHARACTER } from "../../constants";
 
 export default function Header({ isOnline, toggleNetwork, configData }) {
 	const [opened, { open, close }] = useDisclosure(false);
@@ -61,7 +61,7 @@ export default function Header({ isOnline, toggleNetwork, configData }) {
 	const [languageOpened, setLanguageOpened] = useState(false);
 	const [configDataSpot, setConfigData] = useState(null);
 	const [languageSelected, setLanguageSelected] = useState(
-		languages.find((item) => item.value === i18n.language)
+		LANGUAGES.find((item) => item.value === i18n.language)
 	);
 	const [printerSetup, setPrinterSetup] = useState({
 		printerName: "",
@@ -498,7 +498,7 @@ export default function Header({ isOnline, toggleNetwork, configData }) {
 									</UnstyledButton>
 								</Menu.Target>
 								<Menu.Dropdown p={4} className={LanguagePickerStyle.dropdown}>
-									{languages.map((item) => (
+									{LANGUAGES.map((item) => (
 										<Menu.Item
 											p={4}
 											leftSection={
@@ -581,6 +581,7 @@ export default function Header({ isOnline, toggleNetwork, configData }) {
 							})
 						}
 						placeholder="RT378"
+						description="Same as printer name and printer sharing name"
 					/>
 					<Select
 						mb={10}
@@ -593,22 +594,22 @@ export default function Header({ isOnline, toggleNetwork, configData }) {
 								characterSet: e,
 							})
 						}
-						data={characterSets}
+						data={CHARACTER_SET}
 						placeholder="PC437_USA"
 					/>
-					<TextInput
+					<Select
 						mb={10}
 						required
-						label={t("Line Characters")}
+						label={t("Line Character")}
 						value={printerSetup.lineCharacter}
-						onChange={(e) => {
-							if (e.target.value.length <= 1) {
-								setPrinterSetup({
-									...printerSetup,
-									lineCharacter: e.target.value,
-								});
-							}
-						}}
+						onChange={(e) =>
+							setPrinterSetup({
+								...printerSetup,
+								lineCharacter: e,
+							})
+						}
+						description="How the lines separator will build"
+						data={LINE_CHARACTER}
 						placeholder="="
 					/>
 					<Button type="submit" fullWidth bg={"red.5"}>
@@ -634,7 +635,7 @@ export default function Header({ isOnline, toggleNetwork, configData }) {
 				<Divider mb="md" />
 
 				<Stack gap="md">
-					{syncData.map((item, index) => (
+					{SYNC_DATA.map((item, index) => (
 						<Paper key={index} p="md" radius="md" withBorder shadow="sm">
 							<Group justify="space-between" wrap="nowrap">
 								<Text fw={500}>{item}</Text>

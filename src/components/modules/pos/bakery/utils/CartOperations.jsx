@@ -6,7 +6,6 @@ import { useDispatch } from "react-redux";
 import { showNotificationComponent } from "../../../../core-component/showNotificationComponent";
 import { useOutletContext } from "react-router";
 
-
 export const useCartOperations = ({
 	enableTable,
 	tableId,
@@ -25,10 +24,17 @@ export const useCartOperations = ({
 		return enableTable && tableId ? `table-${tableId}-pos-products` : "temp-pos-products";
 	}, [enableTable, tableId]);
 
-	const getCartProducts = useCallback(() => {
-		const cartProducts = localStorage.getItem(getStorageKey());
-		return cartProducts ? JSON.parse(cartProducts) : [];
-	}, [getStorageKey]);
+	const getCartProducts = async () => {
+		try {
+			const cartProducts = await window.dbAPI.getDataFromTable("invoice_table_item", {
+				invoice_id: tableId,
+			});
+
+			return cartProducts;
+		} catch (error) {
+			console.error(error);
+		}
+	};
 
 	const updateTableStatusIfNeeded = useCallback(
 		(cartLength) => {
@@ -53,10 +59,10 @@ export const useCartOperations = ({
 
 	const handleIncrement = useCallback(
 		async (productId) => {
-			let product = products?.find((p) => p.id === productId);
+			let product = products?.find((p) => p.id == productId);
 			if (!products) {
 				const allProducts = await window.dbAPI.getDataFromTable("core_products");
-				product = allProducts.find((p) => p.id === productId);
+				product = allProducts.find((p) => p.id == productId);
 			}
 			const data = {
 				url: "inventory/pos/inline-update",
@@ -86,17 +92,16 @@ export const useCartOperations = ({
 				} else {
 					let newSubTotal = 0;
 					const [invoiceTableItem, invoiceTable] = await Promise.all([
-						window.dbAPI.getDataFromTable(
-							"invoice_table_item",
-							product.id,
-							"stock_item_id"
-						),
+						window.dbAPI.getDataFromTable("invoice_table_item", {
+							invoice_id: tableId,
+							stock_item_id: product.id,
+						}),
 						window.dbAPI.getDataFromTable("invoice_table", tableId),
 					]);
-					if (invoiceTableItem) {
-						const updatedQuantity = invoiceTableItem.quantity + 1;
+					if (invoiceTableItem?.length) {
+						const updatedQuantity = invoiceTableItem[0].quantity + 1;
 						const updatedSubTotal = updatedQuantity * product.sales_price;
-						const deltaSubTotal = updatedSubTotal - invoiceTableItem.sub_total;
+						const deltaSubTotal = updatedSubTotal - invoiceTableItem[0].sub_total;
 
 						await window.dbAPI.updateDataInTable("invoice_table_item", {
 							condition: { invoice_id: tableId, stock_item_id: product.id },
@@ -143,51 +148,158 @@ export const useCartOperations = ({
 	);
 
 	const handleDecrement = useCallback(
-		(productId) => {
-			const myCartProducts = getCartProducts();
-
-			const updatedProducts = myCartProducts
-				.map((item) => {
-					if (item.product_id === productId) {
-						const newQuantity = Math.max(0, item.quantity - 1);
-						return {
-							...item,
-							quantity: newQuantity,
-							sub_total: newQuantity * item.sales_price,
-						};
-					}
-					return item;
-				})
-				.filter((item) => item.quantity > 0);
-
-			updateTableStatusIfNeeded(updatedProducts.length);
-			localStorage.setItem(getStorageKey(), JSON.stringify(updatedProducts));
-			setLoadCartProducts(true);
-		},
-		[getStorageKey, getCartProducts, updateTableStatusIfNeeded, setLoadCartProducts]
-	);
-
-	const handleDelete = useCallback(
 		async (productId) => {
-			const myCartProducts = getCartProducts();
+			let product = products?.find((p) => p.id == productId);
+			if (!products) {
+				const allProducts = await window.dbAPI.getDataFromTable("core_products");
+				product = allProducts.find((p) => p.id == productId);
+			}
 
-			const updatedProducts = myCartProducts.filter((item) => item.product_id !== productId);
+			try {
+				if (isOnline) {
+					// Handle decrement logic when online
+					const data = {
+						url: "inventory/pos/inline-update",
+						data: {
+							invoice_id: tableId,
+							field_name: "items",
+							value: {
+								...product,
+								quantity: -1,
+							},
+						},
+						module: "pos",
+					};
+					const resultAction = await dispatch(storeEntityData(data));
 
-			// Show notification for successful deletion
-			notifications.show({
-				title: t("Success"),
-				message: t("Item removed from cart"),
-				color: "green",
-				position: "bottom-right",
-				autoClose: 2000,
-			});
+					if (resultAction.payload?.status !== 200) {
+						showNotificationComponent(
+							resultAction.payload?.message || "Error updating invoice",
+							"red",
+							"",
+							"",
+							true
+						);
+					}
+				} else {
+					let newSubTotal = 0;
+					const [invoiceTableItem, invoiceTable] = await Promise.all([
+						window.dbAPI.getDataFromTable("invoice_table_item", {
+							invoice_id: tableId,
+							stock_item_id: product.id,
+						}),
+						window.dbAPI.getDataFromTable("invoice_table", tableId),
+					]);
 
-			updateTableStatusIfNeeded(updatedProducts.length);
-			localStorage.setItem(getStorageKey(), JSON.stringify(updatedProducts));
-			setLoadCartProducts(true);
+					if (invoiceTableItem?.length) {
+						const currentQuantity = invoiceTableItem[0].quantity;
+
+						if (currentQuantity <= 1) return;
+
+						const updatedQuantity = currentQuantity - 1;
+						const updatedSubTotal = updatedQuantity * product.sales_price;
+						const deltaSubTotal = updatedSubTotal - invoiceTableItem[0].sub_total;
+
+						await window.dbAPI.updateDataInTable("invoice_table_item", {
+							condition: { invoice_id: tableId, stock_item_id: product.id },
+							data: {
+								stock_item_id: product.id,
+								invoice_id: tableId,
+								quantity: updatedQuantity,
+								purchase_price: product.purchase_price,
+								sales_price: product.sales_price,
+								sub_total: updatedSubTotal,
+								display_name: product.display_name,
+							},
+						});
+
+						newSubTotal = deltaSubTotal;
+
+						await window.dbAPI.updateDataInTable("invoice_table", {
+							id: tableId,
+							data: {
+								sub_total: invoiceTable.sub_total + newSubTotal,
+							},
+						});
+					}
+				}
+			} catch (error) {
+				showNotificationComponent("Request failed. Please try again.", "red", "", "", true);
+				console.error("Error updating invoice:", error);
+			} finally {
+				setReloadInvoiceData(true);
+			}
 		},
-		[getCartProducts, getStorageKey, updateTableStatusIfNeeded, setLoadCartProducts, isOnline]
+		[products, tableId, dispatch, setReloadInvoiceData, isOnline]
 	);
+
+	const handleDelete = async (productId) => {
+		const myCartProducts = await getCartProducts();
+
+		if (!myCartProducts.length) return;
+
+		if (isOnline) {
+			try {
+				const data = {
+					url: "inventory/pos/inline-update",
+					data: {
+						invoice_id: tableId,
+						field_name: "items",
+						value: [],
+					},
+					module: "pos",
+				};
+				const resultAction = await dispatch(storeEntityData(data));
+
+				if (resultAction.payload?.status !== 200) {
+					showNotificationComponent(
+						resultAction.payload?.message || "Error updating invoice",
+						"red",
+						"",
+						"",
+						true
+					);
+				}
+			} catch (error) {
+				showNotificationComponent("Request failed. Please try again.", "red", "", "", true);
+				console.error("Error updating invoice:", error);
+			}
+		} else {
+			const [invoiceTableItem, invoiceTable] = await Promise.all([
+				window.dbAPI.getDataFromTable("invoice_table_item", {
+					invoice_id: tableId,
+					stock_item_id: productId,
+				}),
+				window.dbAPI.getDataFromTable("invoice_table", tableId),
+			]);
+
+			await Promise.all([
+				window.dbAPI.deleteDataFromTable("invoice_table_item", {
+					invoice_id: tableId,
+					stock_item_id: productId,
+				}),
+				window.dbAPI.updateDataInTable("invoice_table", {
+					id: tableId,
+					data: {
+						sub_total: invoiceTable.sub_total - invoiceTableItem[0]?.sub_total,
+					},
+				}),
+			]);
+		}
+
+		// Show notification for successful deletion
+		notifications.show({
+			title: t("Success"),
+			message: t("Item removed from cart"),
+			color: "green",
+			position: "bottom-right",
+			autoClose: 2000,
+		});
+
+		updateTableStatusIfNeeded(myCartProducts.length - 1);
+		setLoadCartProducts(true);
+		setReloadInvoiceData(true);
+	};
 
 	const handleClearCart = useCallback(() => {
 		localStorage.removeItem(getStorageKey());

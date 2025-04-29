@@ -485,10 +485,20 @@ const updateDataInTable = (table, { id, data, condition = {}, property = "id" })
 	stmt.run(...setValues, ...whereValues);
 };
 
-const deleteDataFromTable = (table, id = 1, property = "id") => {
+const deleteDataFromTable = (table, idOrConditions = 1, property = "id") => {
 	table = convertTableName(table);
-	const stmt = db.prepare(`DELETE FROM ${table} WHERE ${property} = ?`);
-	stmt.run(id);
+	let stmt;
+	if (typeof idOrConditions === "object" && idOrConditions !== null) {
+		// multiple conditions
+		const keys = Object.keys(idOrConditions);
+		const conditions = keys.map((key) => `${key} = ?`).join(" AND ");
+		const values = keys.map((key) => idOrConditions[key]);
+		stmt = db.prepare(`DELETE FROM ${table} WHERE ${conditions}`);
+		stmt.run(...values);
+	} else {
+		stmt = db.prepare(`DELETE FROM ${table} WHERE ${property} = ?`);
+		stmt.run(idOrConditions);
+	}
 };
 
 const destroyTableData = (table = "users") => {

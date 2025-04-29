@@ -791,6 +791,7 @@ export default function Invoice(props) {
 											<ActionIcon
 												size={"sm"}
 												bg={"gray.7"}
+												disabled={data.quantity === 1}
 												onClick={() => handleDecrement(data.stock_item_id)}
 											>
 												<IconMinus height={"12"} width={"12"} />
