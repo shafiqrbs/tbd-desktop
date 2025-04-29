@@ -109,7 +109,7 @@ function _SalesTable() {
 	const rows =
 		Array.isArray(salesItems) &&
 		salesItems?.map((element, index) => (
-			<Table.Tr key={element.name}>
+			<Table.Tr key={element.name+index}>
 				<Table.Td fz="xs" width={"20"}>
 					{index + 1}
 				</Table.Td>

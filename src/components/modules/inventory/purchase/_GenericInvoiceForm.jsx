@@ -374,7 +374,11 @@ function _GenericInvoiceForm(props) {
 
 	//update local storage and reset form values
 	async function updateLocalStorageAndResetForm(addProducts, type) {
-		await window.dbAPI.upsertIntoTable("temp_purchase_products", addProducts);
+		await Promise.all(
+			addProducts.map(async (product) => {
+				await window.dbAPI.upsertIntoTable("temp_purchase_products", product);
+			})
+		);
 		setSearchValue("");
 		setWarehouseData(null);
 		setProduct(null);
@@ -444,15 +448,19 @@ function _GenericInvoiceForm(props) {
 				</Grid.Col>
 				<Grid.Col span={7}>
 					<form
-						onSubmit={form.onSubmit(async(values) => {
+						onSubmit={form.onSubmit(async (values) => {
 							if (!values.barcode && !values.product_id) {
 								form.setFieldError("barcode", true);
 								form.setFieldError("product_id", true);
 								isWarehouse && form.setFieldError("warehouse_id", true);
 								setTimeout(() => {}, 1000);
 							} else {
-								const myCardProducts = await window.dbAPI.getDataFromTable("temp_purchase_products") || [];
-								const localProducts = await window.dbAPI.getDataFromTable("core-products") || [];
+								const myCardProducts =
+									(await window.dbAPI.getDataFromTable(
+										"temp_purchase_products"
+									)) || [];
+								const localProducts =
+									(await window.dbAPI.getDataFromTable("core-products")) || [];
 
 								if (values.product_id && !values.barcode) {
 									handleAddProductByProductId(
@@ -708,15 +716,19 @@ function _GenericInvoiceForm(props) {
 																			"var(--mantine-radius-sm)",
 																	},
 																}}
-																onClick={async() => {
+																onClick={async () => {
 																	const quantity =
 																		productQuantities[data.id];
 																	if (
 																		quantity &&
 																		Number(quantity) > 0
 																	) {
-																		const cardProducts = await window.dbAPI.getDataFromTable("temp_purchase_products");
-																		const myCardProducts = cardProducts || [];
+																		const cardProducts =
+																			await window.dbAPI.getDataFromTable(
+																				"temp_purchase_products"
+																			);
+																		const myCardProducts =
+																			cardProducts || [];
 
 																		const productToAdd = {
 																			product_id: data.id,
@@ -766,11 +778,12 @@ function _GenericInvoiceForm(props) {
 
 																		// Update localStorage and reset form values
 																		await Promise.all(
-																			myCardProducts.map((product) =>
-																				window.dbAPI.upsertIntoTable(
-																					"temp_purchase_products",
-																					product
-																				)
+																			myCardProducts.map(
+																				(product) =>
+																					window.dbAPI.upsertIntoTable(
+																						"temp_purchase_products",
+																						product
+																					)
 																			)
 																		);
 

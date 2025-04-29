@@ -33,8 +33,7 @@ function PurchaseInvoice() {
 								currencySymbol={configData?.currency?.symbol}
 							/>
 							<Box p="8">
-								{
-									configData?.business_model?.slug === 'general' &&
+								{configData?.business_model?.slug === "general" && (
 									<_GenericInvoiceForm
 										allowZeroPercentage={configData?.zero_stock}
 										currencySymbol={configData?.currency?.symbol}
@@ -44,7 +43,7 @@ function PurchaseInvoice() {
 										isWarehouse={configData?.sku_warehouse}
 										isSMSActive={configData?.is_active_sms}
 									/>
-								}
+								)}
 							</Box>
 						</>
 					)}
