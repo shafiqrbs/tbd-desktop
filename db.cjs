@@ -102,7 +102,7 @@ db.prepare(
 	CREATE TABLE IF NOT EXISTS core_customers (
 		id INTEGER PRIMARY KEY,
 		name TEXT NOT NULL,
-		mobile TEXT NOT NULL,
+		mobile TEXT,
 		address TEXT,
 		email TEXT,
 		code INTEGER NOT NULL,
@@ -356,6 +356,19 @@ db.prepare(
 		printer_name TEXT NOT NULL,
 		line_character TEXT DEFAULT '-',
 		character_set TEXT DEFAULT 'SLOVENIA',
+		created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+		updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+	)`
+).run();
+
+// transactions table
+db.prepare(
+	`
+	CREATE TABLE IF NOT EXISTS transactions (
+		id INTEGER PRIMARY KEY,
+		transaction_mode_id TEXT NOT NULL,
+		invoice_id TEXT NOT NULL,
+		amount REAL NOT NULL,
 		created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 		updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 	)`

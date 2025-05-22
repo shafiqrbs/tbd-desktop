@@ -14,7 +14,7 @@ import getConfigData from "../../../global-hook/config-data/getConfigData.js";
 
 export default function BakeryIndex() {
 	const [categories, setCategories] = useState([]);
-	const {isOnline, mainAreaHeight } = useOutletContext();
+	const { isOnline, mainAreaHeight } = useOutletContext();
 	const height = mainAreaHeight - 130;
 	const { t } = useTranslation();
 	const dispatch = useDispatch();

@@ -36,7 +36,6 @@ function SalesInvoice() {
 							/>
 							<Box p={"8"}>
 								{insertType === "create" &&
-									configData?.business_model?.slug === "general" && (
 										<_GenericPosForm
 											allowZeroPercentage={configData?.zero_stock}
 											currencySymbol={configData?.currency?.symbol}
@@ -45,7 +44,7 @@ function SalesInvoice() {
 											isZeroReceiveAllow={configData?.is_zero_receive_allow}
 											isWarehouse={configData?.sku_warehouse}
 										/>
-									)}
+								}
 								{insertType === "create" &&
 									configData?.business_model?.slug === "distribution" && (
 										<_WholeSaleGenericInvoiceForm

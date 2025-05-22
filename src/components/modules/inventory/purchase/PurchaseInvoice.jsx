@@ -10,6 +10,8 @@ function PurchaseInvoice() {
 	const progress = getLoadingProgress();
 	const { configData } = getConfigData();
 
+	console.log("configData", configData);
+
 	return (
 		<>
 			{progress !== 100 && (
@@ -33,17 +35,15 @@ function PurchaseInvoice() {
 								currencySymbol={configData?.currency?.symbol}
 							/>
 							<Box p="8">
-								{configData?.business_model?.slug === "general" && (
-									<_GenericInvoiceForm
-										allowZeroPercentage={configData?.zero_stock}
-										currencySymbol={configData?.currency?.symbol}
-										isPurchaseByPurchasePrice={
-											configData?.is_purchase_by_purchase_price
-										}
-										isWarehouse={configData?.sku_warehouse}
-										isSMSActive={configData?.is_active_sms}
-									/>
-								)}
+								<_GenericInvoiceForm
+									allowZeroPercentage={configData?.zero_stock}
+									currencySymbol={configData?.currency?.symbol}
+									isPurchaseByPurchasePrice={
+										configData?.is_purchase_by_purchase_price
+									}
+									isWarehouse={configData?.sku_warehouse}
+									isSMSActive={configData?.is_active_sms}
+								/>
 							</Box>
 						</>
 					)}

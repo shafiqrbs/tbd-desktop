@@ -371,7 +371,8 @@ export default function Invoice(props) {
 	const handleClick = (e) => {
 		if (e.currentTarget.name === "additionalProductAdd") {
 			setEventName(e.currentTarget.name);
-			setCommonDrawer(true);
+			// TODO: Remove this after testing
+			// setCommonDrawer(true);
 		} else if (e.currentTarget.name === "splitPayment") {
 			form.setErrors({ ...form.errors, transaction_mode_id: null });
 			setEventName(e.currentTarget.name);
@@ -465,10 +466,10 @@ export default function Invoice(props) {
 			return;
 		}
 
-		if (!customerId) {
-			showNotificationComponent(t("ChooseCustomer"), "red", "", "", true, 1000, true);
-			return;
-		}
+		// if (!customerId) {
+		// 	showNotificationComponent(t("ChooseCustomer"), "red", "", "", true, 1000, true);
+		// 	return;
+		// }
 
 		if (!invoiceData.payment) {
 			showNotificationComponent(t("PaymentAmount"), "red", "", "", true, 1000, true);
@@ -514,7 +515,9 @@ export default function Invoice(props) {
 						console.error("Error fetching data:", resultAction);
 					}
 				} else {
-					const customerInfo = customersDropdownData.find((data) => data.value == invoiceData.customer_id); 
+					const customerInfo = customersDropdownData.find(
+						(data) => data.value == invoiceData.customer_id
+					);
 					await window.dbAPI.upsertIntoTable("sales", {
 						invoice: generateInvoiceId(),
 						sub_total: invoiceData.sub_total,
@@ -525,8 +528,8 @@ export default function Invoice(props) {
 						discount_calculation: null,
 						discount_type: invoiceData.discount_type,
 						customerId: invoiceData.customer_id,
-						customerName: customerInfo.label.split(" -- ")[1],
-						customerMobile: customerInfo.label.split(" -- ")[0],
+						customerName: customerInfo?.label?.split(" -- ")[1] || "N/A",
+						customerMobile: customerInfo?.label?.split(" -- ")[0] || "N/A",
 						createdByUser: "sandra",
 						createdById: invoiceData.created_by_id,
 						salesById: invoiceData.sales_by_id,
@@ -541,19 +544,19 @@ export default function Invoice(props) {
 
 					await window.dbAPI.updateDataInTable("invoice_table", {
 						id: tableId,
-						data : {
+						data: {
 							sales_by_id: null,
 							transaction_mode_id: null,
 							customer_id: null,
 							is_active: 0,
 							sub_total: null,
 							payment: null,
-						}
-					})
+						},
+					});
 
 					invoiceData.invoice_items.forEach((item) => {
 						window.dbAPI.deleteDataFromTable("invoice_table_item", item.id);
-					})
+					});
 				}
 			} catch (err) {
 				console.error("Unexpected error:", err);
@@ -1029,7 +1032,10 @@ export default function Invoice(props) {
 												{transactionModeData.map((mode, index) => (
 													<Box
 														onClick={() => {
-															handleTransactionModel(mode.id, mode.name);
+															handleTransactionModel(
+																mode.id,
+																mode.name
+															);
 														}}
 														key={index}
 														p={4}

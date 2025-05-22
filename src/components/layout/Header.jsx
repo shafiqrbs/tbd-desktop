@@ -1,5 +1,4 @@
 import {
-	HoverCard,
 	Group,
 	Button,
 	UnstyledButton,
@@ -23,6 +22,8 @@ import {
 	Paper,
 	Select,
 	TextInput,
+	CloseButton,
+	ScrollArea,
 } from "@mantine/core";
 
 import { useDisclosure, useFullscreen, useHotkeys } from "@mantine/hooks";
@@ -37,6 +38,8 @@ import {
 	IconWifi,
 	IconRefresh,
 	IconPrinter,
+	IconArrowRight,
+	IconBackspace,
 } from "@tabler/icons-react";
 import { Link, useNavigate } from "react-router";
 import classes from "./../../assets/css/Header.module.css";
@@ -59,7 +62,6 @@ export default function Header({ isOnline, toggleNetwork, configData }) {
 	const { toggle, fullscreen } = useFullscreen();
 	const [syncPanelOpen, setSyncPanelOpen] = useState(false);
 	const [languageOpened, setLanguageOpened] = useState(false);
-	const [configDataSpot, setConfigData] = useState(null);
 	const [languageSelected, setLanguageSelected] = useState(
 		LANGUAGES.find((item) => item.value === i18n.language)
 	);
@@ -68,21 +70,10 @@ export default function Header({ isOnline, toggleNetwork, configData }) {
 		characterSet: "PC437_USA",
 		lineCharacter: "-",
 	});
-
-	useEffect(() => {
-		const checkConfigData = async () => {
-			const storedConfigData = await window.dbAPI.getDataFromTable("config-data");
-			if (storedConfigData) {
-				setConfigData(storedConfigData);
-			} else {
-				navigate("/login");
-			}
-		};
-
-		const timeoutId = setTimeout(checkConfigData, 500);
-
-		return () => clearTimeout(timeoutId);
-	}, [navigate]);
+	const [shortcutModalOpen, setShortcutModalOpen] = useState(false);
+	const [value, setValue] = useState("");
+	const [filteredItems, setFilteredItems] = useState([]);
+	const [selectedIndex, setSelectedIndex] = useState(-1);
 
 	useEffect(() => {
 		const checkPrinterData = async () => {
@@ -102,7 +93,7 @@ export default function Header({ isOnline, toggleNetwork, configData }) {
 	}, [openedPrinter]);
 
 	const getActions = () => {
-		const actions = shortcutDropdownData(t, configDataSpot);
+		const actions = shortcutDropdownData(t, configData);
 		let index = 0;
 
 		// Assign an index to each action
@@ -125,9 +116,6 @@ export default function Header({ isOnline, toggleNetwork, configData }) {
 		await window.dbAPI.destroyTableData();
 		navigate("/login");
 	}
-	const list = getActions().reduce((acc, group) => {
-		return [...acc, ...group.actions];
-	}, []);
 
 	function toggleSyncPanel() {
 		setSyncPanelOpen(!syncPanelOpen);
@@ -142,9 +130,6 @@ export default function Header({ isOnline, toggleNetwork, configData }) {
 				},
 			],
 		],
-		[]
-	);
-	useHotkeys(
 		[
 			[
 				"alt+x",
@@ -170,104 +155,92 @@ export default function Header({ isOnline, toggleNetwork, configData }) {
 			console.error("Error in handlePrinterSetup:", error);
 		}
 	};
-	
-	const shortcuts = (
-		<Stack spacing="xs">
-			{list
-				.reduce((groups, item) => {
-					const lastGroup = groups[groups.length - 1];
-					if (!lastGroup || item.group !== lastGroup.group) {
-						groups.push({ group: item.group, items: [item] });
-					} else {
-						lastGroup.items.push(item);
-					}
-					return groups;
-				}, [])
-				.map((groupData, groupIndex) => (
-					<Box key={groupIndex}>
-						<Text size="sm" fw="bold" c="#828282" pb={"xs"}>
-							{groupData.group}
-						</Text>
 
-						<SimpleGrid cols={2}>
-							{groupData.items.map((action, itemIndex) => (
-								<Link
-									key={itemIndex}
-									to={
-										action.id === "inhouse"
-											? "#"
-											: action.group === "Production" ||
-											  action.group === "প্রোডাকশন"
-											? `production/${action.id}`
-											: action.group === "Core" || action.group === "কেন্দ্র"
-											? `core/${action.id}`
-											: action.group === "Inventory" ||
-											  action.group === "ইনভেন্টরি"
-											? `inventory/${action.id}`
-											: action.group === "Domain" || action.group === "ডোমেইন"
-											? `domain/${action.id}`
-											: action.group === "Accounting" ||
-											  action.group === "একাউন্টিং"
-											? `accounting/${action.id}`
-											: action.group === "Procurement"
-											? `procurement/${action.id}`
-											: action.group === "Sales & Purchase"
-											? `inventory/${action.id}`
-											: `/sitemap`
-									}
-									onClick={() => {
-										navigate(
-											action.group === "Production" ||
-												action.group === "প্রোডাকশন"
-												? `production/${action.id}`
-												: action.group === "Core" ||
-												  action.group === "কেন্দ্র"
-												? `core/${action.id}`
-												: action.group === "Inventory" ||
-												  action.group === "ইনভেন্টরি"
-												? `inventory/${action.id}`
-												: action.group === "Domain" ||
-												  action.group === "ডোমেইন"
-												? `domain/${action.id}`
-												: action.group === "Accounting" ||
-												  action.group === "একাউন্টিং"
-												? `accounting/${action.id}`
-												: action.group === "Sales & Purchase"
-												? `inventory/${action.id}`
-												: `/sitemap`
-										);
-									}}
-									style={{ textDecoration: "none", color: "inherit" }}
-								>
-									<UnstyledButton className={classes.subLink}>
-										<Group
-											wrap="nowrap"
-											align="center"
-											justify="center"
-											gap={4}
-										>
-											<ThemeIcon size={18} variant="transparent" radius="md">
-												<IconCircleCheck
-													style={{ width: rem(14), height: rem(14) }}
-													color={"green"}
-												/>
-											</ThemeIcon>
-											<div>
-												<Center>
-													<Text size="sm" fw={500}>
-														{action.label}
-													</Text>
-												</Center>
-											</div>
-										</Group>
-									</UnstyledButton>
-								</Link>
-							))}
-						</SimpleGrid>
-					</Box>
-				))}
-		</Stack>
-	);
+	const filterList = (searchValue) => {
+		const updatedList = getActions().reduce((acc, group) => {
+			const filteredActions = group.actions.filter((action) =>
+				action.label.toLowerCase().includes(searchValue.toLowerCase())
+			);
+			return [...acc, ...filteredActions];
+		}, []);
+
+		setFilteredItems(updatedList);
+		setSelectedIndex(-1);
+	};
+
+	const clearSearch = () => {
+		setValue("");
+		const allActions = getActions().reduce((acc, group) => [...acc, ...group.actions], []);
+		setFilteredItems(allActions);
+		setSelectedIndex(0);
+	};
+
+	useHotkeys([["alt+c", clearSearch]], []);
+
+	const handleKeyDown = (event) => {
+		if (filteredItems.length === 0) return;
+
+		if (event.key === "ArrowDown") {
+			event.preventDefault();
+			setSelectedIndex((prevIndex) => (prevIndex + 1) % filteredItems.length);
+		} else if (event.key === "ArrowUp") {
+			event.preventDefault();
+			setSelectedIndex((prevIndex) =>
+				prevIndex <= 0 ? filteredItems.length - 1 : prevIndex - 1
+			);
+		} else if (event.key === "Enter" && selectedIndex >= 0) {
+			const selectedAction = filteredItems[selectedIndex];
+			if (selectedAction) {
+				const path =
+					selectedAction.id === "inhouse"
+						? "#"
+						: selectedAction.group === "Production" ||
+						  selectedAction.group === "প্রোডাকশন"
+						? `production/${selectedAction.id}`
+						: selectedAction.group === "Core" || selectedAction.group === "কেন্দ্র"
+						? `core/${selectedAction.id}`
+						: selectedAction.group === "Inventory" ||
+						  selectedAction.group === "ইনভেন্টরি"
+						? `inventory/${selectedAction.id}`
+						: selectedAction.group === "Domain" || selectedAction.group === "ডোমেইন"
+						? `domain/${selectedAction.id}`
+						: selectedAction.group === "Accounting" ||
+						  selectedAction.group === "একাউন্টিং"
+						? `accounting/${selectedAction.id}`
+						: selectedAction.group === "Procurement"
+						? `procurement/${selectedAction.id}`
+						: selectedAction.group === "Sales & Purchase"
+						? `inventory/${selectedAction.id}`
+						: `/sitemap`;
+
+				navigate(path);
+				setValue("");
+				setShortcutModalOpen(false);
+			}
+		}
+	};
+
+	useEffect(() => {
+		if (shortcutModalOpen) {
+			const allActions = getActions().reduce((acc, group) => [...acc, ...group.actions], []);
+			setFilteredItems(allActions);
+			setSelectedIndex(0);
+		}
+	}, [shortcutModalOpen]);
+
+	useEffect(() => {
+		if (selectedIndex >= 0 && filteredItems.length > 0) {
+			const selectedElement = document.getElementById(
+				`item-${filteredItems[selectedIndex].index}`
+			);
+			if (selectedElement) {
+				selectedElement.scrollIntoView({
+					behavior: "smooth",
+					block: "nearest",
+				});
+			}
+		}
+	}, [selectedIndex, filteredItems]);
 
 	return (
 		<>
@@ -287,9 +260,9 @@ export default function Header({ isOnline, toggleNetwork, configData }) {
 					</Modal.Body>
 				</Modal.Content>
 			</Modal.Root>
-			<Box bg="#905a23" mb={"2"} pos={`relative`}>
+			<Box bg="#C6AF9D" mb={"2"} pos={`relative`}>
 				<Grid columns={24} gutter={{ base: 2 }} justify="space-between">
-					<Grid.Col span={3}>
+					<Grid.Col span={6}>
 						{configData?.domain?.company_name === "Sandra" ? (
 							<div
 								style={{
@@ -322,65 +295,6 @@ export default function Header({ isOnline, toggleNetwork, configData }) {
 							</Box>
 						)}
 					</Grid.Col>
-					<Grid.Col span={3} justify="flex-end" align={"center"} mt={"xs"}>
-						<HoverCard
-							width={400}
-							position="bottom"
-							radius="md"
-							shadow="md"
-							withinPortal
-							withArrow
-							arrowPosition="center"
-						>
-							<HoverCard.Target>
-								<a href="#" className={classes.link}>
-									<Center inline>
-										<Box component="span" mr={"xs"} c={"white"} fw={"800"}>
-											{t("Shortcut")}
-										</Box>
-										<IconChevronDown
-											style={{ width: rem(16), height: rem(16) }}
-											color={"white"}
-										/>
-									</Center>
-								</a>
-							</HoverCard.Target>
-
-							<HoverCard.Dropdown style={{ overflow: "hidden" }}>
-								<Group justify="space-between">
-									<Text fw={500} fz={16} c={"red.6"}>
-										{t("Shortcuts")}
-									</Text>
-								</Group>
-
-								<Divider my="sm" />
-
-								<SimpleGrid cols={1} spacing={0}>
-									{shortcuts}
-								</SimpleGrid>
-
-								<div className={classes.dropdownFooter}>
-									<Group justify="space-between" mt={"xs"}>
-										<div>
-											<Text fw={500} fz="sm">
-												Sitemap
-											</Text>
-											<Text size="xs" c="dimmed">
-												Sitemap Details
-											</Text>
-										</div>
-										<Button
-											bg={"green.6"}
-											size="xs"
-											onClick={() => navigate("/")}
-										>
-											Sitemap
-										</Button>
-									</Group>
-								</div>
-							</HoverCard.Dropdown>
-						</HoverCard>
-					</Grid.Col>
 					<Grid.Col
 						span={12}
 						justify="flex-end"
@@ -388,7 +302,7 @@ export default function Header({ isOnline, toggleNetwork, configData }) {
 						direction="row"
 						wrap="wrap"
 					>
-						<Group bg="#905a23">
+						<Group bg="#C6AF9D">
 							<Flex
 								justify="center"
 								align="center"
@@ -426,7 +340,7 @@ export default function Header({ isOnline, toggleNetwork, configData }) {
 									justify="space-between"
 									style={{ border: `2px solid #684119` }}
 									color={`gray`}
-									onClick={open}
+									onClick={() => setShortcutModalOpen(true)}
 									className="no-focus-outline"
 								/>
 							</Flex>
@@ -566,6 +480,245 @@ export default function Header({ isOnline, toggleNetwork, configData }) {
 					</Grid.Col>
 				</Grid>
 			</Box>
+
+			{/* Shortcut Modal */}
+			<Modal
+				opened={shortcutModalOpen}
+				onClose={() => setShortcutModalOpen(false)}
+				centered
+				size="450"
+				padding="md"
+				radius="md"
+				styles={{
+					title: {
+						width: "100%",
+						margin: 0,
+						padding: 0,
+					},
+				}}
+				overlayProps={{
+					backgroundOpacity: 0.7,
+					blur: 3,
+				}}
+				title={
+					<Box>
+						<TextInput
+							w={"100%"}
+							align={"center"}
+							pr={"lg"}
+							justify="space-between"
+							data-autofocus
+							leftSection={<IconSearch size={16} c={"red"} />}
+							placeholder={t("SearchMenu")}
+							value={value}
+							rightSectionPointerEvents="all"
+							rightSection={
+								<div
+									style={{
+										display: "flex",
+										alignItems: "center",
+									}}
+								>
+									{value ? (
+										<>
+											<CloseButton
+												ml={"-50"}
+												mr={"xl"}
+												icon={
+													<IconBackspace
+														style={{ width: rem(24) }}
+														stroke={1.5}
+													/>
+												}
+												aria-label="Clear input"
+												onClick={clearSearch}
+											/>
+											<Kbd ml={"-xl"} h={"24"} c={"gray.8"} fz={"12"}>
+												Alt
+											</Kbd>{" "}
+											+{" "}
+											<Kbd c={"gray.8"} h={"24"} fz={"12"} mr={"lg"}>
+												C
+											</Kbd>
+										</>
+									) : (
+										<>
+											<Kbd ml={"-lg"} h={"24"} c={"gray.8"} fz={"12"}>
+												Alt{" "}
+											</Kbd>{" "}
+											+{" "}
+											<Kbd c={"gray.8"} h={"24"} fz={"12"} mr={"lg"}>
+												X
+											</Kbd>
+										</>
+									)}
+								</div>
+							}
+							onChange={(event) => {
+								setValue(event.target.value);
+								filterList(event.target.value);
+							}}
+							onKeyDown={handleKeyDown}
+							className="no-focus-outline"
+						/>
+					</Box>
+				}
+				transitionProps={{ transition: "fade", duration: 200 }}
+			>
+				<Divider my="sm" mt={0} />
+				<ScrollArea type={"never"} scrollbars="y" h={400}>
+					{filteredItems.length > 0 ? (
+						<Stack spacing="xs">
+							{filteredItems
+								.reduce((groups, item) => {
+									const existingGroup = groups.find(
+										(g) => g.group === item.group
+									);
+									if (existingGroup) {
+										existingGroup.items.push(item);
+									} else {
+										groups.push({
+											group: item.group,
+											items: [item],
+										});
+									}
+									return groups;
+								}, [])
+								.map((groupData, groupIndex) => (
+									<Box key={groupIndex}>
+										<Text size="sm" fw="bold" c="#828282" pb={"xs"}>
+											{groupData.group}
+										</Text>
+										<Stack
+											bg="var(--mantine-color-body)"
+											justify="flex-start"
+											align="stretch"
+											gap="2"
+										>
+											{groupData.items.map((action, itemIndex) => {
+												return (
+													<Link
+														id={`item-${action.index}`}
+														className={"link"}
+														key={itemIndex}
+														to={
+															action.id === "inhouse"
+																? "#"
+																: action.group === "Production" ||
+																  action.group === "প্রোডাকশন"
+																? `production/${action.id}`
+																: action.group === "Core" ||
+																  action.group === "কেন্দ্র"
+																? `core/${action.id}`
+																: action.group === "Inventory" ||
+																  action.group === "ইনভেন্টরি"
+																? `inventory/${action.id}`
+																: action.group === "Domain" ||
+																  action.group === "ডোমেইন"
+																? `domain/${action.id}`
+																: action.group === "Accounting" ||
+																  action.group === "একাউন্টিং"
+																? `accounting/${action.id}`
+																: action.group === "Procurement"
+																? `procurement/${action.id}`
+																: action.group ===
+																  "Sales & Purchase"
+																? `inventory/${action.id}`
+																: `/sitemap`
+														}
+														onClick={() => {
+															setShortcutModalOpen(false);
+															setValue("");
+															navigate(
+																action.id === "inhouse"
+																	? "#"
+																	: action.group ===
+																			"Production" ||
+																	  action.group === "প্রোডাকশন"
+																	? `production/${action.id}`
+																	: action.group === "Core" ||
+																	  action.group === "কেন্দ্র"
+																	? `core/${action.id}`
+																	: action.group ===
+																			"Inventory" ||
+																	  action.group === "ইনভেন্টরি"
+																	? `inventory/${action.id}`
+																	: action.group === "Domain" ||
+																	  action.group === "ডোমেইন"
+																	? `domain/${action.id}`
+																	: action.group ===
+																			"Accounting" ||
+																	  action.group === "একাউন্টিং"
+																	? `accounting/${action.id}`
+																	: action.group === "Procurement"
+																	? `procurement/${action.id}`
+																	: action.group ===
+																	  "Sales & Purchase"
+																	? `inventory/${action.id}`
+																	: `/sitemap`
+															);
+														}}
+													>
+														<Group
+															wrap="nowrap"
+															align="center"
+															justify="left"
+															pt={"4"}
+															pb={"4"}
+															className={`
+																	${filteredItems.indexOf(action) === selectedIndex ? "highlightedItem" : ""}
+																`}
+														>
+															<ThemeIcon
+																size={18}
+																color={"#242424"}
+																variant="transparent"
+															>
+																<IconArrowRight />
+															</ThemeIcon>
+															<Text
+																size="sm"
+																className={`${
+																	filteredItems.indexOf(
+																		action
+																	) === selectedIndex
+																		? "highlightedItem"
+																		: ""
+																}${"link"}`}
+															>
+																{action.label}
+															</Text>
+														</Group>
+													</Link>
+												);
+											})}
+										</Stack>
+									</Box>
+								))}
+						</Stack>
+					) : (
+						<Text align="center" mt="md" c="dimmed">
+							{t("NoResultsFound")}
+						</Text>
+					)}
+				</ScrollArea>
+				<div className={"titleBackground"}>
+					<Group justify="space-between" mt={"xs"}>
+						<div>
+							<Text fw={500} fz="sm">
+								{t("Sitemap")}
+							</Text>
+							<Text size="xs" c="dimmed">
+								{t("SitemapDetails")}
+							</Text>
+						</div>
+						<Button className={"btnPrimaryBg"} size="xs" onClick={() => navigate("/")}>
+							{t("Sitemap")}
+						</Button>
+					</Group>
+				</div>
+			</Modal>
+
 			{/* ---------- printer modal ------- */}
 			<Modal opened={openedPrinter} onClose={closePrinter} title="Setup Printer">
 				<form onSubmit={handlePrinterSetup}>
