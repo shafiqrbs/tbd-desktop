@@ -729,5 +729,9 @@
 	"FormSubmitConfirmationMessage": "আপনি কি নির্দেশনাটি সাবমিট করতে চান?",
 	"SettingsDetails": "সেটিংস বিবিধ",
 	"PartialAmount": "আংশিক পরিমাণ",
-	"SplitPayment": "স্প্লিট পেমেন্ট"
+	"SplitPayment": "স্প্লিট পেমেন্ট",
+	"PaymentAmount": "পেমেন্ট এমাউন্ট",
+	"ChooseTransactionMode": "ট্রান্সকশন মোড নির্বাচন করুন",
+	"Payment": "পেমেন্ট",
+	"SalesComplete": "সেলস সম্পূর্ণ হয়েছে"
 }

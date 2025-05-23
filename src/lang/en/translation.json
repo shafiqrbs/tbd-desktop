@@ -1152,5 +1152,7 @@
 	"RequestQuantity": "Request Quantity",
 	"SettingsDetails": "Settings Details",
 	"PartialAmount": "Partial Amount",
-	"SplitPayment": "Split Payment"
+	"SplitPayment": "Split Payment",
+	"Payment": "Payment",
+	"SalesComplete": "Sales Complete"
 }

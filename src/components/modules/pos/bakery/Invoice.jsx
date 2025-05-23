@@ -25,7 +25,6 @@ import {
 	IconMinus,
 	IconTrash,
 	IconSum,
-	IconUserFilled,
 	IconPrinter,
 	IconDeviceFloppy,
 	IconScissors,
@@ -34,6 +33,7 @@ import {
 	IconTicket,
 	IconCurrencyTaka,
 	IconPercentage,
+	IconUserPlus,
 } from "@tabler/icons-react";
 import { DataTable } from "mantine-datatable";
 import { useDispatch } from "react-redux";
@@ -54,29 +54,27 @@ import { showNotificationComponent } from "../../../core-component/showNotificat
 
 import { formatDate, generateInvoiceId } from "../../../../lib/index.js";
 
-export default function Invoice(props) {
-	const {
-		products,
-		tableId,
-		tables,
-		setLoadCartProducts,
-		tableCustomerMap,
-		updateTableCustomer,
-		clearTableCustomer,
-		customerObject,
-		setCustomerObject,
-		loadCartProducts,
-		updateTableSplitPayment,
-		clearTableSplitPayment,
-		tableSplitPaymentMap,
-		invoiceMode,
-		invoiceData,
-		setTables,
-		setReloadInvoiceData,
-		setTableId,
-		setInvoiceData,
-	} = props;
-
+export default function Invoice({
+	products,
+	tableId,
+	tables,
+	setLoadCartProducts,
+	tableCustomerMap,
+	updateTableCustomer,
+	clearTableCustomer,
+	customerObject,
+	setCustomerObject,
+	loadCartProducts,
+	updateTableSplitPayment,
+	clearTableSplitPayment,
+	tableSplitPaymentMap,
+	invoiceMode,
+	invoiceData,
+	setTables,
+	setReloadInvoiceData,
+	setTableId,
+	setInvoiceData,
+}) {
 	const dispatch = useDispatch();
 	const { t } = useTranslation();
 	const { isOnline, mainAreaHeight } = useOutletContext();
@@ -128,6 +126,8 @@ export default function Invoice(props) {
 	const [enableCoupon, setEnableCoupon] = useState("Coupon");
 
 	const [tableReceiveAmounts, setTableReceiveAmounts] = useState({});
+	const { scrollRef, showLeftArrow, showRightArrow, handleScroll, scroll } = useScroll();
+
 	useEffect(() => {
 		if (enableTable && tableId && tableCustomerMap && tableCustomerMap[tableId]) {
 			const tableCustomer = tableCustomerMap[tableId];
@@ -155,7 +155,6 @@ export default function Invoice(props) {
 
 		fetchData();
 	}, []);
-	const { scrollRef, showLeftArrow, showRightArrow, handleScroll, scroll } = useScroll();
 
 	const form = useForm({
 		initialValues: {
@@ -461,7 +460,7 @@ export default function Invoice(props) {
 			return;
 		}
 
-		if (!invoiceData.transaction_mode_id) {
+		if (!invoiceData.transaction_mode_id && !isSplitPaymentActive) {
 			showNotificationComponent(t("ChooseTransactionMode"), "red", "", "", true, 1000, true);
 			return;
 		}
@@ -471,7 +470,7 @@ export default function Invoice(props) {
 		// 	return;
 		// }
 
-		if (!invoiceData.payment) {
+		if (!invoiceData.payment && !isSplitPaymentActive) {
 			showNotificationComponent(t("PaymentAmount"), "red", "", "", true, 1000, true);
 			return;
 		}
@@ -501,7 +500,27 @@ export default function Invoice(props) {
 		const fetchData = async () => {
 			setIsDisabled(true);
 			try {
+				// If split payment is active, set payment to full amount
+				const fullAmount = isSplitPaymentActive
+					? salesTotalWithoutDiscountAmount
+					: invoiceData.payment;
+
 				if (isOnline) {
+					// First update the payment amount if split payment is active
+					if (isSplitPaymentActive) {
+						const updatePaymentData = {
+							url: "inventory/pos/inline-update",
+							data: {
+								invoice_id: tableId,
+								field_name: "amount",
+								value: fullAmount,
+							},
+							module: "pos",
+						};
+
+						await dispatch(storeEntityData(updatePaymentData));
+					}
+
 					const resultAction = await dispatch(
 						getIndexEntityData({
 							url: "inventory/pos/sales-complete/" + invoiceData.id,
@@ -518,12 +537,15 @@ export default function Invoice(props) {
 					const customerInfo = customersDropdownData.find(
 						(data) => data.value == invoiceData.customer_id
 					);
+					const invoiceId = generateInvoiceId();
+
+					// Insert into sales table with multi_transaction flag
 					await window.dbAPI.upsertIntoTable("sales", {
-						invoice: generateInvoiceId(),
+						invoice: invoiceId,
 						sub_total: invoiceData.sub_total,
 						total: invoiceData.total ?? invoiceData.sub_total,
 						approved_by_id: invoiceData.created_by_id,
-						payment: invoiceData.payment,
+						payment: fullAmount,
 						discount: null,
 						discount_calculation: null,
 						discount_type: invoiceData.discount_type,
@@ -539,7 +561,33 @@ export default function Invoice(props) {
 						mode_name: transactionModeName,
 						created: formatDate(new Date()),
 						sales_items: JSON.stringify(invoiceData.invoice_items),
+						multi_transaction: isSplitPaymentActive ? 1 : 0,
 					});
+
+					// Handle sales transactions based on split payment status
+					if (isSplitPaymentActive) {
+						// For split payment, insert multiple rows
+						const currentTableKey = tableId || "general";
+						const splitPayments = tableSplitPaymentMap[currentTableKey] || [];
+
+						for (const payment of splitPayments) {
+							await window.dbAPI.upsertIntoTable("sales_transactions", {
+								transaction_mode_id: payment.transaction_mode_id,
+								invoice_id: invoiceId,
+								amount: payment.partial_amount,
+								remarks: payment.remarks || "",
+							});
+						}
+					} else {
+						// For single payment, insert one row
+						await window.dbAPI.upsertIntoTable("sales_transactions", {
+							transaction_mode_id: transactionModeId,
+							invoice_id: invoiceId,
+							amount: fullAmount,
+							remarks: "",
+						});
+					}
+
 					resetAll();
 
 					await window.dbAPI.updateDataInTable("invoice_table", {
@@ -1219,7 +1267,7 @@ export default function Invoice(props) {
 												customerObject && customerObject.name ? (
 													<></>
 												) : (
-													<IconUserFilled
+													<IconUserPlus
 														height={14}
 														width={14}
 														stroke={2}
@@ -1667,18 +1715,30 @@ export default function Invoice(props) {
 														...prev,
 														[currentTableKey]: newValue,
 													}));
-												}
 
-												if (!isOnline) {
-													await window.dbAPI.updateDataInTable(
-														"invoice_table",
-														{
-															id: tableId,
-															data: {
-																payment: event.target.value,
-															},
-														}
+													// Calculate due amount immediately
+													const totalAmount =
+														salesTotalAmount - salesDiscountAmount;
+													const receiveAmount = Number(newValue) || 0;
+													const dueAmount = totalAmount - receiveAmount;
+													setSalesDueAmount(dueAmount);
+													setReturnOrDueText(
+														totalAmount < receiveAmount
+															? "Return"
+															: "Due"
 													);
+
+													if (!isOnline) {
+														await window.dbAPI.updateDataInTable(
+															"invoice_table",
+															{
+																id: tableId,
+																data: {
+																	payment: newValue,
+																},
+															}
+														);
+													}
 												}
 											}}
 										/>
@@ -1793,6 +1853,7 @@ export default function Invoice(props) {
 							setReloadInvoiceData={setReloadInvoiceData}
 						/>
 					)}
+					{/* split amount, customer add, kitchen print, additional items etc */}
 					{commonDrawer && (
 						<_CommonDrawer
 							salesByUserName={salesByUserName}
@@ -1808,6 +1869,7 @@ export default function Invoice(props) {
 							setCommonDrawer={setCommonDrawer}
 							currentSplitPayments={currentTableSplitPayments}
 							tableSplitPaymentMap={tableSplitPaymentMap}
+							invoiceData={invoiceData}
 						/>
 					)}
 				</Box>

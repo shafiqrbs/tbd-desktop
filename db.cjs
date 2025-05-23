@@ -207,7 +207,8 @@ db.prepare(
 		customer_address TEXT,
 		customer_group TEXT,
 		balance REAL,
-		sales_items TEXT
+		sales_items TEXT,
+		multi_transaction INTEGER DEFAULT 0
 	);
   	`
 ).run();
@@ -361,12 +362,12 @@ db.prepare(
 	)`
 ).run();
 
-// transactions table
+// sales transactions table
 db.prepare(
 	`
-	CREATE TABLE IF NOT EXISTS transactions (
+	CREATE TABLE IF NOT EXISTS sales_transactions (
 		id INTEGER PRIMARY KEY,
-		transaction_mode_id TEXT NOT NULL,
+		transaction_mode_id INTEGER NOT NULL,
 		invoice_id TEXT NOT NULL,
 		amount REAL NOT NULL,
 		created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
