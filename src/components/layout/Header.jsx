@@ -3,10 +3,8 @@ import {
 	Button,
 	UnstyledButton,
 	Text,
-	SimpleGrid,
 	ThemeIcon,
 	Divider,
-	Center,
 	Box,
 	rem,
 	Image,
@@ -18,8 +16,6 @@ import {
 	Flex,
 	Grid,
 	Stack,
-	Drawer,
-	Paper,
 	Select,
 	TextInput,
 	CloseButton,
@@ -28,7 +24,6 @@ import {
 
 import { useDisclosure, useFullscreen, useHotkeys } from "@mantine/hooks";
 import {
-	IconCircleCheck,
 	IconChevronDown,
 	IconLogout,
 	IconSearch,
@@ -42,7 +37,6 @@ import {
 	IconBackspace,
 } from "@tabler/icons-react";
 import { Link, useNavigate } from "react-router";
-import classes from "./../../assets/css/Header.module.css";
 import LanguagePickerStyle from "./../../assets/css/LanguagePicker.module.css";
 import "@mantine/spotlight/styles.css";
 import { useEffect, useState } from "react";
@@ -51,7 +45,8 @@ import SpotLightSearchModal from "../modules/modals/SpotLightSearchModal.jsx";
 import { useDispatch } from "react-redux";
 import shortcutDropdownData from "../global-hook/shortcut-dropdown/shortcutDropdownData.js";
 import Sandra_Logo from "../../assets/images/sandra_logo.jpeg";
-import { CHARACTER_SET, LANGUAGES, SYNC_DATA, LINE_CHARACTER } from "../../constants";
+import { CHARACTER_SET, LANGUAGES, LINE_CHARACTER } from "../../constants";
+import SyncDrawer from "../global-drawer/SyncDrawer.jsx";
 
 export default function Header({ isOnline, toggleNetwork, configData }) {
 	const [opened, { open, close }] = useDisclosure(false);
@@ -771,45 +766,7 @@ export default function Header({ isOnline, toggleNetwork, configData }) {
 				</form>
 			</Modal>
 			{/* ----------- sync information ----------- */}
-			<Drawer
-				position="right"
-				opened={syncPanelOpen}
-				onClose={() => setSyncPanelOpen(false)}
-				padding="lg"
-				size="md"
-				overlayProps={{
-					backgroundOpacity: 0.55,
-				}}
-				title="Syncing Information"
-				styles={{
-					title: { fontWeight: 600, fontSize: rem(20), color: "#626262" },
-				}}
-			>
-				<Divider mb="md" />
-
-				<Stack gap="md">
-					{SYNC_DATA.map((item, index) => (
-						<Paper key={index} p="md" radius="md" withBorder shadow="sm">
-							<Group justify="space-between" wrap="nowrap">
-								<Text fw={500}>{item}</Text>
-								<ActionIcon
-									variant="filled"
-									radius="xl"
-									color="teal"
-									size="28px"
-									className="sync-button"
-								>
-									<IconRefresh className="sync-icon" size={20} />
-								</ActionIcon>
-							</Group>
-						</Paper>
-					))}
-				</Stack>
-
-				<Text size="xs" c="dimmed" mt="xl" ta="center">
-					Last synchronized: Today at 14:35
-				</Text>
-			</Drawer>
+			<SyncDrawer syncPanelOpen={syncPanelOpen} setSyncPanelOpen={setSyncPanelOpen} />
 		</>
 	);
 }

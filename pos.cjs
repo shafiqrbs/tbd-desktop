@@ -170,22 +170,6 @@ const kitchenPrint = async ({ configData, selectedProducts, salesByUserName, set
 		printer.setTextSize(0, 0);
 		printer.drawLine();
 
-		printer.alignLeft();
-		printer.setTextSize(0, 0);
-		printer.println(`Email  : ${configData?.domain?.email || "N/A"}`);
-		printer.setTextSize(0, 0);
-		printer.println(`Mobile : ${configData?.domain?.mobile || "N/A"}`);
-		printer.setTextSize(0, 0);
-		printer.println(`Address: ${configData?.domain?.address || "N/A"}`);
-		printer.drawLine();
-
-		printer.alignCenter();
-		printer.bold(true);
-		printer.setTextSize(0, 0);
-		printer.println(`${selectedProducts.type.toUpperCase()}`);
-		printer.bold(false);
-		printer.drawLine();
-
 		printer.setTypeFontB();
 		printer.tableCustom([
 			{ text: `${salesByUserName || "N/A"}`, align: "LEFT", width: 0.5 },

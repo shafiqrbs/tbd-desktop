@@ -129,6 +129,15 @@ export default function Invoice({
 	const [tableReceiveAmounts, setTableReceiveAmounts] = useState({});
 	const { scrollRef, showLeftArrow, showRightArrow, handleScroll, scroll } = useScroll();
 
+	const [indexData, setIndexData] = useState(null);
+	const getAdditionalItem = (value) => {
+		setIndexData(value);
+	};
+	const [customerId, setCustomerId] = useState(invoiceData?.customer_id || "");
+	const [customerDrawer, setCustomerDrawer] = useState(false);
+	const [customersDropdownData, setCustomersDropdownData] = useState([]);
+	const [refreshCustomerDropdown, setRefreshCustomerDropdown] = useState(false);
+
 	useEffect(() => {
 		if (enableTable && tableId && tableCustomerMap && tableCustomerMap[tableId]) {
 			const tableCustomer = tableCustomerMap[tableId];
@@ -287,6 +296,7 @@ export default function Invoice({
 	};
 	useEffect(() => {
 		if (isSplitPaymentActive) {
+			console.log(customerId, isSplitPaymentActive, "checking");
 			setSalesDueAmount(0);
 			setReturnOrDueText("Due");
 		} else if (form.values.split_amount) {
@@ -305,15 +315,7 @@ export default function Invoice({
 				setSalesDueAmount(totalAmount);
 			}
 		}
-	}, [form.values.split_amount, isSplitPaymentActive]);
-	const [indexData, setIndexData] = useState(null);
-	const getAdditionalItem = (value) => {
-		setIndexData(value);
-	};
-	const [customerId, setCustomerId] = useState(invoiceData?.customer_id || "");
-	const [customerDrawer, setCustomerDrawer] = useState(false);
-	const [customersDropdownData, setCustomersDropdownData] = useState([]);
-	const [refreshCustomerDropdown, setRefreshCustomerDropdown] = useState(false);
+	}, [form.values.split_amount, isSplitPaymentActive, customerId]);
 
 	const handleCustomerAdd = () => {
 		if (enableTable && tableId) {
@@ -442,13 +444,18 @@ export default function Invoice({
 			setSalesTotalWithoutDiscountAmount(
 				(invoiceData.sub_total || 0) - (invoiceData.discount || 0)
 			);
-			setSalesDueAmount(
-				(invoiceData.sub_total || 0) -
-					((invoiceData.payment || 0) + (invoiceData.discount || 0))
-			);
-			setReturnOrDueText(
-				(invoiceData.sub_total || 0) > (invoiceData.payment || 0) ? "Due" : "Return"
-			);
+
+			// Only update due amount if split payment is not active
+			if (!isSplitPaymentActive) {
+				setSalesDueAmount(
+					(invoiceData.sub_total || 0) -
+						((invoiceData.payment || 0) + (invoiceData.discount || 0))
+				);
+				setReturnOrDueText(
+					(invoiceData.sub_total || 0) > (invoiceData.payment || 0) ? "Due" : "Return"
+				);
+			}
+
 			setCurrentPaymentInput(invoiceData?.payment || "");
 			setTransactionModeId(invoiceData?.transaction_mode_id || "");
 			if (invoiceData.discount_type === "Flat") {
@@ -457,7 +464,7 @@ export default function Invoice({
 				setSalesDiscountAmount(invoiceData?.percentage);
 			}
 		}
-	}, [invoiceData, discountType]);
+	}, [invoiceData, discountType, isSplitPaymentActive]);
 	const updateTableStatus = async (newStatus) => {
 		if (!tableId) return;
 
