@@ -33,6 +33,9 @@ try {
 		thermalPrint: (data) => {
 			return ipcRenderer.invoke("pos-thermal", data);
 		},
+		kitchenPrint: (data) => {
+			return ipcRenderer.invoke("kitchen-thermal", data);
+		},
 	});
 	console.info("deviceAPI exposed successfully");
 } catch (error) {

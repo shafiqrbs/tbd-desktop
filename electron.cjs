@@ -74,6 +74,14 @@ ipcMain.handle("pos-thermal", async (event, data) => {
 	}
 });
 
+ipcMain.handle("kitchen-thermal", async (event, data) => {
+	try {
+		return deviceModule.kitchenPrint(data);
+	} catch (error) {
+		console.error("Error occurred on kitchen thermal printing: ", error);
+	}
+});
+
 let mainWindow;
 let splash;
 
@@ -114,7 +122,6 @@ app.whenReady().then(() => {
 			sandbox: false,
 		},
 		autoHideMenuBar: true,
-		
 	});
 	mainWindow.webContents.session.on(
 		"select-serial-port",

@@ -100,6 +100,7 @@ export default function Invoice({
 	const [salesTotalWithoutDiscountAmount, setSalesTotalWithoutDiscountAmount] = useState(
 		invoiceData?.sub_total - invoiceData?.discount
 	);
+	const [currentPaymentInput, setCurrentPaymentInput] = useState(invoiceData?.payment || "");
 	const [salesDueAmount, setSalesDueAmount] = useState(
 		invoiceData?.sub_total - (invoiceData?.payment + invoiceData?.discount)
 	);
@@ -285,7 +286,10 @@ export default function Invoice({
 		updateTableSplitPayment(currentTableKey, splitPayments);
 	};
 	useEffect(() => {
-		if (form.values.split_amount) {
+		if (isSplitPaymentActive) {
+			setSalesDueAmount(0);
+			setReturnOrDueText("Due");
+		} else if (form.values.split_amount) {
 			let subtotal = 0;
 			const totalAmount = subtotal - salesDiscountAmount;
 			let receiveAmount = 0;
@@ -301,7 +305,7 @@ export default function Invoice({
 				setSalesDueAmount(totalAmount);
 			}
 		}
-	}, [form.values.split_amount]);
+	}, [form.values.split_amount, isSplitPaymentActive]);
 	const [indexData, setIndexData] = useState(null);
 	const getAdditionalItem = (value) => {
 		setIndexData(value);
@@ -360,6 +364,11 @@ export default function Invoice({
 			Object.keys(customerObject).length > 0
 		) {
 			updateTableCustomer(tableId, customerId, customerObject);
+			// Update invoiceData with the new customer ID
+			setInvoiceData((prev) => ({
+				...prev,
+				customer_id: customerId,
+			}));
 		}
 	}, [customerId, customerObject, tableId, enableTable, updateTableCustomer]);
 
@@ -369,6 +378,15 @@ export default function Invoice({
 
 	const handleClick = (e) => {
 		if (e.currentTarget.name === "additionalProductAdd") {
+			if (!tableId) {
+				notifications.show({
+					color: "red",
+					title: t("Error"),
+					message: t("SelectATableFirst"),
+					autoClose: 2000,
+				});
+				return;
+			}
 			setEventName(e.currentTarget.name);
 			// TODO: Remove this after testing
 			// setCommonDrawer(true);
@@ -417,7 +435,6 @@ export default function Invoice({
 		}
 	}, [tableId]);
 
-	const [currentPaymentInput, setCurrentPaymentInput] = useState(invoiceData?.payment || "");
 	useEffect(() => {
 		if (invoiceData) {
 			setDiscountType(invoiceData.discount_type || "Percent");
@@ -534,9 +551,11 @@ export default function Invoice({
 						console.error("Error fetching data:", resultAction);
 					}
 				} else {
+					console.log(customersDropdownData, invoiceData.customer_id);
 					const customerInfo = customersDropdownData.find(
 						(data) => data.value == invoiceData.customer_id
 					);
+					console.log(customerInfo);
 					const invoiceId = generateInvoiceId();
 
 					// Insert into sales table with multi_transaction flag

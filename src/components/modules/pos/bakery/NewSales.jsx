@@ -187,6 +187,14 @@ export default function NewSales({
 	});
 
 	const handleSelect = (productId) => {
+		if (!tableId) {
+			return notifications.show({
+				title: "Table not selected",
+				message: "Please select a table first",
+				color: "red",
+				autoClose: 2000,
+			});
+		}
 		setSelected((prevSelected) =>
 			prevSelected.includes(productId)
 				? prevSelected.filter((id) => id !== productId)
