@@ -34,6 +34,7 @@ import {
 	IconCurrencyTaka,
 	IconPercentage,
 	IconUserPlus,
+	IconReceipt,
 } from "@tabler/icons-react";
 import { DataTable } from "mantine-datatable";
 import { useDispatch } from "react-redux";
@@ -425,19 +426,6 @@ export default function Invoice({
 	};
 
 	useEffect(() => {
-		if (tableId) {
-			if (tableCustomerMap && tableCustomerMap[tableId]) {
-				const tableCustomer = tableCustomerMap[tableId];
-				setCustomerId(tableCustomer.id);
-				setCustomerObject(tableCustomer);
-			} else {
-				setCustomerId(null);
-				setCustomerObject({});
-			}
-		}
-	}, [tableId]);
-
-	useEffect(() => {
 		if (invoiceData) {
 			setDiscountType(invoiceData.discount_type || "Percent");
 			setSalesTotalAmount(invoiceData.sub_total || 0);
@@ -456,7 +444,11 @@ export default function Invoice({
 				);
 			}
 
-			setCurrentPaymentInput(invoiceData?.payment || "");
+			// Only set currentPaymentInput if it's empty or if we're initializing
+			if (!currentPaymentInput) {
+				setCurrentPaymentInput(invoiceData?.payment || "");
+			}
+
 			setTransactionModeId(invoiceData?.transaction_mode_id || "");
 			if (invoiceData.discount_type === "Flat") {
 				setSalesDiscountAmount(invoiceData?.discount || 0);
@@ -474,12 +466,15 @@ export default function Invoice({
 			)
 		);
 	};
-	const handleSave = () => {
-		if (!invoiceData.invoice_items || invoiceData.invoice_items.length === 0) {
+
+	const handleSave = async ({ withPos = false }) => {
+		// Validation checks
+		if (!invoiceData.invoice_items?.length) {
 			showNotificationComponent(t("NoProductAdded"), "red", "", "", true, 1000, true);
 			return;
 		}
-		if (!salesByUser || salesByUser == "undefined") {
+
+		if (!salesByUser || salesByUser === "undefined") {
 			showNotificationComponent(t("ChooseUser"), "red", "", "", true, 1000, true);
 			return;
 		}
@@ -489,162 +484,177 @@ export default function Invoice({
 			return;
 		}
 
-		// if (!customerId) {
-		// 	showNotificationComponent(t("ChooseCustomer"), "red", "", "", true, 1000, true);
-		// 	return;
-		// }
-
 		if (!invoiceData.payment && !isSplitPaymentActive) {
 			showNotificationComponent(t("PaymentAmount"), "red", "", "", true, 1000, true);
 			return;
 		}
 
-		function resetAll() {
+		setIsDisabled(true);
+
+		try {
+			const fullAmount = isSplitPaymentActive
+				? salesTotalWithoutDiscountAmount
+				: invoiceData.payment;
+
+			if (isOnline) {
+				await handleOnlineSave(fullAmount);
+			} else {
+				await handleOfflineSave(fullAmount);
+			}
+
+			resetSaleState();
 			showNotificationComponent(t("SalesComplete"), "blue", "", "", true, 1000, true);
-			clearTableCustomer(tableId);
-			setSalesByUser(null);
-			setCustomerId(null);
-			setTransactionModeId(null);
-			setCurrentPaymentInput("");
-			setSalesDiscountAmount(0);
-			setSalesTotalAmount(0);
-			setSalesTotalWithoutDiscountAmount(0);
-			setSalesDueAmount(0);
-			setReturnOrDueText("Due");
-			setDiscountType("Percent");
-			setCustomerObject({});
-			updateTableStatus("Free");
-			setReloadInvoiceData(true);
-			setTableId(null);
-			setIndexData(null);
-			setInvoiceData(null);
-			form.reset();
-		}
-
-		const fetchData = async () => {
-			setIsDisabled(true);
-			try {
-				// If split payment is active, set payment to full amount
-				const fullAmount = isSplitPaymentActive
-					? salesTotalWithoutDiscountAmount
-					: invoiceData.payment;
-
-				if (isOnline) {
-					// First update the payment amount if split payment is active
-					if (isSplitPaymentActive) {
-						const updatePaymentData = {
-							url: "inventory/pos/inline-update",
-							data: {
-								invoice_id: tableId,
-								field_name: "amount",
-								value: fullAmount,
-							},
-							module: "pos",
-						};
-
-						await dispatch(storeEntityData(updatePaymentData));
-					}
-
-					const resultAction = await dispatch(
-						getIndexEntityData({
-							url: "inventory/pos/sales-complete/" + invoiceData.id,
-							params: {},
-							module: "sales",
-						})
-					);
-					if (getIndexEntityData.fulfilled.match(resultAction)) {
-						resetAll();
-					} else {
-						console.error("Error fetching data:", resultAction);
-					}
-				} else {
-					console.log(customersDropdownData, invoiceData.customer_id);
-					const customerInfo = customersDropdownData.find(
-						(data) => data.value == invoiceData.customer_id
-					);
-					console.log(customerInfo);
-					const invoiceId = generateInvoiceId();
-
-					// Insert into sales table with multi_transaction flag
-					await window.dbAPI.upsertIntoTable("sales", {
-						invoice: invoiceId,
-						sub_total: invoiceData.sub_total,
-						total: invoiceData.total ?? invoiceData.sub_total,
-						approved_by_id: invoiceData.created_by_id,
-						payment: fullAmount,
-						discount: null,
-						discount_calculation: null,
-						discount_type: invoiceData.discount_type,
-						customerId: invoiceData.customer_id,
-						customerName: customerInfo?.label?.split(" -- ")[1] || "N/A",
-						customerMobile: customerInfo?.label?.split(" -- ")[0] || "N/A",
-						createdByUser: "sandra",
-						createdById: invoiceData.created_by_id,
-						salesById: invoiceData.sales_by_id,
-						salesByUser: "sandra",
-						salesByName: null,
-						process: "approved",
-						mode_name: transactionModeName,
-						created: formatDate(new Date()),
-						sales_items: JSON.stringify(invoiceData.invoice_items),
-						multi_transaction: isSplitPaymentActive ? 1 : 0,
-					});
-
-					// Handle sales transactions based on split payment status
-					if (isSplitPaymentActive) {
-						// For split payment, insert multiple rows
-						const currentTableKey = tableId || "general";
-						const splitPayments = tableSplitPaymentMap[currentTableKey] || [];
-
-						for (const payment of splitPayments) {
-							await window.dbAPI.upsertIntoTable("sales_transactions", {
-								transaction_mode_id: payment.transaction_mode_id,
-								invoice_id: invoiceId,
-								amount: payment.partial_amount,
-								remarks: payment.remarks || "",
-							});
-						}
-					} else {
-						// For single payment, insert one row
-						await window.dbAPI.upsertIntoTable("sales_transactions", {
-							transaction_mode_id: transactionModeId,
-							invoice_id: invoiceId,
-							amount: fullAmount,
-							remarks: "",
-						});
-					}
-
-					resetAll();
-
-					await window.dbAPI.updateDataInTable("invoice_table", {
-						id: tableId,
-						data: {
-							sales_by_id: null,
-							transaction_mode_id: null,
-							customer_id: null,
-							is_active: 0,
-							sub_total: null,
-							payment: null,
-						},
-					});
-
-					invoiceData.invoice_items.forEach((item) => {
-						window.dbAPI.deleteDataFromTable("invoice_table_item", item.id);
+			console.log(invoiceData);
+			if (withPos) {
+				const setup = await window.dbAPI.getDataFromTable("printer");
+				if (!setup?.printer_name) {
+					return notifications.show({
+						title: "Printer not found",
+						message: "Please setup printer first",
+						color: "red",
 					});
 				}
-			} catch (err) {
-				console.error("Unexpected error:", err);
-			} finally {
-				setSalesByUser(null);
-				setCustomerId(null);
-				setCustomerObject(null);
-				setReloadInvoiceData(true);
+				const status = await window.deviceAPI.thermalPrint({
+					configData,
+					salesItems: invoiceData.invoice_items,
+					salesViewData: invoiceData,
+					setup,
+				});
 
-				setIsDisabled(false);
+				if (!status?.success) {
+					notifications.show({
+						color: "red",
+						title: "Printing Failed",
+						message: status.message,
+						icon: <IconReceipt />,
+						style: { backgroundColor: "#f1f1f1" },
+					});
+				}
 			}
-		};
-		fetchData();
+		} catch (err) {
+			console.error("Error saving sale:", err);
+		} finally {
+			setIsDisabled(false);
+		}
 	};
+
+	const handleOnlineSave = async (fullAmount) => {
+		if (isSplitPaymentActive) {
+			await dispatch(
+				storeEntityData({
+					url: "inventory/pos/inline-update",
+					data: {
+						invoice_id: tableId,
+						field_name: "amount",
+						value: fullAmount,
+					},
+					module: "pos",
+				})
+			);
+		}
+
+		const resultAction = await dispatch(
+			getIndexEntityData({
+				url: "inventory/pos/sales-complete/" + invoiceData.id,
+				params: {},
+				module: "sales",
+			})
+		);
+
+		if (!getIndexEntityData.fulfilled.match(resultAction)) {
+			throw new Error("Failed to complete online sale");
+		}
+	};
+
+	const handleOfflineSave = async (fullAmount) => {
+		const customerInfo = customersDropdownData.find((d) => d.value == invoiceData.customer_id);
+		const invoiceId = generateInvoiceId();
+
+		// Insert sale record
+		await window.dbAPI.upsertIntoTable("sales", {
+			invoice: invoiceId,
+			sub_total: invoiceData.sub_total,
+			total: invoiceData.total ?? invoiceData.sub_total,
+			approved_by_id: invoiceData.created_by_id,
+			payment: fullAmount,
+			discount: null,
+			discount_calculation: null,
+			discount_type: invoiceData.discount_type,
+			customerId: invoiceData.customer_id,
+			customerName: customerInfo?.label?.split(" -- ")[1] || "N/A",
+			customerMobile: customerInfo?.label?.split(" -- ")[0] || "N/A",
+			createdByUser: "sandra",
+			createdById: invoiceData.created_by_id,
+			salesById: invoiceData.sales_by_id,
+			salesByUser: "sandra",
+			salesByName: null,
+			process: "approved",
+			mode_name: transactionModeName,
+			created: formatDate(new Date()),
+			sales_items: JSON.stringify(invoiceData.invoice_items),
+			multi_transaction: isSplitPaymentActive ? 1 : 0,
+		});
+
+		// Handle transactions
+		if (isSplitPaymentActive) {
+			const splitPayments = tableSplitPaymentMap[tableId || "general"] || [];
+			for (const payment of splitPayments) {
+				await window.dbAPI.upsertIntoTable("sales_transactions", {
+					transaction_mode_id: payment.transaction_mode_id,
+					invoice_id: invoiceId,
+					amount: payment.partial_amount,
+					remarks: payment.remarks || "",
+				});
+			}
+		} else {
+			await window.dbAPI.upsertIntoTable("sales_transactions", {
+				transaction_mode_id: transactionModeId,
+				invoice_id: invoiceId,
+				amount: fullAmount,
+				remarks: "",
+			});
+		}
+
+		// Clear invoice table
+		await window.dbAPI.updateDataInTable("invoice_table", {
+			id: tableId,
+			data: {
+				sales_by_id: null,
+				transaction_mode_id: null,
+				customer_id: null,
+				is_active: 0,
+				sub_total: null,
+				payment: null,
+			},
+		});
+
+		// Delete invoice items
+		for (const item of invoiceData.invoice_items) {
+			await window.dbAPI.deleteDataFromTable("invoice_table_item", item.id);
+		}
+	};
+
+	const resetSaleState = () => {
+		clearTableCustomer(tableId);
+		setSalesByUser(null);
+		setCustomerId(null);
+		setTransactionModeId(null);
+		setCurrentPaymentInput("");
+		setSalesDiscountAmount(0);
+		setSalesTotalAmount(0);
+		setSalesTotalWithoutDiscountAmount(0);
+		setSalesDueAmount(0);
+		setReturnOrDueText("Due");
+		setDiscountType("Percent");
+		setCustomerObject({});
+		updateTableStatus("Free");
+		setReloadInvoiceData(true);
+		setTableId(null);
+		setIndexData(null);
+		setInvoiceData(null);
+		form.reset();
+	};
+
 	return (
 		<>
 			<Box
@@ -1599,58 +1609,6 @@ export default function Invoice({
 										}}
 									>
 										<TextInput
-											onBlur={async (event) => {
-												const data = {
-													url: "inventory/pos/inline-update",
-													data: {
-														invoice_id: tableId,
-														field_name: "amount",
-														value: event.target.value,
-													},
-													module: "pos",
-												};
-
-												// Dispatch and handle response
-												try {
-													if (isOnline) {
-														const resultAction = await dispatch(
-															storeEntityData(data)
-														);
-
-														if (resultAction.payload?.status !== 200) {
-															showNotificationComponent(
-																resultAction.payload?.message ||
-																	"Error updating invoice",
-																"red",
-																"",
-																"",
-																true
-															);
-														}
-													} else {
-														await window.dbAPI.updateDataInTable(
-															"invoice_table",
-															{
-																id: tableId,
-																data: {
-																	payment: event.target.value,
-																},
-															}
-														);
-													}
-												} catch (error) {
-													showNotificationComponent(
-														"Request failed. Please try again.",
-														"red",
-														"",
-														"",
-														true
-													);
-													console.error("Error updating invoice:", error);
-												} finally {
-													setReloadInvoiceData(true);
-												}
-											}}
 											type="number"
 											placeholder={
 												isThisTableSplitPaymentActive
@@ -1737,12 +1695,13 @@ export default function Invoice({
 													setCurrentPaymentInput(newValue);
 													form.setFieldValue("receive_amount", newValue);
 
+													// Only update table receive amounts, don't trigger immediate calculations
 													setTableReceiveAmounts((prev) => ({
 														...prev,
 														[currentTableKey]: newValue,
 													}));
 
-													// Calculate due amount immediately
+													// Calculate due amount immediately for display
 													const totalAmount =
 														salesTotalAmount - salesDiscountAmount;
 													const receiveAmount = Number(newValue) || 0;
@@ -1754,6 +1713,7 @@ export default function Invoice({
 															: "Due"
 													);
 
+													// Update the database
 													if (!isOnline) {
 														await window.dbAPI.updateDataInTable(
 															"invoice_table",
@@ -1764,6 +1724,66 @@ export default function Invoice({
 																},
 															}
 														);
+													}
+												}
+											}}
+											onBlur={async (event) => {
+												if (!isThisTableSplitPaymentActive) {
+													const newValue = event.target.value;
+
+													const data = {
+														url: "inventory/pos/inline-update",
+														data: {
+															invoice_id: tableId,
+															field_name: "amount",
+															value: newValue,
+														},
+														module: "pos",
+													};
+
+													try {
+														if (isOnline) {
+															const resultAction = await dispatch(
+																storeEntityData(data)
+															);
+
+															if (
+																resultAction.payload?.status !== 200
+															) {
+																showNotificationComponent(
+																	resultAction.payload?.message ||
+																		"Error updating invoice",
+																	"red",
+																	"",
+																	"",
+																	true
+																);
+															}
+														} else {
+															await window.dbAPI.updateDataInTable(
+																"invoice_table",
+																{
+																	id: tableId,
+																	data: {
+																		payment: newValue,
+																	},
+																}
+															);
+														}
+													} catch (error) {
+														showNotificationComponent(
+															"Request failed. Please try again.",
+															"red",
+															"",
+															"",
+															true
+														);
+														console.error(
+															"Error updating invoice:",
+															error
+														);
+													} finally {
+														setReloadInvoiceData(true);
 													}
 												}
 											}}
@@ -1836,6 +1856,7 @@ export default function Invoice({
 									size={"lg"}
 									fullWidth={true}
 									leftSection={<IconPrinter />}
+									onClick={() => handleSave({ withPos: true })}
 								>
 									{t("Pos")}
 								</Button>
@@ -1847,7 +1868,7 @@ export default function Invoice({
 									bg={"#38b000"}
 									fullWidth={true}
 									leftSection={<IconDeviceFloppy />}
-									onClick={handleSave}
+									onClick={() => handleSave({ withPos: false })}
 								>
 									{t("Save")}
 								</Button>
