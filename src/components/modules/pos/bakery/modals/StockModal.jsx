@@ -9,5 +9,19 @@ export default function StockModal() {
 	});
 
 	const locationData = getSettingParticularDropdownData("location");
-	return <StockTable categoryDropdown={categoryDropdown} locationData={locationData} />;
+	return (
+		<StockTable
+			categoryDropdown={categoryDropdown}
+			locationData={locationData}
+			visibleColumns={[
+				"index",
+				"category_name",
+				"product_name",
+				"unit_name",
+				"purchase_price",
+				"sales_price",
+				"quantity",
+			]}
+		/>
+	);
 }

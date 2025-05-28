@@ -12,6 +12,9 @@ try {
 		getDataFromTable: (table, id, property) => {
 			return ipcRenderer.invoke("get-data-from-table", table, id, property);
 		},
+		getJoinedTableData: (data) => {
+			return ipcRenderer.invoke("get-joined-table-data", data);
+		},
 		updateDataInTable: (table, values) => {
 			return ipcRenderer.invoke("update-in-table", table, values);
 		},

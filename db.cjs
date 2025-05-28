@@ -529,6 +529,114 @@ const resetDatabase = async () => {
 	}
 };
 
+const getJoinedTableData = ({
+	table1,
+	table2,
+	foreignKey,
+	conditions = {},
+	select = {
+		table1: ["*"], // ['id', 'name', 'price'] or ['*'] for all columns
+		table2: ["*"], // ['id', 'name'] or ['*'] for all columns
+	},
+	rename = {}, // { 'table1.id': 'product_id', 'table2.name': 'category_name' }
+	pagination = {
+		limit: 50,
+		offset: 0,
+	},
+	search = {}, // { field: 'name', value: 'bread' }
+}) => {
+	try {
+		table1 = convertTableName(table1);
+		table2 = convertTableName(table2);
+
+		// Get all columns for both tables
+		const table1Columns = db
+			.prepare(`PRAGMA table_info(${table1})`)
+			.all()
+			.map((col) => col.name);
+		const table2Columns = db
+			.prepare(`PRAGMA table_info(${table2})`)
+			.all()
+			.map((col) => col.name);
+
+		// Build select clause
+		const buildSelectClause = (table, columns, alias, availableColumns) => {
+			if (columns.includes("*")) {
+				return availableColumns.map((col) => `${alias}.${col}`).join(", ");
+			}
+			return columns
+				.map((col) => {
+					const renameKey = `${table}.${col}`;
+					const newName = rename[renameKey] || col;
+					return `${alias}.${col} as ${newName}`;
+				})
+				.join(", ");
+		};
+
+		const table1Select = buildSelectClause(table1, select.table1, "p", table1Columns);
+		const table2Select = buildSelectClause(table2, select.table2, "s", table2Columns);
+
+		// Build the base query
+		let query = `
+			SELECT ${table1Select}, ${table2Select}
+			FROM ${table1} p
+			LEFT JOIN ${table2} s ON p.${foreignKey} = s.id
+		`;
+
+		// Add conditions if provided
+		const whereConditions = [];
+		const queryValues = [];
+
+		// Add search condition if provided
+		if (Object.keys(search).length > 0) {
+			const { field, value } = search;
+			whereConditions.push(`p.${field} LIKE ?`);
+			queryValues.push(`%${value}%`);
+		}
+
+		// Add other conditions
+		if (Object.keys(conditions).length > 0) {
+			Object.entries(conditions).forEach(([key, value]) => {
+				if (typeof value === "object") {
+					// Handle operators like IN, LIKE, etc.
+					const [operator, operand] = Object.entries(value)[0];
+					whereConditions.push(`p.${key} ${operator} ?`);
+					queryValues.push(operand);
+				} else {
+					whereConditions.push(`p.${key} = ?`);
+					queryValues.push(value);
+				}
+			});
+		}
+
+		// Add WHERE clause if there are any conditions
+		if (whereConditions.length > 0) {
+			query += ` WHERE ${whereConditions.join(" AND ")}`;
+		}
+
+		// Add pagination
+		query += ` LIMIT ${pagination.limit} OFFSET ${pagination.offset}`;
+
+		// Get total count for pagination
+		const countQuery = query.replace(/SELECT .* FROM/, "SELECT COUNT(*) as total FROM");
+		const totalCount = db.prepare(countQuery).get(...queryValues).total;
+
+		// Prepare and execute the main query
+		const stmt = db.prepare(query);
+		const results = stmt.all(...queryValues);
+
+		return {
+			data: results,
+			total: totalCount,
+			page: Math.floor(pagination.offset / pagination.limit) + 1,
+			totalPages: Math.ceil(totalCount / pagination.limit),
+		};
+	} catch (error) {
+		console.error("Error in getJoinedTableData:", error);
+		throw error;
+	}
+};
+
 module.exports = {
 	upsertIntoTable,
 	getDataFromTable,
@@ -536,4 +644,5 @@ module.exports = {
 	deleteDataFromTable,
 	destroyTableData,
 	resetDatabase,
+	getJoinedTableData,
 };

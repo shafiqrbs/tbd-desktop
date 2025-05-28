@@ -209,6 +209,7 @@ const initialState = {
 			validation: false,
 			validationMessage: [],
 			deleteMessage: "",
+			fetching: false,
 		},
 		// +++++ new other modules can be added from here +++++
 	},

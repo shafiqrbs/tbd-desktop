@@ -82,6 +82,14 @@ ipcMain.handle("kitchen-thermal", async (event, data) => {
 	}
 });
 
+ipcMain.handle("get-joined-table-data", async (event, data) => {
+	try {
+		return dbModule.getJoinedTableData(data);
+	} catch (error) {
+		console.error("Error occurred on getting joined table data: ", error);
+	}
+});
+
 let mainWindow;
 let splash;
 
@@ -173,6 +181,7 @@ app.whenReady().then(() => {
 	// Once the main window is ready, close the splash screen and show the main window
 	mainWindow.once("ready-to-show", () => {
 		splash.destroy();
+		mainWindow.maximize();
 		mainWindow.show();
 	});
 });
