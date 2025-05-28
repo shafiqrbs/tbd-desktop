@@ -584,53 +584,29 @@ const getJoinedTableData = ({
 		`;
 
 		// Add conditions if provided
-		const whereConditions = [];
-		const queryValues = [];
-
-		// Add search condition if provided
-		if (Object.keys(search).length > 0) {
-			const { field, value } = search;
-			whereConditions.push(`p.${field} LIKE ?`);
-			queryValues.push(`%${value}%`);
-		}
-
-		// Add other conditions
 		if (Object.keys(conditions).length > 0) {
-			Object.entries(conditions).forEach(([key, value]) => {
+			const conditionClauses = Object.entries(conditions).map(([key, value]) => {
 				if (typeof value === "object") {
 					// Handle operators like IN, LIKE, etc.
 					const [operator, operand] = Object.entries(value)[0];
-					whereConditions.push(`p.${key} ${operator} ?`);
-					queryValues.push(operand);
-				} else {
-					whereConditions.push(`p.${key} = ?`);
-					queryValues.push(value);
+					return `p.${key} ${operator} ?`;
 				}
+				return `p.${key} = ?`;
 			});
+
+			query += ` WHERE ${conditionClauses.join(" AND ")}`;
 		}
 
-		// Add WHERE clause if there are any conditions
-		if (whereConditions.length > 0) {
-			query += ` WHERE ${whereConditions.join(" AND ")}`;
-		}
-
-		// Add pagination
-		query += ` LIMIT ${pagination.limit} OFFSET ${pagination.offset}`;
-
-		// Get total count for pagination
-		const countQuery = query.replace(/SELECT .* FROM/, "SELECT COUNT(*) as total FROM");
-		const totalCount = db.prepare(countQuery).get(...queryValues).total;
-
-		// Prepare and execute the main query
+		// Prepare and execute the query
 		const stmt = db.prepare(query);
-		const results = stmt.all(...queryValues);
+		const values = Object.values(conditions).map((value) => {
+			if (typeof value === "object") {
+				return Object.values(value)[0];
+			}
+			return value;
+		});
 
-		return {
-			data: results,
-			total: totalCount,
-			page: Math.floor(pagination.offset / pagination.limit) + 1,
-			totalPages: Math.ceil(totalCount / pagination.limit),
-		};
+		return stmt.all(...values);
 	} catch (error) {
 		console.error("Error in getJoinedTableData:", error);
 		throw error;
