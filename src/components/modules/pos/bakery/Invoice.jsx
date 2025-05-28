@@ -53,7 +53,7 @@ import _CommonDrawer from "./drawer/_CommonDrawer.jsx";
 import { useScroll } from "./utils/ScrollOperations";
 import { showNotificationComponent } from "../../../core-component/showNotificationComponent.jsx";
 
-import { formatDate, generateInvoiceId } from "../../../../lib/index.js";
+import { formatDateTime, generateInvoiceId } from "../../../../lib/index.js";
 
 export default function Invoice({
 	products,
@@ -83,7 +83,7 @@ export default function Invoice({
 	const calculatedHeight = height - 200;
 
 	const { configData } = getConfigData();
-	const enableTable = !!(configData?.is_pos && invoiceMode === "table");
+	const enableTable = !!(configData?.inventory_config?.is_pos && invoiceMode === "table");
 	const [printPos, setPrintPos] = useState(false);
 	// Sales by user state management
 	const [salesByUser, setSalesByUser] = useState(String(invoiceData?.sales_by_id || ""));
@@ -297,7 +297,6 @@ export default function Invoice({
 	};
 	useEffect(() => {
 		if (isSplitPaymentActive) {
-			console.log(customerId, isSplitPaymentActive, "checking");
 			setSalesDueAmount(0);
 			setReturnOrDueText("Due");
 		} else if (form.values.split_amount) {
@@ -434,15 +433,15 @@ export default function Invoice({
 			);
 
 			// Only update due amount if split payment is not active
-			if (!isSplitPaymentActive) {
-				setSalesDueAmount(
-					(invoiceData.sub_total || 0) -
-						((invoiceData.payment || 0) + (invoiceData.discount || 0))
-				);
-				setReturnOrDueText(
-					(invoiceData.sub_total || 0) > (invoiceData.payment || 0) ? "Due" : "Return"
-				);
-			}
+			// if (!isSplitPaymentActive) {
+			setSalesDueAmount(
+				(invoiceData.sub_total || 0) -
+					((invoiceData.payment || 0) + (invoiceData.discount || 0))
+			);
+			setReturnOrDueText(
+				(invoiceData.sub_total || 0) > (invoiceData.payment || 0) ? "Due" : "Return"
+			);
+			// }
 
 			// Only set currentPaymentInput if it's empty or if we're initializing
 			if (!currentPaymentInput) {
@@ -590,7 +589,7 @@ export default function Invoice({
 			salesByName: null,
 			process: "approved",
 			mode_name: transactionModeName,
-			created: formatDate(new Date()),
+			created: formatDateTime(new Date()),
 			sales_items: JSON.stringify(invoiceData.invoice_items),
 			multi_transaction: isSplitPaymentActive ? 1 : 0,
 		});
@@ -656,12 +655,11 @@ export default function Invoice({
 	};
 
 	return (
-		<>
+		<ScrollArea h={enableTable ? height + 160 : height + 50}>
 			<Box
 				w="100%"
 				pl={10}
 				pr={10}
-				h={enableTable ? height + 84 : height + 195}
 				className={classes["box-white"]}
 				style={{ display: "flex", flexDirection: "column" }}
 			>
@@ -1921,6 +1919,6 @@ export default function Invoice({
 					)}
 				</Box>
 			</Box>
-		</>
+		</ScrollArea>
 	);
 }

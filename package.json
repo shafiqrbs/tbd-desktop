@@ -50,6 +50,7 @@
 		"crypto-js": "^4.2.0",
 		"dayjs": "^1.11.13",
 		"electron-squirrel-startup": "^1.0.1",
+		"embla-carousel-autoplay": "^8.6.0",
 		"embla-carousel-react": "^7.1.0",
 		"esbuild-plugin-polyfill-node": "^0.3.0",
 		"i18next": "^24.2.2",

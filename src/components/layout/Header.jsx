@@ -243,11 +243,7 @@ export default function Header({ isOnline, toggleNetwork, configData }) {
 				<Modal.Overlay />
 				<Modal.Content p={"xs"}>
 					<Modal.Header ml={"xs"}>
-						<Modal.Title>
-							{configData && configData?.domain
-								? configData.domain?.company_name
-								: ""}
-						</Modal.Title>
+						<Modal.Title>{configData?.company_name}</Modal.Title>
 						<Modal.CloseButton />
 					</Modal.Header>
 					<Modal.Body>
@@ -258,7 +254,7 @@ export default function Header({ isOnline, toggleNetwork, configData }) {
 			<Box bg="#C6AF9D" mb={"2"} pos={`relative`}>
 				<Grid columns={24} gutter={{ base: 2 }} justify="space-between">
 					<Grid.Col span={6}>
-						{configData?.domain?.company_name === "Sandra" ? (
+						{configData?.company_name === "Sandra" ? (
 							<div
 								style={{
 									display: "flex",
@@ -284,9 +280,7 @@ export default function Header({ isOnline, toggleNetwork, configData }) {
 								className="brand-logo"
 								onClick={() => navigate("/")}
 							>
-								{configData && configData?.domain
-									? configData.domain?.company_name
-									: ""}
+								{configData?.company_name}
 							</Box>
 						)}
 					</Grid.Col>

@@ -1,30 +1,47 @@
-import React from "react";
-import {
-	IconDeviceFloppy,
-	IconPlus,
-	IconDashboard,
-	IconReportMoney,
-	IconReportAnalytics,
-	IconBuildingCottage,
-	IconArmchair2,
-	IconCellSignal4,
-} from "@tabler/icons-react";
-import { Button, Flex, Text, Tooltip, ScrollArea } from "@mantine/core";
+import { useState } from "react";
+import { IconDashboard, IconReportMoney, IconBuildingCottage } from "@tabler/icons-react";
+import { Button, Flex, Tooltip, ScrollArea, Modal } from "@mantine/core";
 import { useTranslation } from "react-i18next";
-import { useNavigate, useOutletContext } from "react-router";
+import { useOutletContext } from "react-router";
 import getConfigData from "../../../global-hook/config-data/getConfigData";
+import SalesModal from "./modals/SalesModal";
+import StockModal from "./modals/StockModal";
+import BakeryDashboardModal from "./modals/BakeryDashboardModal";
 
-function __ShortcutPos(props) {
-	const { t, i18n } = useTranslation();
-	const { isOnline, mainAreaHeight } = useOutletContext();
+function ShortcutPos() {
+	const { t } = useTranslation();
+	const { mainAreaHeight } = useOutletContext();
 	const height = mainAreaHeight - 190;
 	const { configData } = getConfigData();
-	const navigate = useNavigate();
+
+	// Modal state
+	const [modalOpened, setModalOpened] = useState(false);
+	const [modalContent, setModalContent] = useState(null);
+	const [modalTitle, setModalTitle] = useState("");
+
+	const openModal = (content, title) => {
+		setModalContent(content);
+		setModalTitle(title);
+		setModalOpened(true);
+	};
+
+	const renderModalContent = () => {
+		switch (modalContent) {
+			case "dashboard":
+				return <BakeryDashboardModal />;
+			case "sales":
+				return <SalesModal />;
+			case "stock":
+				return <StockModal />;
+			default:
+				return null;
+		}
+	};
 
 	return (
 		<>
 			<ScrollArea
-				h={!!configData?.is_table_pos ? height : height + 110}
+				h={configData?.is_table_pos ? height : height + 110}
 				bg="white"
 				type="never"
 				className="border-radius"
@@ -49,7 +66,7 @@ function __ShortcutPos(props) {
 								variant={"light"}
 								color={`black`}
 								radius="xl"
-								onClick={(e) => {}}
+								onClick={() => openModal("dashboard", t("Dashboard"))}
 							>
 								<Flex direction={`column`} align={"center"}>
 									<IconDashboard size={16} color={"white"} />
@@ -79,9 +96,7 @@ function __ShortcutPos(props) {
 								variant={"light"}
 								color={`black`}
 								radius="xl"
-								onClick={() => {
-									navigate("/inventory/sales");
-								}}
+								onClick={() => openModal("sales", t("Sales"))}
 							>
 								<Flex direction={`column`} align={"center"}>
 									<IconReportMoney size={16} color={"white"} />
@@ -92,7 +107,7 @@ function __ShortcutPos(props) {
 							{t("Sales")}
 						</Flex>
 					</Flex>
-					<Flex direction={`column`} align={"center"} mb={"8"}>
+					{/* <Flex direction={`column`} align={"center"} mb={"8"}>
 						<Tooltip
 							label={t("AltTextNew")}
 							px={16}
@@ -123,7 +138,7 @@ function __ShortcutPos(props) {
 						<Flex direction={`column`} align={"center"} fz={"12"} c={"black"}>
 							{t("UserSales")}
 						</Flex>
-					</Flex>
+					</Flex> */}
 					<Flex direction={`column`} align={"center"} mb={"8"}>
 						<Tooltip
 							label={t("AltTextNew")}
@@ -143,7 +158,7 @@ function __ShortcutPos(props) {
 								variant={"light"}
 								color={`black`}
 								radius="xl"
-								onClick={(e) => {}}
+								onClick={() => openModal("stock", t("Stock"))}
 							>
 								<Flex direction={`column`} align={"center"}>
 									<IconBuildingCottage size={16} color={"white"} />
@@ -154,106 +169,117 @@ function __ShortcutPos(props) {
 							{t("Stock")}
 						</Flex>
 					</Flex>
-					<Flex direction={`column`} align={"center"} mb={"8"}>
-						<Tooltip
-							label={t("AltTextNew")}
-							px={16}
-							py={2}
-							withArrow
-							position={"left"}
-							c={"white"}
-							bg={`red.5`}
-							transitionProps={{ transition: "pop-bottom-left", duration: 500 }}
-						>
-							<Button
-								bg={"#673AB7"}
-								size="md"
-								pl={"12"}
-								pr={"12"}
-								variant={"light"}
-								color={`black`}
-								radius="xl"
-								onClick={(e) => {
-									//
-								}}
-							>
-								<Flex direction={`column`} align={"center"}>
-									<IconArmchair2 size={16} color={"white"} />
-								</Flex>
-							</Button>
-						</Tooltip>
-						<Flex
-							direction={`column`}
-							align={"center"}
-							fz={"12"}
-							c={"black"}
-							wrap={"wrap"}
-						>
-							<Text
-								size="xs"
-								c="black"
-								ta="center"
-								w={56}
-								style={{
-									wordBreak: "break-word",
-									hyphens: "auto",
-								}}
-							>
-								{t("AdditionalTables")}
-							</Text>
-						</Flex>
-					</Flex>
-					<Flex direction={`column`} align={"center"} mb={"8"}>
-						<Tooltip
-							label={t("AltTextNew")}
-							px={16}
-							py={2}
-							withArrow
-							position={"left"}
-							c={"white"}
-							bg={`red.5`}
-							transitionProps={{ transition: "pop-bottom-left", duration: 500 }}
-						>
-							<Button
-								bg={"#009688"}
-								size="md"
-								pl={"12"}
-								pr={"12"}
-								variant={"light"}
-								color={`black`}
-								radius="xl"
-								onClick={(e) => {}}
-							>
-								<Flex direction={`column`} align={"center"}>
-									<IconCellSignal4 size={16} color={"white"} />
-								</Flex>
-							</Button>
-						</Tooltip>
-						<Flex
-							direction={`column`}
-							align={"center"}
-							fz={"12"}
-							c={"black"}
-							wrap={"wrap"}
-						>
-							<Text
-								size="xs"
-								c="black"
-								ta="center"
-								w={56}
-								style={{
-									wordBreak: "break-word",
-									hyphens: "auto",
-								}}
-							>
-								{t("Online")}
-							</Text>
-						</Flex>
-					</Flex>
+					{/* <Flex direction={`column`} align={"center"} mb={"8"}>
+                        <Tooltip
+                            label={t("AltTextNew")}
+                            px={16}
+                            py={2}
+                            withArrow
+                            position={"left"}
+                            c={"white"}
+                            bg={`red.5`}
+                            transitionProps={{ transition: "pop-bottom-left", duration: 500 }}
+                        >
+                            <Button
+                                bg={"#673AB7"}
+                                size="md"
+                                pl={"12"}
+                                pr={"12"}
+                                variant={"light"}
+                                color={`black`}
+                                radius="xl"
+                                onClick={(e) => {
+                                    //
+                                }}
+                            >
+                                <Flex direction={`column`} align={"center"}>
+                                    <IconArmchair2 size={16} color={"white"} />
+                                </Flex>
+                            </Button>
+                        </Tooltip>
+                        <Flex
+                            direction={`column`}
+                            align={"center"}
+                            fz={"12"}
+                            c={"black"}
+                            wrap={"wrap"}
+                        >
+                            <Text
+                                size="xs"
+                                c="black"
+                                ta="center"
+                                w={56}
+                                style={{
+                                    wordBreak: "break-word",
+                                    hyphens: "auto",
+                                }}
+                            >
+                                {t("AdditionalTables")}
+                            </Text>
+                        </Flex>
+                    </Flex> */}
+					{/* <Flex direction={`column`} align={"center"} mb={"8"}>
+                        <Tooltip
+                            label={t("AltTextNew")}
+                            px={16}
+                            py={2}
+                            withArrow
+                            position={"left"}
+                            c={"white"}
+                            bg={`red.5`}
+                            transitionProps={{ transition: "pop-bottom-left", duration: 500 }}
+                        >
+                            <Button
+                                bg={"#009688"}
+                                size="md"
+                                pl={"12"}
+                                pr={"12"}
+                                variant={"light"}
+                                color={`black`}
+                                radius="xl"
+                                onClick={(e) => {}}
+                            >
+                                <Flex direction={`column`} align={"center"}>
+                                    <IconCellSignal4 size={16} color={"white"} />
+                                </Flex>
+                            </Button>
+                        </Tooltip>
+                        <Flex
+                            direction={`column`}
+                            align={"center"}
+                            fz={"12"}
+                            c={"black"}
+                            wrap={"wrap"}
+                        >
+                            <Text
+                                size="xs"
+                                c="black"
+                                ta="center"
+                                w={56}
+                                style={{
+                                    wordBreak: "break-word",
+                                    hyphens: "auto",
+                                }}
+                            >
+                                {t("Online")}
+                            </Text>
+                        </Flex>
+                    </Flex> */}
 				</Flex>
 			</ScrollArea>
+
+			{/* Single Modal */}
+			<Modal
+				opened={modalOpened}
+				onClose={() => setModalOpened(false)}
+				title={modalTitle}
+				size="100%"
+				centered
+			>
+				{renderModalContent()}
+			</Modal>
 		</>
 	);
 }
 
-export default __ShortcutPos;
+export default ShortcutPos;

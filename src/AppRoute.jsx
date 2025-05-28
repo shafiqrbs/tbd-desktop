@@ -11,6 +11,7 @@ import PurchaseInvoice from "./components/modules/inventory/purchase/PurchaseInv
 // import SalesEdit from "./components/modules/inventory/sales/SalesEdit";
 import SalesInvoice from "./components/modules/inventory/sales/SalesInvoice.jsx";
 import BakeryIndex from "./components/modules/pos/bakery/BakeryIndex";
+import StockIndex from "./components/modules/inventory/stock/StockIndex.jsx";
 
 export default function AppRoute() {
 	return (
@@ -31,6 +32,7 @@ export default function AppRoute() {
 					<Route path="sales-invoice" element={<SalesInvoice />} />
 					{/* <Route path="purchase/edit/:id" element={<PurchaseEdit />} /> */}
 					<Route path="purchase-invoice" element={<PurchaseInvoice />} />
+					<Route path="stock" element={<StockIndex />} />
 				</Route>
 				<Route path="pos">
 					<Route path="bakery" element={<BakeryIndex />} />

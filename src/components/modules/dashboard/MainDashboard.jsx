@@ -157,7 +157,7 @@ function MainDashboard(props) {
 			</SimpleGrid>
 			<ScrollArea h={height} scrollbarSize={2} type="never">
 				<SimpleGrid cols={{ base: 1, md: 4 }} spacing="xs">
-					{configData?.domain?.modules?.includes("sales-purchase") && (
+					{configData?.modules?.includes("sales-purchase") && (
 						<Card shadow="md" radius="md" className={classes.card} padding="lg">
 							<Grid gutter={{ base: 2 }}>
 								<Grid.Col span={2}>
@@ -398,7 +398,7 @@ function MainDashboard(props) {
 						</Card>
 					)}
 
-					{configData?.domain?.modules?.includes("accounting") && (
+					{configData?.modules?.includes("accounting") && (
 						<Card shadow="md" radius="md" className={classes.card} padding="lg">
 							<Grid gutter={{ base: 2 }}>
 								<Grid.Col span={2}>
@@ -574,7 +574,7 @@ function MainDashboard(props) {
 							</Box>
 						</Card>
 					)}
-					{configData?.domain?.modules?.includes("procurement") && (
+					{configData?.modules?.includes("procurement") && (
 						<Card shadow="md" radius="md" className={classes.card} padding="lg">
 							<Grid gutter={{ base: 2 }}>
 								<Grid.Col span={2}>
@@ -695,7 +695,7 @@ function MainDashboard(props) {
 							</Box>
 						</Card>
 					)}
-					{configData?.domain?.modules?.includes("inventory") && (
+					{configData?.modules?.includes("inventory") && (
 						<Card shadow="md" radius="md" className={classes.card} padding="lg">
 							<Grid gutter={{ base: 2 }}>
 								<Grid.Col span={2}>
@@ -1019,7 +1019,7 @@ function MainDashboard(props) {
 							</Box>
 						</Card>
 					)}
-					{configData?.domain?.modules?.includes("domain") && (
+					{configData?.modules?.includes("domain") && (
 						<Card shadow="md" radius="md" className={classes.card} padding="lg">
 							<Grid gutter={{ base: 2 }}>
 								<Grid.Col span={2}>
@@ -1070,7 +1070,7 @@ function MainDashboard(props) {
 							</Box>
 						</Card>
 					)}
-					{configData?.domain?.modules?.includes("core") && (
+					{configData?.modules?.includes("core") && (
 						<Card shadow="md" radius="md" className={classes.card} padding="lg">
 							<Grid gutter={{ base: 2 }}>
 								<Grid.Col span={2}>
@@ -1266,7 +1266,7 @@ function MainDashboard(props) {
 							</Box>
 						</Card>
 					)}
-					{configData?.domain?.modules?.includes("production") && (
+					{configData?.modules?.includes("production") && (
 						<Card shadow="md" radius="md" className={classes.card} padding="lg">
 							<Grid gutter={{ base: 2 }}>
 								<Grid.Col span={2}>

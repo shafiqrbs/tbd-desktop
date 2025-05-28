@@ -20,14 +20,14 @@ import { useNavigate } from "react-router";
 import { useEffect, useState } from "react";
 // import commonDataStoreIntoLocalStorage from "./global-hook/local-storage/commonDataStoreIntoLocalStorage";
 
-// const dataMap = {
-// 	core_customers: "customers",
-// 	core_users: "users",
-// 	core_vendors: "vendors",
-// 	accounting_transaction_mode: "transaction_modes",
-// 	config_data: "inventory_config",
-// 	core_products: "stock_item",
-// };
+const dataMap = {
+	core_customers: "customers",
+	core_users: "users",
+	core_vendors: "vendors",
+	accounting_transaction_mode: "transaction_modes",
+	config_data: "domain_config",
+	core_products: "stock_item",
+};
 
 export default function Activate() {
 	const [spinner, setSpinner] = useState(false);
@@ -66,40 +66,34 @@ export default function Activate() {
 					is_activated: 1,
 				});
 
-				// const operations = Object.entries(dataMap).map(([table, property]) => {
-				// 	const dataList = Array.isArray(response.data.data[property])
-				// 		? response.data.data[property]
-				// 		: [response.data.data[property]];
+				const operations = Object.entries(dataMap).map(([table, property]) => {
+					const dataList = Array.isArray(response.data.data[property])
+						? response.data.data[property]
+						: [response.data.data[property]];
 
-				// 	return dataList.map((data) => {
-				// 		if (table === "config_data") {
-				// 			console.log(dataList, data)
-				// 			data = {
-				// 				data: JSON.stringify(data),
-				// 			};
-				// 			console.log((data));
-				// 		}
-				// 		return window.dbAPI.upsertIntoTable(table, data);
-				// 	});
-				// });
+					return dataList.map((data) => {
+						if (table === "config_data") {
+							data = {
+								data: JSON.stringify(data),
+							};
+							console.log(data);
+						}
+						return window.dbAPI.upsertIntoTable(table, data);
+					});
+				});
 
-				// await Promise.all(operations);
-				// await commonDataStoreIntoLocalStorage(response.data?.data?.domain_config?.id)
+				await Promise.all(operations);
+				// await commonDataStoreIntoLocalStorage(response.data?.data?.domain_config?.id);
 
 				navigate("/login", { replace: true });
 			} else {
 				setErrorMessage(response.data.message);
 			}
 		} catch (error) {
-			// setErrorMessage(
-			// 	error?.response?.data.message || error?.message || "Account activation failed"
-			// );
-			// TODO: Remove this after testing
-			window.dbAPI.upsertIntoTable("license_activate", {
-				license_key: values.licenseKey,
-				is_activated: 1,
-			});
-			navigate("/login", { replace: true });
+			setErrorMessage(
+				error?.response?.data.message || error?.message || "Account activation failed"
+			);
+
 			console.error(error);
 		} finally {
 			setSpinner(false);

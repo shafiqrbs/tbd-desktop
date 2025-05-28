@@ -63,7 +63,7 @@ export default function NewSales({
 	const [selected, setSelected] = useState([]);
 	const [id, setId] = useState(null);
 	const { configData } = getConfigData();
-	const enableTable = !!(configData?.is_pos && invoiceMode === "table");
+	const enableTable = !!(configData?.inventory_config?.is_pos && invoiceMode === "table");
 	const [loadCartProducts, setLoadCartProducts] = useState(false);
 
 	const [originalProducts, setOriginalProducts] = useState([]);

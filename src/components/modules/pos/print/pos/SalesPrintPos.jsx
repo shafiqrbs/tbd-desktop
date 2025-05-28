@@ -178,12 +178,6 @@ export function SalesPrintPos(props) {
 											style={{ width: "30mm" }}
 										>
 											{element.product_id}
-											{/* {element.sku && (
-                                                <>
-                                                    <br />
-                                                    {t('Sku')} {element.sku}
-                                                </>
-                                            )} */}
 										</td>
 										<td
 											className={`${classes["invoice-text"]} ${classes["text-left"]}`}
@@ -277,10 +271,6 @@ export function SalesPrintPos(props) {
 									(Number(posData.total) - Number(posData.payment)).toFixed(2)}
 							</p>
 						</div>
-						{/* <div className={`${classes['footer-items']} ${classes['margin-footer-botom']}`}>
-                            <p className={`${classes['footer-name']} ${classes['invoice-text']}`}>Grand Total</p>
-                            <p className={`${classes['footer-details']} ${classes['invoice-text']}`}>{data2[0].grand_total}</p>
-                        </div> */}
 						<Text
 							className={`${classes["footer-company"]} ${classes["invoice-text"]}`}
 							mt={"md"}

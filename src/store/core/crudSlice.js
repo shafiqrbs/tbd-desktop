@@ -203,6 +203,13 @@ const initialState = {
 			validationMessage: [],
 			deleteMessage: "",
 		},
+		stock: {
+			list: [],
+			current: null,
+			validation: false,
+			validationMessage: [],
+			deleteMessage: "",
+		},
 		// +++++ new other modules can be added from here +++++
 	},
 	isLoading: false,

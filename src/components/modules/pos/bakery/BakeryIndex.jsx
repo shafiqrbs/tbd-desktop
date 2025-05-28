@@ -263,7 +263,7 @@ export default function BakeryIndex() {
 			)}
 			{progress === 100 && (
 				<>
-					{configData?.is_pos && (
+					{configData?.inventory_config.is_pos && (
 						<HeaderNavbar
 							pageTitle={t("ManageCustomer")}
 							roles={t("Roles")}

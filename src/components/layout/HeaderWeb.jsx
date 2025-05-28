@@ -47,9 +47,10 @@ import {
 	IconBackspace,
 	IconUser,
 	IconLock,
-	IconUserHexagon, IconCheck,
+	IconUserHexagon,
+	IconCheck,
 } from "@tabler/icons-react";
-import { Link, useOutletContext } from "react-router-dom";
+import { Link, useOutletContext } from "react-router";
 import HeaderStyle from "./../../assets/css/Header.module.css";
 import classes from "./../../assets/css/Header.module.css";
 import LanguagePickerStyle from "./../../assets/css/LanguagePicker.module.css";
@@ -58,7 +59,7 @@ import React, { useEffect, useState } from "react";
 import flagBD from "../../assets/images/flags/bd.svg";
 import flagGB from "../../assets/images/flags/gb.svg";
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 import SpotLightSearchModal from "../modules/modals/SpotLightSearchModal.jsx";
 import { useDispatch } from "react-redux";
 import { setInventoryShowDataEmpty } from "../../store/inventory/crudSlice.js";
@@ -66,8 +67,8 @@ import shortcutDropdownData from "../global-hook/shortcut-dropdown/shortcutDropd
 import logo_default from "../../assets/images/logo_default.png";
 import ImageUploadDropzone from "../form-builders/ImageUploadDropzone";
 import PasswordInputForm from "../form-builders/PasswordInputForm";
-import {storeEntityData} from "../../store/inventory/crudSlice";
-import {notifications} from "@mantine/notifications";
+import { storeEntityData } from "../../store/inventory/crudSlice";
+import { notifications } from "@mantine/notifications";
 import ChangePassword from "../modules/core/user/ChnagePassword";
 import AddProductDrawer from "../modules/inventory/sales/drawer-form/AddProductDrawer";
 
@@ -170,7 +171,7 @@ export default function Header({ isOnline, configData, mainAreaHeight }) {
 				},
 			],
 			[
-				"alt+x", 
+				"alt+x",
 				() => {
 					setShortcutModalOpen(false);
 				},

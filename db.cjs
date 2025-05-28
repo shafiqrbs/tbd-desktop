@@ -84,7 +84,7 @@ db.prepare(
 		product_nature TEXT NOT NULL,
 		display_name TEXT NOT NULL,
 		slug TEXT NOT NULL,
-		category_id INTEGER NOT NULL,
+		category_id INTEGER,
 		unit_id INTEGER NOT NULL,
 		quantity REAL NOT NULL,
 		purchase_price REAL NOT NULL,

@@ -8,6 +8,19 @@ export const formatDate = (date) => {
 	return formattedDateWithDash; // 13-04-2025
 };
 
+export const formatDateTime = (date) => {
+	const formattedDate = new Intl.DateTimeFormat("en-GB", {
+		day: "2-digit",
+		month: "2-digit",
+		year: "numeric",
+		hour: "2-digit",
+		minute: "2-digit",
+		hour12: true,
+	}).format(date);
+	const formattedDateWithDash = formattedDate.replace(/\//g, "-");
+	return formattedDateWithDash; // 13-04-2025 12:00 PM
+};
+
 export const generateInvoiceId = () => {
 	return Date.now().toString().slice(1, 13);
 };
