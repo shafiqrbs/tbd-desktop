@@ -5,6 +5,8 @@ import { storeEntityData } from "../../../../../store/core/crudSlice";
 import { useDispatch } from "react-redux";
 import { showNotificationComponent } from "../../../../core-component/showNotificationComponent";
 import { useOutletContext } from "react-router";
+import getConfigData from "../../../../global-hook/config-data/getConfigData";
+import { calculateSubTotalWithVAT } from "../../../../../lib";
 
 export const useCartOperations = ({
 	enableTable,
@@ -20,6 +22,8 @@ export const useCartOperations = ({
 	const { isOnline } = useOutletContext();
 	const { t } = useTranslation();
 	const dispatch = useDispatch();
+	const { configData } = getConfigData();
+
 	const getStorageKey = useCallback(() => {
 		return enableTable && tableId ? `table-${tableId}-pos-products` : "temp-pos-products";
 	}, [enableTable, tableId]);
@@ -64,6 +68,10 @@ export const useCartOperations = ({
 				const allProducts = await window.dbAPI.getDataFromTable("core_products");
 				product = allProducts.find((p) => p.id == productId);
 			}
+
+			// Get VAT config from config_data
+			const vatConfig = configData?.inventory_config?.config_vat;
+
 			const data = {
 				url: "inventory/pos/inline-update",
 				data: {
@@ -98,9 +106,14 @@ export const useCartOperations = ({
 						}),
 						window.dbAPI.getDataFromTable("invoice_table", tableId),
 					]);
+
 					if (invoiceTableItem?.length) {
 						const updatedQuantity = invoiceTableItem[0].quantity + 1;
-						const updatedSubTotal = updatedQuantity * product.sales_price;
+						const updatedSubTotal = calculateSubTotalWithVAT(
+							product.sales_price,
+							updatedQuantity,
+							vatConfig
+						);
 						const deltaSubTotal = updatedSubTotal - invoiceTableItem[0].sub_total;
 
 						await window.dbAPI.updateDataInTable("invoice_table_item", {
@@ -117,6 +130,11 @@ export const useCartOperations = ({
 						});
 						newSubTotal = deltaSubTotal;
 					} else {
+						const subTotal = calculateSubTotalWithVAT(
+							product.sales_price,
+							1,
+							vatConfig
+						);
 						await window.dbAPI.upsertIntoTable("invoice_table_item", {
 							stock_item_id: product.id,
 							invoice_id: tableId,
@@ -125,11 +143,12 @@ export const useCartOperations = ({
 							sales_price: product.sales_price,
 							custom_price: 0,
 							is_print: 0,
-							sub_total: product.sales_price,
+							sub_total: subTotal,
 							display_name: product.display_name,
 						});
-						newSubTotal = product.sales_price;
+						newSubTotal = subTotal;
 					}
+
 					await window.dbAPI.updateDataInTable("invoice_table", {
 						id: tableId,
 						data: {
@@ -155,9 +174,11 @@ export const useCartOperations = ({
 				product = allProducts.find((p) => p.id == productId);
 			}
 
+			// Get VAT config from config_data
+			const vatConfig = configData?.inventory_config?.config_vat;
+
 			try {
 				if (isOnline) {
-					// Handle decrement logic when online
 					const data = {
 						url: "inventory/pos/inline-update",
 						data: {
@@ -197,7 +218,11 @@ export const useCartOperations = ({
 						if (currentQuantity <= 1) return;
 
 						const updatedQuantity = currentQuantity - 1;
-						const updatedSubTotal = updatedQuantity * product.sales_price;
+						const updatedSubTotal = calculateSubTotalWithVAT(
+							product.sales_price,
+							updatedQuantity,
+							vatConfig
+						);
 						const deltaSubTotal = updatedSubTotal - invoiceTableItem[0].sub_total;
 
 						await window.dbAPI.updateDataInTable("invoice_table_item", {

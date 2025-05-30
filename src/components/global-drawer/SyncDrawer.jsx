@@ -55,9 +55,16 @@ export default function SyncDrawer({ syncPanelOpen, setSyncPanelOpen }) {
 				{SYNC_DATA.map((item, index) => (
 					<Paper key={index} p="md" radius="md" withBorder shadow="sm">
 						<Group justify="space-between" wrap="nowrap">
-							<Text fw={500}>{item}</Text>
+							<Stack gap={4}>
+								<Text fw={600} tt="capitalize">
+									{item.mode}
+								</Text>
+								<Text size="sm" c="dimmed">
+									{item.description}
+								</Text>
+							</Stack>
 							<ActionIcon
-								onClick={() => handleSync(item?.toLowerCase())}
+								onClick={() => handleSync(item.mode)}
 								variant="filled"
 								radius="xl"
 								color="teal"

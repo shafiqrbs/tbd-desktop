@@ -37,25 +37,22 @@ import TextAreaForm from "../../../../form-builders/TextAreaForm.jsx";
 import tableCss from "../../../../../assets/css/Table.module.css";
 import { DataTable } from "mantine-datatable";
 
-
-function _AddCustomerFormPos(props) {
-	const {
-		setCustomerDrawer,
-		setRefreshCustomerDropdown,
-		fieldPrefix,
-		customersDropdownData,
-		setCustomerId,
-		customerId,
-		locationDropdown,
-		customerGroupDropdownData,
-		customerObject,
-		setCustomerObject,
-		enableTable,
-		tableId,
-		updateTableCustomer,
-		clearTableCustomer,
-	} = props;
-
+function _AddCustomerFormPos({
+	setCustomerDrawer,
+	setRefreshCustomerDropdown,
+	fieldPrefix,
+	customersDropdownData,
+	setCustomerId,
+	customerId,
+	locationDropdown,
+	customerGroupDropdownData,
+	customerObject,
+	setCustomerObject,
+	enableTable,
+	tableId,
+	updateTableCustomer,
+	clearTableCustomer,
+}) {
 	const { t } = useTranslation();
 	const dispatch = useDispatch();
 	const { isOnline, mainAreaHeight } = useOutletContext();
@@ -67,6 +64,9 @@ function _AddCustomerFormPos(props) {
 
 	const [customerIdForReceiver, setCustomerIdForReceiver] = useState(null);
 	const [indexData] = useState([]);
+	const [page, setPage] = useState(1);
+	const [fetching, setFetching] = useState(false);
+	const [provisionDrawer, setProvisionDrawer] = useState(false);
 
 	const customerDetails = React.useMemo(() => {
 		if (customerObject && customerId) {
@@ -624,7 +624,7 @@ function _AddCustomerFormPos(props) {
 														<Menu.Dropdown>
 															<Menu.Item
 																onClick={() => {
-																	setProvisionDrawer(true);
+																	// removed provision drawer functionality as it's not implemented
 																}}
 																target="_blank"
 																component="a"

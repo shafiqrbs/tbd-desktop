@@ -226,32 +226,28 @@ export default function NewSales({
 	};
 
 	useEffect(() => {
-		const interval = setInterval(() => {
-			setTables((prevTables) =>
-				prevTables?.map((table) => {
-					if (table.status !== "Free" && table.currentStatusStartTime) {
-						const elapsedSeconds = Math.floor(
-							(new Date() - new Date(table.currentStatusStartTime)) / 1000
-						);
-						const hours = Math.floor(elapsedSeconds / 3600)
-							.toString()
-							.padStart(2, "0");
-						const minutes = Math.floor((elapsedSeconds % 3600) / 60)
-							.toString()
-							.padStart(2, "0");
-						const seconds = (elapsedSeconds % 60).toString().padStart(2, "0");
+		setTables((prevTables) =>
+			prevTables?.map((table) => {
+				if (table.status !== "Free" && table.currentStatusStartTime) {
+					const elapsedSeconds = Math.floor(
+						(new Date() - new Date(table.currentStatusStartTime)) / 1000
+					);
+					const hours = Math.floor(elapsedSeconds / 3600)
+						.toString()
+						.padStart(2, "0");
+					const minutes = Math.floor((elapsedSeconds % 3600) / 60)
+						.toString()
+						.padStart(2, "0");
+					const seconds = (elapsedSeconds % 60).toString().padStart(2, "0");
 
-						return {
-							...table,
-							elapsedTime: `${hours}:${minutes}:${seconds}`,
-						};
-					}
-					return table;
-				})
-			);
-		}, 1000);
-
-		return () => clearInterval(interval);
+					return {
+						...table,
+						elapsedTime: `${hours}:${minutes}:${seconds}`,
+					};
+				}
+				return table;
+			})
+		);
 	}, []);
 
 	const renderStatusButtons = () => (

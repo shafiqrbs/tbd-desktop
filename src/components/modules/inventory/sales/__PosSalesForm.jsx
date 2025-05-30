@@ -295,7 +295,6 @@ export default function __PosSalesForm(props) {
 								salesByName: coreUser.name,
 								createdByUser: user?.username,
 								createdByName: user?.name,
-
 							};
 
 							await window.dbAPI.upsertIntoTable("sales", salesData);

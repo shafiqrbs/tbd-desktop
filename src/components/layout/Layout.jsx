@@ -28,7 +28,6 @@ const Layout = () => {
 		const fetchData = async () => {
 			const res = await setUptoDateConfigData();
 			const default_config_data = await window.dbAPI.getDataFromTable("config_data");
-			console.log(res, default_config_data);
 			if (default_config_data?.id) {
 				window.dbAPI.updateDataInTable("config_data", {
 					id: default_config_data.id,

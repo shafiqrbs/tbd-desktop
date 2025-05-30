@@ -25,7 +25,7 @@ function SalesIndex() {
 			)}
 			{progress === 100 && (
 				<Box>
-					{configData && (
+					{configData?.id && (
 						<>
 							<_SalesPurchaseHeaderNavbar
 								pageTitle={t("ManageSales")}

@@ -29,10 +29,6 @@ export const applyDiscount = (price, discount) => {
 	return price - (price * discount) / 100;
 };
 
-export const applyVat = (price, vat) => {
-	return price + (price * vat) / 100;
-};
-
 export const applyZakat = (price, zakat) => {
 	return price * zakat;
 };
@@ -43,4 +39,26 @@ export const applyAIT = (price, ait) => {
 
 export const applyCoupon = (price, coupon) => {
 	return price - (price * coupon) / 100;
+};
+
+// =============== vat calculation utility function ================
+export const calculateVATPrice = (price, vatConfig) => {
+	if (!vatConfig?.vat_enable) return price;
+
+	if (vatConfig.vat_mode?.toLowerCase() === "including") {
+		// If VAT is already included, return the price as is
+		return price;
+	} else if (vatConfig.vat_mode?.toLowerCase() === "excluding") {
+		// If VAT is excluded, add VAT percentage
+		const vatAmount = price * (vatConfig.vat_percent / 100);
+		return price + vatAmount;
+	}
+
+	return price;
+};
+
+// =============== calculate subtotal with vat ================
+export const calculateSubTotalWithVAT = (price, quantity, vatConfig) => {
+	const vatPrice = calculateVATPrice(price, vatConfig);
+	return vatPrice * quantity;
 };

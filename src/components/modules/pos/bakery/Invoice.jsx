@@ -503,7 +503,6 @@ export default function Invoice({
 
 			resetSaleState();
 			showNotificationComponent(t("SalesComplete"), "blue", "", "", true, 1000, true);
-			console.log(invoiceData);
 			if (withPos) {
 				const setup = await window.dbAPI.getDataFromTable("printer");
 				if (!setup?.printer_name) {
@@ -1008,10 +1007,20 @@ export default function Invoice({
 									<Grid.Col span={5}>
 										<Group justify="space-between">
 											<Text fz={"sm"} fw={500} c={"black"}>
-												{t("VAT")}
+												{t("VAT")}{" "}
+												{
+													configData?.inventory_config?.config_vat
+														?.vat_percent
+												}
+												%
 											</Text>
 											<Text fz={"sm"} fw={800} c={"black"}>
-												{configData?.currency?.symbol} 0
+												{parseInt(
+													salesTotalAmount *
+														(configData?.inventory_config?.config_vat
+															?.vat_percent /
+															100)
+												)}
 											</Text>
 										</Group>
 										<Group justify="space-between">

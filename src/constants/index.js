@@ -45,6 +45,27 @@ const LANGUAGES = [
 	{ label: "BN", value: "bn", flag: flagBD },
 ];
 
-const SYNC_DATA = ["Sales", "Purchases", "Products", "Customers", "Vendors"];
+const SYNC_DATA = [
+	{
+		mode: "sales",
+		description: "Sync sales data to cloud",
+	},
+	{
+		mode: "purchases",
+		description: "Sync purchase records",
+	},
+	{
+		mode: "products",
+		description: "Sync product catalog",
+	},
+	{
+		mode: "customers",
+		description: "Sync customer database",
+	},
+	{
+		mode: "vendors",
+		description: "Sync supplier information",
+	},
+];
 
 export { LANGUAGES, CHARACTER_SET, SYNC_DATA, LINE_CHARACTER };

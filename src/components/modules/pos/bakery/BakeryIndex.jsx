@@ -38,13 +38,17 @@ export default function BakeryIndex() {
 	const [tableId, setTableId] = useState(null);
 	const [reloadInvoiceData, setReloadInvoiceData] = useState(false);
 
+	// set default customer object
 	useEffect(() => {
 		async function fetchData() {
 			const result = await window.dbAPI.getDataFromTable("users");
-			setCustomerObject(result);
+			console.log(result);
+			setCustomerObject(result[0]);
 		}
 		fetchData();
 	}, []);
+
+	console.log(customerObject);
 
 	// ✅ Optimized Category Dropdown Fetching
 

@@ -2,27 +2,26 @@ import { useOutletContext } from "react-router";
 import { ActionIcon, Box, ScrollArea, Drawer, Flex } from "@mantine/core";
 import { IconX } from "@tabler/icons-react";
 import AddCustomerDrawerForm from "./AddCustomerDrawerForm";
-import _AddCustomerFormPos from "./_AddCustomerFormPos";
+import _AddCustomerFormPos from "./_AddCustomerFormPos.jsx";
 import getLocationDropdownData from "../../../../global-hook/dropdown/getLocationDropdownData";
 import getCoreSettingCustomerGroupDropdownData from "../../../../global-hook/dropdown/getCoreSettingCustomerGroupDropdownData";
 
-function AddCustomerDrawer(props) {
-	const {
-		customerDrawer,
-		setCustomerDrawer,
-		setRefreshCustomerDropdown,
-		focusField,
-		fieldPrefix,
-		setCustomerId,
-		customersDropdownData,
-		customerId,
-		customerObject,
-		setCustomerObject,
-		enableTable,
-		tableId,
-		updateTableCustomer,
-		clearTableCustomer,
-	} = props;
+function AddCustomerDrawer({
+	customerDrawer,
+	setCustomerDrawer,
+	setRefreshCustomerDropdown,
+	focusField,
+	fieldPrefix,
+	setCustomerId,
+	customersDropdownData,
+	customerId,
+	customerObject,
+	setCustomerObject,
+	enableTable,
+	tableId,
+	updateTableCustomer,
+	clearTableCustomer,
+}) {
 	const { mainAreaHeight } = useOutletContext();
 	const height = mainAreaHeight; //TabList height 104
 	const closeModel = () => {
