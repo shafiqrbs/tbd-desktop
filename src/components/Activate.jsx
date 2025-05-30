@@ -63,6 +63,7 @@ export default function Activate() {
 			if (response.data.status === 200) {
 				window.dbAPI.upsertIntoTable("license_activate", {
 					license_key: values.licenseKey,
+					active_key: values.activeKey,
 					is_activated: 1,
 				});
 
@@ -76,7 +77,6 @@ export default function Activate() {
 							data = {
 								data: JSON.stringify(data),
 							};
-							console.log(data);
 						}
 						return window.dbAPI.upsertIntoTable(table, data);
 					});

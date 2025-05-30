@@ -10,6 +10,7 @@ import getConfigData from "../global-hook/config-data/getConfigData";
 import { useDispatch } from "react-redux";
 import { setMenu } from "../../store/core/crudSlice";
 import { notifications } from "@mantine/notifications";
+import { setUptoDateConfigData } from "../../services/apiService";
 
 const Layout = () => {
 	const networkStatus = useNetwork();
@@ -22,6 +23,23 @@ const Layout = () => {
 	const [user, setUser] = useState({});
 	const { configData } = getConfigData();
 	const dispatch = useDispatch();
+
+	useEffect(() => {
+		const fetchData = async () => {
+			const res = await setUptoDateConfigData();
+			const default_config_data = await window.dbAPI.getDataFromTable("config_data");
+			console.log(res, default_config_data);
+			if (default_config_data?.id) {
+				window.dbAPI.updateDataInTable("config_data", {
+					id: default_config_data.id,
+					data: {
+						data: JSON.stringify(res),
+					},
+				});
+			}
+		};
+		fetchData();
+	}, []);
 
 	useEffect(() => {
 		const initializeData = async () => {

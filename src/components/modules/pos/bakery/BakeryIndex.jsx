@@ -28,7 +28,6 @@ export default function BakeryIndex() {
 	);
 
 	// ✅ Local State
-	const [time, setTime] = useState(new Date().toLocaleTimeString());
 	const [tables, setTables] = useState([]);
 	const [tableCustomerMap, setTableCustomerMap] = useState({});
 	const [customerObject, setCustomerObject] = useState({});
@@ -38,6 +37,14 @@ export default function BakeryIndex() {
 	const [invoiceMode, setInvoiceMode] = useState(null);
 	const [tableId, setTableId] = useState(null);
 	const [reloadInvoiceData, setReloadInvoiceData] = useState(false);
+
+	useEffect(() => {
+		async function fetchData() {
+			const result = await window.dbAPI.getDataFromTable("users");
+			setCustomerObject(result);
+		}
+		fetchData();
+	}, []);
 
 	// ✅ Optimized Category Dropdown Fetching
 
@@ -67,15 +74,6 @@ export default function BakeryIndex() {
 			? categoryDropdownData.map(({ name, id }) => ({ label: name, value: String(id) }))
 			: [];
 	}, [categoryDropdownData]);
-
-	// ✅ Optimized Time Update Using `setInterval`
-	useEffect(() => {
-		const intervalId = setInterval(() => {
-			setTime(new Date().toLocaleTimeString());
-		}, 1000); // Update time every second instead of every 100ms
-
-		return () => clearInterval(intervalId);
-	}, []);
 
 	// ✅ Optimized Data Fetching
 	useEffect(() => {
@@ -196,15 +194,6 @@ export default function BakeryIndex() {
 		setTables(transformedTables);
 	}, [transformedTables]);
 
-	// ✅ Time Update in Tables
-	useEffect(() => {
-		setTables((prevTables) => {
-			return prevTables?.map((table) =>
-				table.time !== time ? { ...table, time: time } : table
-			);
-		});
-	}, [time]);
-
 	// ✅ Memoized Selected Customer Object
 	const selectedCustomer = useMemo(
 		() => tableCustomerMap[tableId] || {},
@@ -263,7 +252,7 @@ export default function BakeryIndex() {
 			)}
 			{progress === 100 && (
 				<>
-					{configData?.inventory_config.is_pos && (
+					{configData?.inventory_config?.is_pos && (
 						<HeaderNavbar
 							pageTitle={t("ManageCustomer")}
 							roles={t("Roles")}

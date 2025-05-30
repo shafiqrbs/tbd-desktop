@@ -5,7 +5,7 @@ import { storeEntityData } from "../../../store/core/crudSlice.js";
 import { useDispatch } from "react-redux";
 import { showNotificationComponent } from "../../core-component/showNotificationComponent.jsx";
 import { useOutletContext } from "react-router";
-
+import { useState, useEffect } from "react";
 
 function HeaderNavbar({
 	tables,
@@ -15,9 +15,19 @@ function HeaderNavbar({
 	setCustomerObject,
 	invoiceMode,
 }) {
+	const [time, setTime] = useState(new Date().toLocaleTimeString());
+
 	const { isOnline } = useOutletContext();
 	const dispatch = useDispatch();
 	const { scrollRef, showLeftArrow, showRightArrow, handleScroll, scroll } = useScroll();
+
+	useEffect(() => {
+		const intervalId = setInterval(() => {
+			setTime(new Date().toLocaleTimeString());
+		}, 1000);
+
+		return () => clearInterval(intervalId);
+	}, []);
 
 	const HandleParticularClick = async (invoice) => {
 		const newTableId = tableId === invoice.id ? null : invoice.id;
@@ -150,7 +160,7 @@ function HeaderNavbar({
 										style={{ borderRadius: "1px" }}
 									>
 										<Text fz="sm" fw={400}>
-											{table.status ? table.elapsedTime : table.time}
+											{table.status ? table.elapsedTime : time}
 										</Text>
 									</Flex>
 

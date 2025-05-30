@@ -46,7 +46,7 @@ export default function Login() {
 				const res = await window.dbAPI.getDataFromTable("users");
 				setUser(res);
 				if (res?.id) {
-					navigate("/", { replace: true });
+					navigate("/pos/bakery", { replace: true });
 				}
 			} catch (error) {
 				console.error("Auth check error:", error);
@@ -115,7 +115,7 @@ export default function Login() {
 				orderProcessDropdownLocalDataStore(response.data?.data?.id);
 
 				await commonDataStoreIntoLocalStorage(response.data?.data?.id);
-				navigate("/", { replace: true });
+				navigate("/pos/bakery", { replace: true });
 			} else {
 				setErrorMessage(response.data.message);
 			}
@@ -132,8 +132,9 @@ export default function Login() {
 			title: "Reset local data?",
 			children: (
 				<Text size="sm">
-					Are you sure you want to reset your local data? This action is destructive and you
-					will lose all of your local data which aren&apos;t synced yet. The app will be closed after reset.
+					Are you sure you want to reset your local data? This action is destructive and
+					you will lose all of your local data which aren&apos;t synced yet. The app will
+					be closed after reset.
 				</Text>
 			),
 			labels: { confirm: "Reset now", cancel: "No don't reset it" },

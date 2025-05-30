@@ -193,3 +193,19 @@ export const getCoreSettingDropdown = async (value) => {
 		throw error;
 	}
 };
+
+export const setUptoDateConfigData = async () => {
+	const data = await window.dbAPI.getDataFromTable("license_activate");
+
+	try {
+		const response = await createAxiosRequest(
+			"get",
+			`core/splash-info?license_key=${data.license_key}&active_key=${data.active_key}`
+		);
+
+		return response.data?.data?.domain_config;
+	} catch (error) {
+		console.error("Error in setUptoDateConfigData:", error);
+		throw error;
+	}
+};

@@ -18,6 +18,7 @@ db.prepare(
 	CREATE TABLE IF NOT EXISTS license_activate (
 		id INTEGER PRIMARY KEY,
 		license_key TEXT,
+		active_key TEXT,
 		is_activated INTEGER,
 		activated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 	)
