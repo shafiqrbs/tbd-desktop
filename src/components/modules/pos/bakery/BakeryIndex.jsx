@@ -42,13 +42,10 @@ export default function BakeryIndex() {
 	useEffect(() => {
 		async function fetchData() {
 			const result = await window.dbAPI.getDataFromTable("users");
-			console.log(result);
 			setCustomerObject(result[0]);
 		}
 		fetchData();
 	}, []);
-
-	console.log(customerObject);
 
 	// ✅ Optimized Category Dropdown Fetching
 
@@ -251,12 +248,11 @@ export default function BakeryIndex() {
 
 	return (
 		<>
-			{progress !== 100 && (
+			{progress !== 100 ? (
 				<Progress color="red" size="sm" striped animated value={progress} />
-			)}
-			{progress === 100 && (
+			) : (
 				<>
-					{configData?.inventory_config?.is_pos && (
+					{configData?.inventory_config?.is_pos ? (
 						<HeaderNavbar
 							pageTitle={t("ManageCustomer")}
 							roles={t("Roles")}
@@ -268,7 +264,7 @@ export default function BakeryIndex() {
 							setCustomerObject={setCustomerObject}
 							invoiceMode={invoiceMode}
 						/>
-					)}
+					) : null}
 					<Box
 						h={height + 4}
 						mt={6}

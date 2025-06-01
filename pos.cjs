@@ -13,8 +13,8 @@ const thermalPrint = async ({ configData, salesItems, salesViewData, setup }) =>
 				timeout: 5000,
 			},
 		});
-		printer.alignCenter();
-		await printer.printImage("./icons/sandra.png");
+		// printer.alignCenter();
+		// await printer.printImage("./icons/sandra.png");
 		printer.bold(true);
 		printer.setTextSize(1, 1);
 		printer.alignCenter();

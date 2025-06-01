@@ -41,7 +41,7 @@ function ShortcutPos() {
 	return (
 		<>
 			<ScrollArea
-				h={configData?.is_table_pos ? height : height + 110}
+				h={configData?.inventory_config?.is_pos ? height : height + 195}
 				bg="white"
 				type="never"
 				className="border-radius"
