@@ -59,7 +59,7 @@ export function SalesPrintA4({ salesViewData, setPrintA4, salesItems }) {
 								<Stack justify="center" gap={0}>
 									<Flex justify={"flex-end"} mt={"0"}>
 										<Text fw={"600"} fz={"16"} mr={"sm"}>
-											{configData.domain.name}
+											{configData?.name || configData?.company_name}
 										</Text>
 									</Flex>
 									<Stack justify="flex-end" gap={0} mt={"4"}>
@@ -69,7 +69,7 @@ export function SalesPrintA4({ salesViewData, setPrintA4, salesItems }) {
 											</p>
 											<p className={classes["invoice-text"]}>:</p>
 											<p className={classes["invoice-text"]}>
-												{configData.domain.email}
+												{configData?.email || ""}
 											</p>
 										</Group>
 										<Group justify="flex-start" gap={0}>
@@ -78,7 +78,7 @@ export function SalesPrintA4({ salesViewData, setPrintA4, salesItems }) {
 											</p>
 											<p className={classes["invoice-text"]}>:</p>
 											<p className={classes["invoice-text"]}>
-												{configData.domain.mobile}
+												{configData?.mobile || ""}
 											</p>
 										</Group>
 									</Stack>
@@ -101,9 +101,7 @@ export function SalesPrintA4({ salesViewData, setPrintA4, salesItems }) {
 											</p>
 											<p className={classes["invoice-text"]}>:</p>
 											<p className={classes["padding-left"]}>
-												{salesViewData &&
-													salesViewData?.customerName &&
-													salesViewData?.customerName}
+												{salesViewData?.customerName || ""}
 											</p>
 										</Group>
 										<Group justify="flex-start" gap={0}>
@@ -112,9 +110,7 @@ export function SalesPrintA4({ salesViewData, setPrintA4, salesItems }) {
 											</p>
 											<p className={classes["invoice-text"]}>:</p>
 											<p className={classes["padding-left"]}>
-												{salesViewData &&
-													salesViewData.customerMobile &&
-													salesViewData.customerMobile}
+												{salesViewData?.customerMobile || ""}
 											</p>
 										</Group>
 										<Group justify="flex-start" gap={0}>
@@ -123,9 +119,7 @@ export function SalesPrintA4({ salesViewData, setPrintA4, salesItems }) {
 											</p>
 											<p className={classes["invoice-text"]}>:</p>
 											<p className={classes["padding-left"]}>
-												{salesViewData &&
-													salesViewData.customer_address &&
-													salesViewData.customer_address}
+												{salesViewData?.customer_address || ""}
 											</p>
 										</Group>
 									</Stack>
@@ -176,34 +170,22 @@ export function SalesPrintA4({ salesViewData, setPrintA4, salesItems }) {
 								</Stack>
 								<Stack align="flex-start" justify="center" gap="0">
 									<Text h={18} fw={"300"} fz={"12"}>
-										{salesViewData &&
-											salesViewData.invoice &&
-											salesViewData.invoice}
+										{salesViewData?.invoice || ""}
 									</Text>
 									<Text h={18} fw={"300"} fz={"12"}>
-										{salesViewData &&
-											salesViewData.created &&
-											salesViewData.created}
+										{salesViewData?.created || ""}
 									</Text>
 									<Text h={18} fw={"300"} fz={"12"}>
-										{salesViewData &&
-											salesViewData.createdByName &&
-											salesViewData.createdByName}
+										{salesViewData?.createdByName || ""}
 									</Text>
 									<Text h={18} fw={"300"} fz={"12"}>
-										{salesViewData &&
-											salesViewData.salesByUser &&
-											salesViewData.salesByUser}
+										{salesViewData?.salesByUser || ""}
 									</Text>
 									<Text h={18} fw={"300"} fz={"12"}>
-										{salesViewData &&
-											salesViewData.mode_name &&
-											salesViewData.mode_name}
+										{salesViewData?.mode_name || ""}
 									</Text>
 									<Text h={18} fw={"300"} fz={"12"}>
-										{salesViewData &&
-											salesViewData.process &&
-											salesViewData.process}
+										{salesViewData?.process || ""}
 									</Text>
 								</Stack>
 							</Group>
@@ -250,33 +232,33 @@ export function SalesPrintA4({ salesViewData, setPrintA4, salesItems }) {
 												{index + 1}
 											</td>
 											<td className={classes["invoice-body-table-td"]}>
-												{element.name}
-												{element.sku && (
+												{element?.name}
+												{element?.sku && (
 													<>
 														<br />
-														{t("Sku")} {element.sku}
+														{t("Sku")} {element?.sku}
 													</>
 												)}
 											</td>
 											<td
 												className={`${classes["invoice-body-table-td"]} ${classes["text-center"]}`}
 											>
-												{element.quantity}
+												{element?.quantity}
 											</td>
 											<td
 												className={`${classes["invoice-body-table-td"]} ${classes["text-right"]}`}
 											>
-												{element.uom}
+												{element?.uom}
 											</td>
 											<td
 												className={`${classes["invoice-body-table-td"]} ${classes["text-center"]}`}
 											>
-												{element.sales_price}
+												{element?.sales_price}
 											</td>
 											<td
 												className={`${classes["invoice-body-table-td"]} ${classes["text-right"]}`}
 											>
-												{element.sub_total}
+												{element?.sub_total}
 											</td>
 										</tr>
 									</React.Fragment>

@@ -345,15 +345,19 @@ function _GenericInvoiceForm(props) {
 					<Box bg={"white"} p={"xs"} className={"borderRadiusAll"}>
 						<Box>
 							<form
-								onSubmit={form.onSubmit(async(values) => {
+								onSubmit={form.onSubmit(async (values) => {
 									if (!values.barcode && !values.product_id) {
 										form.setFieldError("barcode", true);
 										form.setFieldError("product_id", true);
 										setTimeout(() => {}, 1000);
 									} else {
-										const cardProducts = await window.dbAPI.getDataFromTable("temp_sales_products");
+										const cardProducts = await window.dbAPI.getDataFromTable(
+											"temp_sales_products"
+										);
 										const myCardProducts = cardProducts ? cardProducts : [];
-										const storedProducts = await window.dbAPI.getDataFromTable("core_products");
+										const storedProducts = await window.dbAPI.getDataFromTable(
+											"core_products"
+										);
 										const localProducts = storedProducts ? storedProducts : [];
 
 										if (values.product_id && !values.barcode) {
@@ -636,7 +640,10 @@ function _GenericInvoiceForm(props) {
 												const editedQuantity = e.currentTarget.value;
 												setEditedQuantity(editedQuantity);
 
-												const cardProducts = await window.dbAPI.getDataFromTable("temp_sales_products");
+												const cardProducts =
+													await window.dbAPI.getDataFromTable(
+														"temp_sales_products"
+													);
 
 												const updatedProducts = cardProducts.map(
 													(product) => {
@@ -657,9 +664,12 @@ function _GenericInvoiceForm(props) {
 
 												await Promise.all(
 													updatedProducts.map((product) =>
-														window.dbAPI.upsertIntoTable("temp_sales_products", product)
+														window.dbAPI.upsertIntoTable(
+															"temp_sales_products",
+															product
+														)
 													)
-												)
+												);
 												setLoadCardProducts(true);
 											};
 
@@ -709,8 +719,11 @@ function _GenericInvoiceForm(props) {
 											};
 
 											useEffect(() => {
-												const timeoutId = setTimeout(async() => {
-													const cardProducts = window.dbAPI.getDataFromTable("temp_sales_products") || [];
+												const timeoutId = setTimeout(async () => {
+													const cardProducts =
+														window.dbAPI.getDataFromTable(
+															"temp_sales_products"
+														) || [];
 													const updatedProducts = cardProducts.map(
 														(product) => {
 															if (
@@ -729,9 +742,14 @@ function _GenericInvoiceForm(props) {
 														}
 													);
 
-													const promises = updatedProducts.map(async (product) => {
-														await window.dbAPI.upsertIntoTable("temp_sales_products", product);
-													});
+													const promises = updatedProducts.map(
+														async (product) => {
+															await window.dbAPI.upsertIntoTable(
+																"temp_sales_products",
+																product
+															);
+														}
+													);
 
 													await Promise.all(promises);
 													setLoadCardProducts(true);
@@ -772,7 +790,10 @@ function _GenericInvoiceForm(props) {
 												const editedPercent = e.currentTarget.value;
 												setEditedPercent(editedPercent);
 
-												const tempCardProducts = await window.dbAPI.getDataFromTable("temp_sales_products");
+												const tempCardProducts =
+													await window.dbAPI.getDataFromTable(
+														"temp_sales_products"
+													);
 												const cardProducts = tempCardProducts || [];
 
 												if (
@@ -845,10 +866,13 @@ function _GenericInvoiceForm(props) {
 												</>
 											) : (
 												<Text size={"xs"} ta="right">
-													{(
-														Number(item.price) -
-														Number(item.sales_price)
-													).toFixed(2)}
+													{(() => {
+														const price = Number(item.price);
+														const salesPrice = Number(item.sales_price);
+														if (isNaN(price) || isNaN(salesPrice))
+															return "0.00";
+														return (price - salesPrice).toFixed(2);
+													})()}
 												</Text>
 											);
 										},
@@ -899,9 +923,14 @@ function _GenericInvoiceForm(props) {
 															(d) => d.product_id !== item.product_id
 														);
 
-														const promises = updatedProducts.map(async (product) => {
-															window.dbAPI.upsertIntoTable("temp_sales_products", product);
-														});
+														const promises = updatedProducts.map(
+															async (product) => {
+																window.dbAPI.upsertIntoTable(
+																	"temp_sales_products",
+																	product
+																);
+															}
+														);
 
 														await Promise.all(promises);
 														setLoadCardProducts(true);

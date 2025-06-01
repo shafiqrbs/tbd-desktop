@@ -55,7 +55,7 @@ export function PurchasePrintNormal(props) {
 									<Stack justify="center" gap={0}>
 										<Flex justify={"flex-end"} mt={"0"}>
 											<Text fw={"600"} fz={"16"} mr={"sm"}>
-												{configData.domain?.name}
+												{configData?.domain?.name}
 											</Text>
 										</Flex>
 										<Stack justify="flex-end" gap={0} mt={"4"}>
@@ -65,7 +65,7 @@ export function PurchasePrintNormal(props) {
 												</p>
 												<p className={classes["invoice-text"]}>:</p>
 												<p className={classes["invoice-text"]}>
-													{configData.domain?.email}
+													{configData?.domain?.email}
 												</p>
 											</Group>
 											<Group justify="flex-start" gap={0}>

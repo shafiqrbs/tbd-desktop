@@ -50,7 +50,7 @@ function _SalesTable() {
 	const printRef = useRef();
 	const dispatch = useDispatch();
 	const { t } = useTranslation();
-	const {isOnline, mainAreaHeight } = useOutletContext();
+	const { isOnline, mainAreaHeight } = useOutletContext();
 	const tableHeight = mainAreaHeight - 106; //TabList height 104
 	const height = mainAreaHeight - 304; //TabList height 104
 
@@ -109,24 +109,24 @@ function _SalesTable() {
 	const rows =
 		Array.isArray(salesItems) &&
 		salesItems?.map((element, index) => (
-			<Table.Tr key={element.name+index}>
+			<Table.Tr key={element.name + index}>
 				<Table.Td fz="xs" width={"20"}>
 					{index + 1}
 				</Table.Td>
 				<Table.Td ta="left" fz="xs" width={"300"}>
-					{element.name || element.display_name || ""}
+					{element?.name || element?.display_name || ""}
 				</Table.Td>
 				<Table.Td ta="center" fz="xs" width={"60"}>
-					{element.quantity}
+					{element?.quantity}
 				</Table.Td>
 				<Table.Td ta="right" fz="xs" width={"80"}>
-					{element.uom}
+					{element?.uom}
 				</Table.Td>
 				<Table.Td ta="right" fz="xs" width={"80"}>
-					{element.sales_price}
+					{element?.sales_price}
 				</Table.Td>
 				<Table.Td ta="right" fz="xs" width={"100"}>
-					{element.sub_total}
+					{element?.sub_total}
 				</Table.Td>
 			</Table.Tr>
 		));
@@ -423,16 +423,15 @@ function _SalesTable() {
 											accessor: "due",
 											title: t("Due"),
 											textAlign: "right",
-											render: (data) => (
-												<>
-													{data.total
-														? (
-																Number(data.total) -
-																Number(data.payment)
-														  ).toFixed(2)
-														: "0.00"}
-												</>
-											),
+											render: (data) => {
+												const total = Number(data.total);
+												const payment = Number(data.payment);
+												let due = 0;
+												if (!isNaN(total) && !isNaN(payment)) {
+													due = total - payment;
+												}
+												return <>{!isNaN(due) ? due.toFixed(2) : "0.00"}</>;
+											},
 										},
 										{
 											accessor: "action",
@@ -560,7 +559,8 @@ function _SalesTable() {
 																	</Menu.Item>
 																)}
 															{!data.invoice_batch_id &&
-																!data.approved_by_id && isOnline && (
+																!data.approved_by_id &&
+																isOnline && (
 																	<Menu.Item
 																		onClick={() => {
 																			navigate(
@@ -589,7 +589,8 @@ function _SalesTable() {
 																{t("Show")}
 															</Menu.Item>
 															{!data.invoice_batch_id &&
-																!data.approved_by_id && isOnline && (
+																!data.approved_by_id &&
+																isOnline && (
 																	<Menu.Item
 																		onClick={() => {
 																			modals.openConfirmModal(

@@ -28,7 +28,7 @@ export function PurchasePrintPos(props) {
 				<header className={classes["body-head"]}>
 					<div className={classes["pos-head"]}>
 						<img src={imageSrc} alt="logo" className={classes["head-img"]} />
-						<h3 className={classes["head-title"]}>{configData.domain?.name}</h3>
+						<h3 className={classes["head-title"]}>{configData?.domain?.name}</h3>
 						<Grid
 							columns={24}
 							gutter={0}

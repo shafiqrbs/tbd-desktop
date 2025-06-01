@@ -1,11 +1,14 @@
 import { Drawer, Divider, Stack, Paper, Group, Text, ActionIcon, rem } from "@mantine/core";
 import { IconRefresh } from "@tabler/icons-react";
 import { SYNC_DATA } from "../../constants";
+import { useNetwork } from "@mantine/hooks";
 
 export default function SyncDrawer({ syncPanelOpen, setSyncPanelOpen }) {
+	const networkStatus = useNetwork();
+
 	const handleSync = async (syncOption) => {
 		try {
-			let salesData, salesWithTransactions;
+			let salesData, salesWithTransactions, output;
 
 			switch (syncOption) {
 				case "sales":
@@ -22,7 +25,13 @@ export default function SyncDrawer({ syncPanelOpen, setSyncPanelOpen }) {
 						}))
 					);
 
-					console.log(salesWithTransactions);
+					output = {
+						user: await window.dbAPI.getDataFromTable("users"),
+						content: salesWithTransactions,
+						status: networkStatus.online ? "online" : "offline",
+					};
+
+					console.log(output);
 
 					break;
 
