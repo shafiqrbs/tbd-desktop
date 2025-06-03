@@ -91,6 +91,7 @@ export default function Invoice({
 	const [transactionModeName, setTransactionModeName] = useState(null);
 	const currentTableKey = tableId || "general";
 	const currentTableSplitPayments = tableSplitPaymentMap[currentTableKey] || [];
+
 	const isSplitPaymentActive = currentTableSplitPayments.length > 0;
 
 	const isThisTableSplitPaymentActive = isSplitPaymentActive;
@@ -317,6 +318,44 @@ export default function Invoice({
 
 	const getSplitPayment = (splitPayments) => {
 		updateTableSplitPayment(currentTableKey, splitPayments);
+
+		// =============== calculate total paid amount from split payments ================
+		const totalPaidAmount = splitPayments.reduce(
+			(sum, payment) => sum + Number(payment.partial_amount),
+			0
+		);
+
+		// =============== update due amount and return text ================
+		const newDueAmount = salesTotalAmount - (totalPaidAmount + salesDiscountAmount);
+		setSalesDueAmount(newDueAmount);
+		setReturnOrDueText(newDueAmount < 0 ? "Return" : "Due");
+
+		// =============== update current payment input ================
+		setCurrentPaymentInput(totalPaidAmount.toString());
+		setTableReceiveAmounts((prev) => ({
+			...prev,
+			[currentTableKey]: totalPaidAmount.toString(),
+		}));
+
+		// =============== update form value ================
+		form.setFieldValue("receive_amount", totalPaidAmount.toString());
+
+		// =============== update invoice data ================
+		setInvoiceData((prev) => ({
+			...prev,
+			payment: totalPaidAmount,
+			due_amount: newDueAmount,
+		}));
+
+		// =============== update database if offline ================
+		if (!isOnline) {
+			window.dbAPI.updateDataInTable("invoice_table", {
+				id: tableId,
+				data: {
+					payment: totalPaidAmount,
+				},
+			});
+		}
 	};
 
 	const handleCustomerAdd = () => {
@@ -370,9 +409,7 @@ export default function Invoice({
 		setIsDisabled(true);
 
 		try {
-			const fullAmount = isSplitPaymentActive
-				? salesTotalWithoutDiscountAmount
-				: invoiceData.payment;
+			const fullAmount = invoiceData.payment;
 
 			if (isOnline) {
 				await handleOnlineSave(fullAmount);
@@ -530,6 +567,7 @@ export default function Invoice({
 		setIndexData(null);
 		setInvoiceData(null);
 		form.reset();
+		clearTableSplitPayment(currentTableKey);
 	};
 
 	const handleTransactionModel = async (id, name) => {
@@ -808,6 +846,7 @@ export default function Invoice({
 				<Box pr={4} pb={4} pt={2} mt={6}>
 					<ActionButtons
 						form={form}
+						tableId={tableId}
 						transactionModeData={transactionModeData}
 						transactionModeId={transactionModeId}
 						handleTransactionModel={handleTransactionModel}
@@ -825,7 +864,6 @@ export default function Invoice({
 						salesDiscountAmount={salesDiscountAmount}
 						setSalesDiscountAmount={setSalesDiscountAmount}
 						setReloadInvoiceData={setReloadInvoiceData}
-						tableId={tableId}
 						currentTableKey={currentTableKey}
 						isThisTableSplitPaymentActive={isThisTableSplitPaymentActive}
 						clearTableSplitPayment={clearTableSplitPayment}

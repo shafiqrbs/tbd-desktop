@@ -510,7 +510,7 @@ export default function ActionButtons({
 							aria-label="Settings"
 							onClick={(e) => {
 								if (isThisTableSplitPaymentActive) {
-									clearTableSplitPayment();
+									clearTableSplitPayment(currentTableKey);
 								} else {
 									handleClick(e);
 								}

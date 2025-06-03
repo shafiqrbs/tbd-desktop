@@ -35,6 +35,8 @@ export default function SplitPayment({
 	const [formSubmitted, setFormSubmitted] = useState(false);
 	const [remainingAmount, setRemainingAmount] = useState(salesDueAmount);
 	const [transactionModeData, setTransactionModeData] = useState([]);
+	const [splitPayments, setSplitPayments] = useState([]);
+	const [saveDisabled, setSaveDisabled] = useState(true);
 
 	useEffect(() => {
 		async function fetchTransactionData() {
@@ -58,9 +60,6 @@ export default function SplitPayment({
 		if (formSubmitted) return;
 		setId(id);
 	};
-
-	const [splitPayments, setSplitPayments] = useState([]);
-	const [saveDisabled, setSaveDisabled] = useState(true);
 
 	useEffect(() => {
 		let totalPaidAmount = 0;
@@ -88,20 +87,10 @@ export default function SplitPayment({
 		} else {
 			setRemainingAmount(0);
 		}
-
-		// Enable save button only when amounts match exactly
-		const amountMatches = Math.abs(totalPaidAmount - salesDueAmount) < 0.01;
-		setSaveDisabled(!amountMatches || payments.length === 0);
+		console.log("splitPayments", splitPayments, payments);
+		// =============== enable save button if there are any payments ================
+		setSaveDisabled(payments.length === 0);
 	}, [splitPaymentForm.values, salesDueAmount]);
-
-	const handleFormSubmit = () => {
-		if (saveDisabled) return;
-
-		// Pass split payment data back to parent
-		getSplitPayment(splitPayments);
-		console.log("splitPayments", splitPayments);
-		setFormSubmitted(true);
-	};
 
 	useEffect(() => {
 		if (currentSplitPayments && currentSplitPayments.length > 0) {
@@ -123,6 +112,14 @@ export default function SplitPayment({
 			setRemainingAmount((salesDueAmount - totalPaid).toFixed(2));
 		}
 	}, []);
+
+	const handleFormSubmit = () => {
+		if (saveDisabled) return;
+
+		// Pass split payment data back to parent
+		getSplitPayment(splitPayments);
+		setFormSubmitted(true);
+	};
 
 	return (
 		<form onSubmit={splitPaymentForm.onSubmit(handleFormSubmit)}>
