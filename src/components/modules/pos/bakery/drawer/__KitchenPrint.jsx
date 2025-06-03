@@ -5,14 +5,7 @@ import { useTranslation } from "react-i18next";
 import { useOutletContext } from "react-router";
 import KitchenPrint from "../../print/pos/KitchenPrint";
 
-export default function __KitchenPrint({
-	loadCartProducts,
-	setLoadCartProducts,
-	tableId,
-	enableTable,
-	salesByUserName,
-	invoiceData,
-}) {
+export default function __KitchenPrint({ salesByUserName, invoiceData }) {
 	const { mainAreaHeight } = useOutletContext();
 	const height = mainAreaHeight - 100;
 	const { t } = useTranslation();

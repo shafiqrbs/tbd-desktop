@@ -4,7 +4,7 @@ import { notifications } from "@mantine/notifications";
 
 export default function KitchenPrint(props) {
 	const { selectedProducts, setPrint, salesByUserName } = props;
-	const configData = getConfigData();
+	const { configData } = getConfigData();
 
 	useEffect(() => {
 		const handlePrint = async () => {
@@ -37,7 +37,7 @@ export default function KitchenPrint(props) {
 		};
 
 		handlePrint();
-	}, []);
+	}, [configData, selectedProducts, salesByUserName, setPrint]);
 
 	return null;
 }

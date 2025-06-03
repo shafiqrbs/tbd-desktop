@@ -75,6 +75,7 @@ export default function NewSales({
 	const [barcode, setBarcode] = useState("");
 
 	const [isValidBarcode, setIsValidBarcode] = useState(true);
+
 	const handleBarcodeSearch = (code) => {
 		const product = products.find((p) => p.barcode === code || p.id.toString() === code);
 
