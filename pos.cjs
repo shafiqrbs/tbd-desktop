@@ -62,7 +62,7 @@ const thermalPrint = async ({ configData, salesItems, salesViewData, setup }) =>
 			{ text: "Particulars", align: "LEFT", width: 0.5 },
 			{ text: "QTY", align: "CENTER", width: 0.05 },
 			{ text: "Price", align: "RIGHT", width: 0.1 },
-			{ text: "Total", align: "RIGHT", width: 0.25 },
+			{ text: "Total", align: "RIGHT", width: 0.35 },
 		]);
 		printer.bold(false);
 		printer.drawLine();
