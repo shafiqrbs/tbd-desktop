@@ -42,7 +42,7 @@ export default function NavigationGeneral() {
 								variant={"light"}
 								color={`black`}
 								radius="xl"
-								onClick={(e) => {
+								onClick={() => {
 									navigate("/inventory/stock");
 								}}
 							>
@@ -85,7 +85,7 @@ export default function NavigationGeneral() {
 								variant={"light"}
 								color={`black`}
 								radius="xl"
-								onClick={(e) => {
+								onClick={() => {
 									navigate("/inventory/product");
 								}}
 							>
@@ -128,7 +128,7 @@ export default function NavigationGeneral() {
 								variant={"light"}
 								color={`black`}
 								radius="xl"
-								onClick={(e) => {
+								onClick={() => {
 									navigate("/inventory/category");
 								}}
 							>
@@ -174,7 +174,7 @@ export default function NavigationGeneral() {
 								variant={"light"}
 								color={`black`}
 								radius="xl"
-								onClick={(e) => {
+								onClick={() => {
 									navigate("/inventory/category-group");
 								}}
 							>
@@ -221,7 +221,7 @@ export default function NavigationGeneral() {
 								variant={"light"}
 								color={`black`}
 								radius="xl"
-								onClick={(e) => {
+								onClick={() => {
 									navigate("/inventory/particular");
 								}}
 							>
@@ -271,7 +271,7 @@ export default function NavigationGeneral() {
 										variant={"light"}
 										color={`black`}
 										radius="xl"
-										onClick={(e) => {
+										onClick={() => {
 											navigate("/inventory/config");
 										}}
 									>

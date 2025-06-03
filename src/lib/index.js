@@ -62,3 +62,15 @@ export const calculateSubTotalWithVAT = (price, quantity, vatConfig) => {
 	const vatPrice = calculateVATPrice(price, vatConfig);
 	return vatPrice * quantity;
 };
+
+export const calculateVATAmount = (vatPrice, vatConfig) => {
+	if (vatConfig.vat_mode?.toLowerCase() === "excluding") {
+		// =============== calculate base price first by removing vat ================
+		const basePrice = vatPrice / (1 + vatConfig.vat_percent / 100);
+		// =============== then calculate vat amount from base price ================
+		const vatAmount = basePrice * (vatConfig.vat_percent / 100);
+		return vatAmount?.toFixed(2);
+	}
+
+	return vatPrice?.toFixed(2);
+};

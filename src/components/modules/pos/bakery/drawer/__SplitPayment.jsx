@@ -22,7 +22,7 @@ import { useForm } from "@mantine/form";
 import InputForm from "../../../../form-builders/InputForm.jsx";
 import InputNumberForm from "../../../../form-builders/InputNumberForm.jsx";
 
-export default function __SplitPayment({
+export default function SplitPayment({
 	closeDrawer,
 	salesDueAmount,
 	getSplitPayment,
@@ -99,6 +99,7 @@ export default function __SplitPayment({
 
 		// Pass split payment data back to parent
 		getSplitPayment(splitPayments);
+		console.log("splitPayments", splitPayments);
 		setFormSubmitted(true);
 	};
 

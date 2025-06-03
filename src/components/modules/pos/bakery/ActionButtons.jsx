@@ -30,17 +30,20 @@ import classes from "./css/Invoice.module.css";
 import { useDispatch } from "react-redux";
 import { storeEntityData } from "../../../../store/core/crudSlice.js";
 import { showNotificationComponent } from "../../../core-component/showNotificationComponent.jsx";
+import { useScroll } from "./utils/ScrollOperations.jsx";
+import { useTranslation } from "react-i18next";
+import getConfigData from "../../../global-hook/config-data/getConfigData.js";
+import { useOutletContext } from "react-router";
+import { calculateVATAmount } from "../../../../lib/index.js";
+import { useState } from "react";
 
 export default function ActionButtons({
 	form,
 	transactionModeData,
 	transactionModeId,
 	handleTransactionModel,
-	isOnline,
 	invoiceData,
-	configData,
 	discountType,
-	t,
 	enableTable,
 	handleClick,
 	salesTotalAmount,
@@ -63,18 +66,185 @@ export default function ActionButtons({
 	setReturnOrDueText,
 	customerObject,
 	handleCustomerAdd,
-	enableCoupon,
-	setEnableCoupon,
 	isDisabled,
 	handleSave,
-	scrollRef,
-	handleScroll,
-	showLeftArrow,
-	showRightArrow,
-	scroll,
 	setDisabledDiscountButton,
 }) {
+	const { configData } = getConfigData();
+	const { isOnline } = useOutletContext();
 	const dispatch = useDispatch();
+	const { scrollRef, showLeftArrow, showRightArrow, handleScroll, scroll } = useScroll();
+	const { t } = useTranslation();
+	const [enableCoupon, setEnableCoupon] = useState("Coupon");
+
+	const handleDiscount = async () => {
+		setDisabledDiscountButton(true);
+		const newDiscountType = discountType === "Percent" ? "Flat" : "Percent";
+		setDiscountType(newDiscountType);
+		const currentDiscountValue = salesDiscountAmount;
+
+		const data = {
+			url: "inventory/pos/inline-update",
+			data: {
+				invoice_id: tableId,
+				field_name: "discount_type",
+				value: newDiscountType,
+				discount_amount: currentDiscountValue,
+			},
+			module: "pos",
+		};
+
+		setSalesDiscountAmount(currentDiscountValue);
+
+		try {
+			if (isOnline) {
+				const resultAction = await dispatch(storeEntityData(data));
+
+				if (resultAction.payload?.status !== 200) {
+					showNotificationComponent(
+						resultAction.payload?.message || "Error updating invoice",
+						"red",
+						"",
+						"",
+						true
+					);
+				} else {
+					await window.dbAPI.updateDataInTable("invoice_table", {
+						id: tableId,
+						data: {
+							discount_type: newDiscountType,
+							discount_amount: currentDiscountValue,
+						},
+					});
+				}
+			}
+		} catch (error) {
+			showNotificationComponent("Request failed. Please try again.", "red", "", "", true);
+			console.error("Error updating invoice:", error);
+		} finally {
+			setReloadInvoiceData(true);
+			setTimeout(() => {
+				setDisabledDiscountButton(false);
+			}, 500);
+		}
+	};
+
+	const handleDiscountBlur = async (event) => {
+		const data = {
+			url: "inventory/pos/inline-update",
+			data: {
+				invoice_id: tableId,
+				field_name: "discount",
+				value: event.target.value,
+				discount_type: discountType,
+			},
+			module: "pos",
+		};
+		// Dispatch and handle response
+		try {
+			if (isOnline) {
+				const resultAction = await dispatch(storeEntityData(data));
+
+				if (resultAction.payload?.status !== 200) {
+					showNotificationComponent(
+						resultAction.payload?.message || "Error updating invoice",
+						"red",
+						"",
+						"",
+						true
+					);
+				}
+			} else {
+				await window.dbAPI.updateDataInTable("invoice_table", {
+					id: tableId,
+					data: {
+						discount: event.target.value,
+						discount_type: discountType,
+					},
+				});
+			}
+		} catch (error) {
+			showNotificationComponent("Request failed. Please try again.", "red", "", "", true);
+			console.error("Error updating invoice:", error);
+		} finally {
+			setReloadInvoiceData(true);
+		}
+	};
+
+	const handlePaymentChange = async (event) => {
+		if (!isThisTableSplitPaymentActive) {
+			const newValue = event.target.value;
+			setCurrentPaymentInput(newValue);
+			form.setFieldValue("receive_amount", newValue);
+
+			// Only update table receive amounts, don't trigger immediate calculations
+			setTableReceiveAmounts((prev) => ({
+				...prev,
+				[currentTableKey]: newValue,
+			}));
+
+			// Calculate due amount immediately for display
+			const totalAmount = salesTotalAmount - salesDiscountAmount;
+			const receiveAmount = Number(newValue) || 0;
+			const dueAmount = totalAmount - receiveAmount;
+			setSalesDueAmount(dueAmount);
+			setReturnOrDueText(totalAmount < receiveAmount ? "Return" : "Due");
+
+			// Update the database
+			if (!isOnline) {
+				await window.dbAPI.updateDataInTable("invoice_table", {
+					id: tableId,
+					data: {
+						payment: newValue,
+					},
+				});
+			}
+		}
+	};
+
+	const handlePaymentBlur = async (event) => {
+		if (!isThisTableSplitPaymentActive) {
+			const newValue = event.target.value;
+
+			const data = {
+				url: "inventory/pos/inline-update",
+				data: {
+					invoice_id: tableId,
+					field_name: "amount",
+					value: newValue,
+				},
+				module: "pos",
+			};
+
+			try {
+				if (isOnline) {
+					const resultAction = await dispatch(storeEntityData(data));
+
+					if (resultAction.payload?.status !== 200) {
+						showNotificationComponent(
+							resultAction.payload?.message || "Error updating invoice",
+							"red",
+							"",
+							"",
+							true
+						);
+					}
+				} else {
+					await window.dbAPI.updateDataInTable("invoice_table", {
+						id: tableId,
+						data: {
+							payment: newValue,
+						},
+					});
+				}
+			} catch (error) {
+				showNotificationComponent("Request failed. Please try again.", "red", "", "", true);
+				console.error("Error updating invoice:", error);
+			} finally {
+				setReloadInvoiceData(true);
+			}
+		}
+	};
 
 	return (
 		<Stack align="stretch" justify={"center"} mt={6} gap={4} pl={4} pr={2} mb={0}>
@@ -116,10 +286,9 @@ export default function ActionButtons({
 									{configData?.inventory_config?.config_vat?.vat_percent}%
 								</Text>
 								<Text fz={"sm"} fw={800} c={"black"}>
-									{parseInt(
-										salesTotalAmount *
-											(configData?.inventory_config?.config_vat?.vat_percent /
-												100)
+									{calculateVATAmount(
+										salesTotalAmount,
+										configData?.inventory_config?.config_vat
 									)}
 								</Text>
 							</Group>
@@ -507,72 +676,7 @@ export default function ActionButtons({
 											size={32}
 											bg={"red.5"}
 											variant="filled"
-											onClick={async () => {
-												setDisabledDiscountButton(true);
-												const newDiscountType =
-													discountType === "Percent" ? "Flat" : "Percent";
-												setDiscountType(newDiscountType);
-												const currentDiscountValue = salesDiscountAmount;
-
-												const data = {
-													url: "inventory/pos/inline-update",
-													data: {
-														invoice_id: tableId,
-														field_name: "discount_type",
-														value: newDiscountType,
-														discount_amount: currentDiscountValue,
-													},
-													module: "pos",
-												};
-
-												setSalesDiscountAmount(currentDiscountValue);
-
-												try {
-													if (isOnline) {
-														const resultAction = await dispatch(
-															storeEntityData(data)
-														);
-
-														if (resultAction.payload?.status !== 200) {
-															showNotificationComponent(
-																resultAction.payload?.message ||
-																	"Error updating invoice",
-																"red",
-																"",
-																"",
-																true
-															);
-														} else {
-															await window.dbAPI.updateDataInTable(
-																"invoice_table",
-																{
-																	id: tableId,
-																	data: {
-																		discount_type:
-																			newDiscountType,
-																		discount_amount:
-																			currentDiscountValue,
-																	},
-																}
-															);
-														}
-													}
-												} catch (error) {
-													showNotificationComponent(
-														"Request failed. Please try again.",
-														"red",
-														"",
-														"",
-														true
-													);
-													console.error("Error updating invoice:", error);
-												} finally {
-													setReloadInvoiceData(true);
-													setTimeout(() => {
-														setDisabledDiscountButton(false);
-													}, 500);
-												}
-											}}
+											onClick={handleDiscount}
 										>
 											{discountType === "Flat" ? (
 												<IconCurrencyTaka size={16} />
@@ -581,59 +685,7 @@ export default function ActionButtons({
 											)}
 										</ActionIcon>
 									}
-									onBlur={async (event) => {
-										const data = {
-											url: "inventory/pos/inline-update",
-											data: {
-												invoice_id: tableId,
-												field_name: "discount",
-												value: event.target.value,
-												discount_type: discountType,
-											},
-											module: "pos",
-										};
-										// Dispatch and handle response
-										try {
-											if (isOnline) {
-												const resultAction = await dispatch(
-													storeEntityData(data)
-												);
-
-												if (resultAction.payload?.status !== 200) {
-													showNotificationComponent(
-														resultAction.payload?.message ||
-															"Error updating invoice",
-														"red",
-														"",
-														"",
-														true
-													);
-												}
-											} else {
-												await window.dbAPI.updateDataInTable(
-													"invoice_table",
-													{
-														id: tableId,
-														data: {
-															discount: event.target.value,
-															discount_type: discountType,
-														},
-													}
-												);
-											}
-										} catch (error) {
-											showNotificationComponent(
-												"Request failed. Please try again.",
-												"red",
-												"",
-												"",
-												true
-											);
-											console.error("Error updating invoice:", error);
-										} finally {
-											setReloadInvoiceData(true);
-										}
-									}}
+									onBlur={handleDiscountBlur}
 								/>
 							</Tooltip>
 						)}
@@ -723,93 +775,8 @@ export default function ActionButtons({
 								}
 								leftSection={<IconPlusMinus size={16} opacity={0.5} />}
 								classNames={{ input: classes.input }}
-								onChange={async (event) => {
-									if (!isThisTableSplitPaymentActive) {
-										const newValue = event.target.value;
-										setCurrentPaymentInput(newValue);
-										form.setFieldValue("receive_amount", newValue);
-
-										// Only update table receive amounts, don't trigger immediate calculations
-										setTableReceiveAmounts((prev) => ({
-											...prev,
-											[currentTableKey]: newValue,
-										}));
-
-										// Calculate due amount immediately for display
-										const totalAmount = salesTotalAmount - salesDiscountAmount;
-										const receiveAmount = Number(newValue) || 0;
-										const dueAmount = totalAmount - receiveAmount;
-										setSalesDueAmount(dueAmount);
-										setReturnOrDueText(
-											totalAmount < receiveAmount ? "Return" : "Due"
-										);
-
-										// Update the database
-										if (!isOnline) {
-											await window.dbAPI.updateDataInTable("invoice_table", {
-												id: tableId,
-												data: {
-													payment: newValue,
-												},
-											});
-										}
-									}
-								}}
-								onBlur={async (event) => {
-									if (!isThisTableSplitPaymentActive) {
-										const newValue = event.target.value;
-
-										const data = {
-											url: "inventory/pos/inline-update",
-											data: {
-												invoice_id: tableId,
-												field_name: "amount",
-												value: newValue,
-											},
-											module: "pos",
-										};
-
-										try {
-											if (isOnline) {
-												const resultAction = await dispatch(
-													storeEntityData(data)
-												);
-
-												if (resultAction.payload?.status !== 200) {
-													showNotificationComponent(
-														resultAction.payload?.message ||
-															"Error updating invoice",
-														"red",
-														"",
-														"",
-														true
-													);
-												}
-											} else {
-												await window.dbAPI.updateDataInTable(
-													"invoice_table",
-													{
-														id: tableId,
-														data: {
-															payment: newValue,
-														},
-													}
-												);
-											}
-										} catch (error) {
-											showNotificationComponent(
-												"Request failed. Please try again.",
-												"red",
-												"",
-												"",
-												true
-											);
-											console.error("Error updating invoice:", error);
-										} finally {
-											setReloadInvoiceData(true);
-										}
-									}
-								}}
+								onChange={handlePaymentChange}
+								onBlur={handlePaymentBlur}
 							/>
 						</Tooltip>
 					</Grid.Col>

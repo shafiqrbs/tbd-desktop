@@ -3,7 +3,6 @@ import { useOutletContext } from "react-router";
 import {
 	Group,
 	Box,
-	ActionIcon,
 	Text,
 	Button,
 	Grid,
@@ -13,10 +12,8 @@ import {
 	Paper,
 } from "@mantine/core";
 import { useTranslation } from "react-i18next";
-import { IconPlus, IconMinus, IconTrash, IconSum, IconReceipt } from "@tabler/icons-react";
-import { DataTable } from "mantine-datatable";
+import { IconSum, IconReceipt } from "@tabler/icons-react";
 import { useDispatch } from "react-redux";
-import tableCss from "./css/Table.module.css";
 import classes from "./css/Invoice.module.css";
 import { IconChefHat } from "@tabler/icons-react";
 import getConfigData from "../../../global-hook/config-data/getConfigData";
@@ -28,11 +25,11 @@ import SelectForm from "../../../form-builders/SelectForm";
 import { storeEntityData, getIndexEntityData } from "../../../../store/core/crudSlice.js";
 import AddCustomerDrawer from "../../inventory/sales/drawer-form/AddCustomerDrawer.jsx";
 import _CommonDrawer from "./drawer/_CommonDrawer.jsx";
-import { useScroll } from "./utils/ScrollOperations";
 import { showNotificationComponent } from "../../../core-component/showNotificationComponent.jsx";
 
 import { formatDateTime, generateInvoiceId } from "../../../../lib/index.js";
 import ActionButtons from "./ActionButtons.jsx";
+import InvoiceTable from "./InvoiceTable.jsx";
 
 export default function Invoice({
 	products,
@@ -104,10 +101,7 @@ export default function Invoice({
 
 	const [disabledDiscountButton, setDisabledDiscountButton] = useState(false);
 
-	const [enableCoupon, setEnableCoupon] = useState("Coupon");
-
 	const [tableReceiveAmounts, setTableReceiveAmounts] = useState({});
-	const { scrollRef, showLeftArrow, showRightArrow, handleScroll, scroll } = useScroll();
 
 	const [indexData, setIndexData] = useState(null);
 	const getAdditionalItem = (value) => {
@@ -117,6 +111,38 @@ export default function Invoice({
 	const [customerDrawer, setCustomerDrawer] = useState(false);
 	const [customersDropdownData, setCustomersDropdownData] = useState([]);
 	const [refreshCustomerDropdown, setRefreshCustomerDropdown] = useState(false);
+
+	const [commonDrawer, setCommonDrawer] = useState(false);
+	const [eventName, setEventName] = useState(null);
+
+	const { handleIncrement, handleDecrement, handleDelete } = useCartOperations({
+		enableTable,
+		tableId,
+		products,
+		setLoadCartProducts,
+		setReloadInvoiceData,
+	});
+
+	const form = useForm({
+		initialValues: {
+			customer_id: "",
+			transaction_mode_id: "",
+			sales_by_id: "",
+			receive_amount: "",
+			discount: "",
+			coupon_code: "",
+		},
+		validate: {
+			transaction_mode_id: (value) => {
+				if (isSplitPaymentActive) return null;
+				return !value ? true : null;
+			},
+			sales_by_id: (value) => (!value ? true : null),
+			customer_id: () => {
+				return !customerId ? true : null;
+			},
+		},
+	});
 
 	useEffect(() => {
 		if (enableTable && tableId && tableCustomerMap && tableCustomerMap[tableId]) {
@@ -142,38 +168,12 @@ export default function Invoice({
 				setSalesByDropdownData(transformedData);
 			}
 		}
-
-		fetchData();
-	}, []);
-
-	const form = useForm({
-		initialValues: {
-			customer_id: "",
-			transaction_mode_id: "",
-			sales_by_id: "",
-			receive_amount: "",
-			discount: "",
-			coupon_code: "",
-		},
-		validate: {
-			transaction_mode_id: (value) => {
-				if (isSplitPaymentActive) return null;
-				return !value ? true : null;
-			},
-			sales_by_id: (value) => (!value ? true : null),
-			customer_id: () => {
-				return !customerId ? true : null;
-			},
-		},
-	});
-
-	useEffect(() => {
 		async function fetchTransactionData() {
 			const data = await window.dbAPI.getDataFromTable("accounting_transaction_mode");
 			setTransactionModeData(data);
 		}
-
 		fetchTransactionData();
+		fetchData();
 	}, []);
 
 	useEffect(() => {
@@ -186,59 +186,6 @@ export default function Invoice({
 		}
 	}, [transactionModeData]);
 
-	const handleTransactionModel = async (id, name) => {
-		setTransactionModeId(id);
-		setTransactionModeName(name);
-		form.setFieldValue("transaction_mode_id", id);
-
-		const data = {
-			url: "inventory/pos/inline-update",
-			data: {
-				invoice_id: tableId,
-				field_name: "transaction_mode_id",
-				value: id,
-			},
-			module: "pos",
-		};
-
-		// Dispatch and handle response
-		try {
-			if (isOnline) {
-				const resultAction = await dispatch(storeEntityData(data));
-
-				if (resultAction.payload?.status !== 200) {
-					showNotificationComponent(
-						resultAction.payload?.message || "Error updating invoice",
-						"red",
-						"",
-						"",
-						true
-					);
-				}
-			} else {
-				await window.dbAPI.updateDataInTable("invoice_table", {
-					id: tableId,
-					data: {
-						transaction_mode_id: id,
-					},
-				});
-			}
-		} catch (error) {
-			showNotificationComponent("Request failed. Please try again.", "red", "", "", true);
-			console.error("Error updating invoice:", error);
-		} finally {
-			setReloadInvoiceData(true);
-		}
-	};
-
-	const { handleIncrement, handleDecrement, handleDelete } = useCartOperations({
-		enableTable,
-		tableId,
-		products,
-		setLoadCartProducts,
-		setReloadInvoiceData,
-	});
-
 	useEffect(() => {
 		if (tableId && !additionalTableSelections[tableId]) {
 			setAdditionalTableSelections((prev) => ({
@@ -248,28 +195,6 @@ export default function Invoice({
 		}
 	}, [tableId]);
 
-	const handleAdditionalTableCheck = (checkedTableId) => {
-		if (!tableId) return;
-
-		setAdditionalTableSelections((prev) => {
-			const currentSelections = new Set(prev[tableId] || []);
-
-			if (currentSelections.has(checkedTableId)) {
-				currentSelections.delete(checkedTableId);
-			} else {
-				currentSelections.add(checkedTableId);
-			}
-
-			return {
-				...prev,
-				[tableId]: currentSelections,
-			};
-		});
-	};
-
-	const getSplitPayment = (splitPayments) => {
-		updateTableSplitPayment(currentTableKey, splitPayments);
-	};
 	useEffect(() => {
 		if (isSplitPaymentActive) {
 			setSalesDueAmount(0);
@@ -291,22 +216,6 @@ export default function Invoice({
 			}
 		}
 	}, [form.values.split_amount, isSplitPaymentActive, customerId]);
-
-	const handleCustomerAdd = () => {
-		if (enableTable && tableId) {
-			form.setErrors({ ...form.errors, customer_id: null });
-			setCustomerDrawer(true);
-		} else if (!enableTable) {
-			setCustomerDrawer(true);
-		} else {
-			notifications.show({
-				color: "red",
-				title: t("Error"),
-				message: t("SelectATableFirst"),
-				autoClose: 2000,
-			});
-		}
-	};
 
 	useEffect(() => {
 		const fetchCustomers = async () => {
@@ -349,55 +258,10 @@ export default function Invoice({
 		}
 	}, [customerId, customerObject, tableId, enableTable, updateTableCustomer]);
 
-	const [commonDrawer, setCommonDrawer] = useState(false);
-
-	const [eventName, setEventName] = useState(null);
-
-	const handleClick = (e) => {
-		if (e.currentTarget.name === "additionalProductAdd") {
-			if (!tableId) {
-				notifications.show({
-					color: "red",
-					title: t("Error"),
-					message: t("SelectATableFirst"),
-					autoClose: 2000,
-				});
-				return;
-			}
-			setEventName(e.currentTarget.name);
-			// TODO: Remove this after testing
-			// setCommonDrawer(true);
-		} else if (e.currentTarget.name === "splitPayment") {
-			form.setErrors({ ...form.errors, transaction_mode_id: null });
-			setEventName(e.currentTarget.name);
-			setCommonDrawer(true);
-		} else if (e.currentTarget.name === "clearSplitPayment") {
-			clearSplitPayment();
-		} else if (e.currentTarget.name === "kitchen") {
-			setEventName(e.currentTarget.name);
-			setCommonDrawer(true);
-		}
-	};
-
 	useEffect(() => {
 		const currentAmount = tableReceiveAmounts[currentTableKey] || "";
 		form.setFieldValue("receive_amount", currentAmount);
 	}, [currentTableKey, tableReceiveAmounts]);
-
-	const clearSplitPayment = () => {
-		if (currentTableKey) {
-			clearTableSplitPayment(currentTableKey);
-
-			form.setFieldValue("receive_amount", tableReceiveAmounts[currentTableKey] || "");
-
-			notifications.show({
-				color: "green",
-				title: t("Success"),
-				message: t("SplitPaymentCleared"),
-				autoClose: 2000,
-			});
-		}
-	};
 
 	useEffect(() => {
 		if (invoiceData) {
@@ -431,6 +295,46 @@ export default function Invoice({
 			}
 		}
 	}, [invoiceData, discountType, isSplitPaymentActive]);
+
+	const handleAdditionalTableCheck = (checkedTableId) => {
+		if (!tableId) return;
+
+		setAdditionalTableSelections((prev) => {
+			const currentSelections = new Set(prev[tableId] || []);
+
+			if (currentSelections.has(checkedTableId)) {
+				currentSelections.delete(checkedTableId);
+			} else {
+				currentSelections.add(checkedTableId);
+			}
+
+			return {
+				...prev,
+				[tableId]: currentSelections,
+			};
+		});
+	};
+
+	const getSplitPayment = (splitPayments) => {
+		updateTableSplitPayment(currentTableKey, splitPayments);
+	};
+
+	const handleCustomerAdd = () => {
+		if (enableTable && tableId) {
+			form.setErrors({ ...form.errors, customer_id: null });
+			setCustomerDrawer(true);
+		} else if (!enableTable) {
+			setCustomerDrawer(true);
+		} else {
+			notifications.show({
+				color: "red",
+				title: t("Error"),
+				message: t("SelectATableFirst"),
+				autoClose: 2000,
+			});
+		}
+	};
+
 	const updateTableStatus = async (newStatus) => {
 		if (!tableId) return;
 
@@ -628,6 +532,92 @@ export default function Invoice({
 		form.reset();
 	};
 
+	const handleTransactionModel = async (id, name) => {
+		setTransactionModeId(id);
+		setTransactionModeName(name);
+		form.setFieldValue("transaction_mode_id", id);
+
+		const data = {
+			url: "inventory/pos/inline-update",
+			data: {
+				invoice_id: tableId,
+				field_name: "transaction_mode_id",
+				value: id,
+			},
+			module: "pos",
+		};
+
+		// Dispatch and handle response
+		try {
+			if (isOnline) {
+				const resultAction = await dispatch(storeEntityData(data));
+
+				if (resultAction.payload?.status !== 200) {
+					showNotificationComponent(
+						resultAction.payload?.message || "Error updating invoice",
+						"red",
+						"",
+						"",
+						true
+					);
+				}
+			} else {
+				await window.dbAPI.updateDataInTable("invoice_table", {
+					id: tableId,
+					data: {
+						transaction_mode_id: id,
+					},
+				});
+			}
+		} catch (error) {
+			showNotificationComponent("Request failed. Please try again.", "red", "", "", true);
+			console.error("Error updating invoice:", error);
+		} finally {
+			setReloadInvoiceData(true);
+		}
+	};
+
+	const clearSplitPayment = () => {
+		if (currentTableKey) {
+			clearTableSplitPayment(currentTableKey);
+
+			form.setFieldValue("receive_amount", tableReceiveAmounts[currentTableKey] || "");
+
+			notifications.show({
+				color: "green",
+				title: t("Success"),
+				message: t("SplitPaymentCleared"),
+				autoClose: 2000,
+			});
+		}
+	};
+
+	const handleClick = (e) => {
+		if (e.currentTarget.name === "additionalProductAdd") {
+			if (!tableId) {
+				notifications.show({
+					color: "red",
+					title: t("Error"),
+					message: t("SelectATableFirst"),
+					autoClose: 2000,
+				});
+				return;
+			}
+			setEventName(e.currentTarget.name);
+			// TODO: Remove this after testing
+			// setCommonDrawer(true);
+		} else if (e.currentTarget.name === "splitPayment") {
+			form.setErrors({ ...form.errors, transaction_mode_id: null });
+			setEventName(e.currentTarget.name);
+			setCommonDrawer(true);
+		} else if (e.currentTarget.name === "clearSplitPayment") {
+			clearSplitPayment();
+		} else if (e.currentTarget.name === "kitchen") {
+			setEventName(e.currentTarget.name);
+			setCommonDrawer(true);
+		}
+	};
+
 	return (
 		<ScrollArea h={enableTable ? height + 160 : height + 50}>
 			<Box
@@ -778,147 +768,19 @@ export default function Invoice({
 							</Paper>
 						</ScrollArea>
 					)}
-					<DataTable
-						classNames={{
-							root: tableCss.root,
-							table: tableCss.table,
-							header: tableCss.header,
-							footer: tableCss.footer,
-							pagination: tableCss.pagination,
-						}}
-						records={invoiceData ? invoiceData.invoice_items : []}
-						columns={[
-							{
-								accessor: "id",
-								title: "S/N",
-								width: 48,
-								render: (data, index) => index + 1,
-							},
-							{
-								accessor: "display_name",
-								title: t("Product"),
-								render: (data) => (
-									<Tooltip
-										multiline
-										w={220}
-										label={
-											indexData
-												? Array.isArray(indexData)
-													? indexData
-															.map(
-																(item) =>
-																	`${item.display_name} (${item.qty})`
-															)
-															.join(", ")
-													: `${indexData.display_name} (${indexData.qty})`
-												: data.display_name
-										}
-										px={12}
-										py={2}
-										bg={"red.6"}
-										c={"white"}
-										withArrow
-										position="top"
-										offset={{ mainAxis: 5, crossAxis: 10 }}
-										zIndex={999}
-										transitionProps={{
-											transition: "pop-bottom-left",
-											duration: 500,
-										}}
-									>
-										<Text
-											variant="subtle"
-											style={{ cursor: "pointer" }}
-											component="a"
-											onClick={handleClick}
-											name="additionalProductAdd"
-											c={"red"}
-											fz={"xs"}
-										>
-											{data.display_name}
-										</Text>
-									</Tooltip>
-								),
-							},
-							{
-								accessor: "quantity",
-								title: t("Qty"),
-								textAlign: "center",
-								render: (data) => (
-									<>
-										<Group gap={8} justify="center">
-											<ActionIcon
-												size={"sm"}
-												bg={"gray.7"}
-												disabled={data.quantity === 1}
-												onClick={() => handleDecrement(data.stock_item_id)}
-											>
-												<IconMinus height={"12"} width={"12"} />
-											</ActionIcon>
-											<Text
-												size="sm"
-												ta={"center"}
-												fw={600}
-												maw={30}
-												miw={30}
-											>
-												{data.quantity}
-											</Text>
-											<ActionIcon
-												size={"sm"}
-												bg={"gray.7"}
-												onClick={() => {
-													handleIncrement(data.stock_item_id);
-												}}
-											>
-												<IconPlus height={"12"} width={"12"} />
-											</ActionIcon>
-										</Group>
-									</>
-								),
-							},
-							{
-								accessor: "price",
-								title: t("Price"),
-								textAlign: "right",
-								render: (data) => <>{data.sales_price}</>,
-							},
-							{
-								accessor: "subtotal",
-								title: "Subtotal",
-								textAlign: "right",
-								render: (data) => <>{data.sub_total.toFixed(2)}</>,
-							},
-							{
-								accessor: "action",
-								title: t(""),
-								textAlign: "right",
-								render: (data) => (
-									<Group justify="right" wrap="nowrap">
-										<ActionIcon
-											size="sm"
-											variant="white"
-											color="red.8"
-											aria-label="Settings"
-											onClick={() => handleDelete(data.stock_item_id)}
-										>
-											<IconTrash height={20} width={20} stroke={1.5} />
-										</ActionIcon>
-									</Group>
-								),
-							},
-						]}
-						loaderSize="xs"
-						loaderColor="grape"
-						height={
-							enableTable && checked
-								? calculatedHeight - 149
-								: enableTable
-								? calculatedHeight - 99
-								: calculatedHeight + 3
-						}
-						scrollAreaProps={{ type: "never" }}
+					{/* ===================== invoice table ===================== */}
+					<InvoiceTable
+						invoiceData={invoiceData}
+						indexData={indexData}
+						handleClick={handleClick}
+						handleDecrement={handleDecrement}
+						handleIncrement={handleIncrement}
+						handleDelete={handleDelete}
+						enableTable={enableTable}
+						checked={checked}
+						calculatedHeight={calculatedHeight}
 					/>
+					{/* ===================== table footer ===================== */}
 					<Group
 						h={34}
 						justify="space-between"
@@ -949,20 +811,19 @@ export default function Invoice({
 						transactionModeData={transactionModeData}
 						transactionModeId={transactionModeId}
 						handleTransactionModel={handleTransactionModel}
-						isOnline={isOnline}
 						invoiceData={invoiceData}
-						configData={configData}
 						discountType={discountType}
-						t={t}
+						setDiscountType={setDiscountType}
 						enableTable={enableTable}
 						handleClick={handleClick}
 						salesTotalAmount={salesTotalAmount}
 						salesTotalWithoutDiscountAmount={salesTotalWithoutDiscountAmount}
 						salesDueAmount={salesDueAmount}
+						setSalesDueAmount={setSalesDueAmount}
 						returnOrDueText={returnOrDueText}
+						setReturnOrDueText={setReturnOrDueText}
 						salesDiscountAmount={salesDiscountAmount}
 						setSalesDiscountAmount={setSalesDiscountAmount}
-						setDiscountType={setDiscountType}
 						setReloadInvoiceData={setReloadInvoiceData}
 						tableId={tableId}
 						currentTableKey={currentTableKey}
@@ -972,19 +833,10 @@ export default function Invoice({
 						currentPaymentInput={currentPaymentInput}
 						setCurrentPaymentInput={setCurrentPaymentInput}
 						setTableReceiveAmounts={setTableReceiveAmounts}
-						setSalesDueAmount={setSalesDueAmount}
-						setReturnOrDueText={setReturnOrDueText}
 						customerObject={customerObject}
 						handleCustomerAdd={handleCustomerAdd}
-						enableCoupon={enableCoupon}
-						setEnableCoupon={setEnableCoupon}
 						isDisabled={isDisabled}
 						handleSave={handleSave}
-						scrollRef={scrollRef}
-						handleScroll={handleScroll}
-						showLeftArrow={showLeftArrow}
-						showRightArrow={showRightArrow}
-						scroll={scroll}
 						setDisabledDiscountButton={setDisabledDiscountButton}
 					/>
 

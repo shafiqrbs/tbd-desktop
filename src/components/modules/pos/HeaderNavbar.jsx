@@ -15,19 +15,9 @@ function HeaderNavbar({
 	setCustomerObject,
 	invoiceMode,
 }) {
-	// const [time, setTime] = useState(new Date().toLocaleTimeString());
-
 	const { isOnline } = useOutletContext();
 	const dispatch = useDispatch();
 	const { scrollRef, showLeftArrow, showRightArrow, handleScroll, scroll } = useScroll();
-
-	// useEffect(() => {
-	// 	const intervalId = setInterval(() => {
-	// 		setTime(new Date().toLocaleTimeString());
-	// 	}, 1000);
-
-	// 	return () => clearInterval(intervalId);
-	// }, []);
 
 	const HandleParticularClick = async (invoice) => {
 		const newTableId = tableId === invoice.id ? null : invoice.id;

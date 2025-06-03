@@ -11,8 +11,10 @@ import HeaderNavbar from "../HeaderNavbar.jsx";
 import { getDropdownData } from "../../../../store/core/utilitySlice.js";
 import { getIndexEntityData } from "../../../../store/core/crudSlice.js";
 import getConfigData from "../../../global-hook/config-data/getConfigData.js";
+import useRefreshConfigData from "../../../global-hook/config-data/useRefreshConfigData.js";
 
 export default function BakeryIndex() {
+	useRefreshConfigData();
 	const [categories, setCategories] = useState([]);
 	const { isOnline, mainAreaHeight } = useOutletContext();
 	const height = mainAreaHeight - 130;
