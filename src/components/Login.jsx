@@ -228,6 +228,18 @@ export default function Login() {
 						<Button
 							fullWidth
 							mt="xl"
+							bg="yellow.2"
+							size="md"
+							type="button"
+							className={LoginPage.control}
+							rightSection={<IconRefresh />}
+							onClick={openResetModal}
+						>
+							Reset
+						</Button>
+						<Button
+							fullWidth
+							mt="xl"
 							bg="red.5"
 							size="md"
 							type="submit"
@@ -238,18 +250,7 @@ export default function Login() {
 						>
 							{spinner ? <Loader color="white" type="dots" size={30} /> : "Login"}
 						</Button>
-						<Button
-							fullWidth
-							mt="xl"
-							bg="red.9"
-							size="md"
-							type="button"
-							className={LoginPage.control}
-							rightSection={<IconRefresh />}
-							onClick={openResetModal}
-						>
-							Reset
-						</Button>
+
 					</Flex>
 				</Paper>
 			</Box>

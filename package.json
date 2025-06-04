@@ -18,7 +18,7 @@
 		"preview": "vite preview",
 		"start": "electron-forge start",
 		"dev-app": "concurrently \"VITE_DEV_SERVER_URL=http://localhost:3000 vite\" \"ELECTRON_START_URL=http://localhost:3000 electron-forge start\"",
-		"package": "electron-forge package",
+		"dev-mac": "concurrently \"cross-env VITE_DEV_SERVER_URL=http://localhost:3000 vite\" \"cross-env ELECTRON_START_URL=http://localhost:3000 electron-forge start\"","package": "electron-forge package",
 		"make": "electron-forge make",
 		"make-win": "electron-forge make --platform=win32 --arch=x64",
 		"electron": "electron ."
