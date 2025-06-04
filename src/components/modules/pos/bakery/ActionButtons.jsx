@@ -259,7 +259,7 @@ export default function ActionButtons({
 			>
 				<Grid.Col span={6} pl={4} pr={4}>
 					<Grid bg={"gray.0"} pl={4} pr={4}>
-						<Grid.Col span={7}>
+						<Grid.Col span={6}>
 							<Stack gap={0}>
 								<Group justify="space-between" gap={0}>
 									<Text fz={"sm"} fw={500} c={"black"}>
@@ -279,7 +279,7 @@ export default function ActionButtons({
 								</Group>
 							</Stack>
 						</Grid.Col>
-						<Grid.Col span={5}>
+						<Grid.Col span={6}>
 							<Group justify="space-between">
 								<Text fz={"sm"} fw={500} c={"black"}>
 									{t("VAT")}{" "}
