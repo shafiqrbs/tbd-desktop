@@ -45,10 +45,10 @@ export const applyCoupon = (price, coupon) => {
 export const calculateVATPrice = (price, vatConfig) => {
 	if (!vatConfig?.vat_enable) return price;
 
-	if (vatConfig.vat_mode?.toLowerCase() === "including") {
+	if (vatConfig?.vat_mode?.toLowerCase() === "including") {
 		// If VAT is already included, return the price as is
 		return price;
-	} else if (vatConfig.vat_mode?.toLowerCase() === "excluding") {
+	} else if (vatConfig?.vat_mode?.toLowerCase() === "excluding") {
 		// If VAT is excluded, add VAT percentage
 		const vatAmount = price * (vatConfig.vat_percent / 100);
 		return price + vatAmount;
@@ -64,7 +64,7 @@ export const calculateSubTotalWithVAT = (price, quantity, vatConfig) => {
 };
 
 export const calculateVATAmount = (vatPrice, vatConfig) => {
-	if (vatConfig.vat_mode?.toLowerCase() === "excluding") {
+	if (vatConfig?.vat_mode?.toLowerCase() === "excluding") {
 		// =============== calculate base price first by removing vat ================
 		const basePrice = vatPrice / (1 + vatConfig.vat_percent / 100);
 		// =============== then calculate vat amount from base price ================
