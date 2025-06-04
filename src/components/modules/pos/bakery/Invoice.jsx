@@ -484,6 +484,8 @@ export default function Invoice({
 		const customerInfo = customersDropdownData.find((d) => d.value == invoiceData.customer_id);
 		const invoiceId = generateInvoiceId();
 
+		const userItem = await window.dbAPI.getDataFromTable("users");
+
 		// Insert sale record
 		await window.dbAPI.upsertIntoTable("sales", {
 			invoice: invoiceId,
@@ -495,8 +497,8 @@ export default function Invoice({
 			discount_calculation: null,
 			discount_type: invoiceData.discount_type,
 			customerId: invoiceData.customer_id,
-			customerName: customerInfo?.label?.split(" -- ")[1],
-			customerMobile: customerInfo?.label?.split(" -- ")[0],
+			customerName: customerInfo?.label?.split(" -- ")[1] || userItem?.name,
+			customerMobile: customerInfo?.label?.split(" -- ")[0] || userItem?.mobile,
 			createdByUser: "sandra",
 			createdById: invoiceData.created_by_id,
 			salesById: invoiceData.sales_by_id,
