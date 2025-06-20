@@ -76,6 +76,18 @@ export default function ActionButtons({
 	const [enableCoupon, setEnableCoupon] = useState("Coupon");
 	const [disabledDiscountButton, setDisabledDiscountButton] = useState(false);
 
+	// =============== utility function to determine kitchen products ================
+	const getKitchenProducts = (items) => {
+		if (!items || items.length === 0) return [];
+
+		return items.filter((item) => {
+			if (!item || item.quantity <= 0) return false;
+
+			// =============== for now, we'll consider all products as kitchen items ================
+			return true;
+		});
+	};
+
 	const handleDiscount = async () => {
 		setDisabledDiscountButton(true);
 		const newDiscountType = discountType === "Percent" ? "Flat" : "Percent";
@@ -243,6 +255,23 @@ export default function ActionButtons({
 				console.error("Error updating invoice:", error);
 			} finally {
 				setReloadInvoiceData(true);
+			}
+		}
+	};
+
+	const handlePrintAll = async () => {
+		// =============== first save the sale ================
+		await handleSave({ withPos: false });
+
+		// =============== then handle kitchen printing ================
+		if (invoiceData?.invoice_items?.length > 0) {
+			// =============== determine kitchen products based on category or product type ================
+			const kitchenProducts = getKitchenProducts(invoiceData.invoice_items);
+
+			if (kitchenProducts.length > 0) {
+				// =============== trigger kitchen print ================
+				// =============== this will open the kitchen print drawer ================
+				handleClick({ currentTarget: { name: "kitchen" } });
 			}
 		}
 	};
@@ -782,6 +811,7 @@ export default function ActionButtons({
 								color="gray"
 								size={"lg"}
 								fullWidth={true}
+								onClick={handlePrintAll}
 							>
 								<Text size="md">{t("AllPrint")}</Text>
 							</Button>

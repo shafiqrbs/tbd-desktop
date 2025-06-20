@@ -2,7 +2,7 @@ import { Drawer, Flex, ActionIcon, Box } from "@mantine/core";
 import { IconX } from "@tabler/icons-react";
 import __AdditionalItems from "./__AdditionalItems";
 import __SplitPayment from "./__SplitPayment";
-import __KitchenPrint from "./__KitchenPrint";
+import KitchenPrintDrawer from "./__KitchenPrint";
 
 export default function _CommonDrawer({
 	setLoadCartProducts,
@@ -73,7 +73,7 @@ export default function _CommonDrawer({
 								/>
 							)}
 							{eventName === "kitchen" && (
-								<__KitchenPrint
+								<KitchenPrintDrawer
 									salesByUserName={salesByUserName}
 									closeDrawer={closeDrawer}
 									tableId={tableId}
