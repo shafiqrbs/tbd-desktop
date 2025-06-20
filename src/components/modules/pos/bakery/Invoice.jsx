@@ -134,7 +134,7 @@ export default function Invoice({
 		validate: {
 			transaction_mode_id: (value) => {
 				if (isSplitPaymentActive) return null;
-				return !value ? true : null;
+				return !value || value === "" ? true : null;
 			},
 			sales_by_id: (value) => (!value ? true : null),
 			customer_id: () => {
@@ -179,11 +179,29 @@ export default function Invoice({
 		if (transactionModeData?.length > 0) {
 			// =============== select first transaction mode by default if none selected ================
 			const defaultMode = transactionModeData[0];
-			if (!transactionModeId) {
+
+			// check if we need to set a default transaction mode
+			const shouldSetDefault =
+				!transactionModeId &&
+				(!invoiceData?.transaction_mode_id || invoiceData.transaction_mode_id === "") &&
+				tableId; // only set default when we have a table selected
+
+			if (shouldSetDefault) {
 				handleTransactionModel(defaultMode.id, defaultMode.name);
 			}
 		}
-	}, [transactionModeData]);
+	}, [transactionModeData, tableId]);
+
+	// =============== handle default transaction mode when table changes ================
+	useEffect(() => {
+		if (transactionModeData?.length > 0 && tableId && !transactionModeId) {
+			const defaultMode = transactionModeData[0];
+			// only set default if no transaction mode is currently selected
+			if (!invoiceData?.transaction_mode_id || invoiceData.transaction_mode_id === "") {
+				handleTransactionModel(defaultMode.id, defaultMode.name);
+			}
+		}
+	}, [tableId, transactionModeData]);
 
 	useEffect(() => {
 		if (tableId && !additionalTableSelections[tableId]) {
@@ -193,28 +211,6 @@ export default function Invoice({
 			}));
 		}
 	}, [tableId]);
-
-	useEffect(() => {
-		if (isSplitPaymentActive) {
-			setSalesDueAmount(0);
-			setReturnOrDueText("Due");
-		} else if (form.values.split_amount) {
-			let subtotal = 0;
-			const totalAmount = subtotal - salesDiscountAmount;
-			let receiveAmount = 0;
-			for (let key in form.values.split_amount) {
-				receiveAmount += Number(form.values.split_amount[key].partial_amount);
-			}
-			if (receiveAmount >= 0) {
-				const text = totalAmount < receiveAmount ? "Return" : "Due";
-				setReturnOrDueText(text);
-				const returnOrDueAmount = totalAmount - receiveAmount;
-				setSalesDueAmount(returnOrDueAmount);
-			} else {
-				setSalesDueAmount(totalAmount);
-			}
-		}
-	}, [form.values.split_amount, isSplitPaymentActive, customerId]);
 
 	useEffect(() => {
 		const fetchCustomers = async () => {
@@ -283,6 +279,9 @@ export default function Invoice({
 			);
 
 			setTransactionModeId(invoiceData?.transaction_mode_id || "");
+			// =============== set form value for transaction mode id ================
+			form.setFieldValue("transaction_mode_id", invoiceData?.transaction_mode_id || "");
+
 			if (invoiceData.discount_type === "Flat") {
 				setSalesDiscountAmount(invoiceData?.discount || 0);
 			} else if (invoiceData.discount_type === "Percent") {
@@ -320,7 +319,9 @@ export default function Invoice({
 		);
 
 		// =============== update due amount and return text ================
-		const newDueAmount = salesTotalAmount - (totalPaidAmount + salesDiscountAmount);
+		// =============== calculate based on total amount minus discount minus split payments ================
+		const totalAmountAfterDiscount = salesTotalAmount - salesDiscountAmount;
+		const newDueAmount = totalAmountAfterDiscount - totalPaidAmount;
 		setSalesDueAmount(newDueAmount);
 		setReturnOrDueText(newDueAmount < 0 ? "Return" : "Due");
 
@@ -549,6 +550,7 @@ export default function Invoice({
 		setSalesByUser(null);
 		setCustomerId(null);
 		setTransactionModeId(null);
+		setTransactionModeName(null);
 		setCurrentPaymentInput("");
 		setSalesDiscountAmount(0);
 		setSalesTotalAmount(0);
@@ -570,6 +572,8 @@ export default function Invoice({
 		setTransactionModeId(id);
 		setTransactionModeName(name);
 		form.setFieldValue("transaction_mode_id", id);
+		// =============== clear form errors for transaction mode ================
+		form.setErrors({ ...form.errors, transaction_mode_id: null });
 
 		const data = {
 			url: "inventory/pos/inline-update",
@@ -908,7 +912,7 @@ export default function Invoice({
 							loadCartProducts={loadCartProducts}
 							getSplitPayment={getSplitPayment}
 							getAdditionalItem={getAdditionalItem}
-							salesDueAmount={salesDueAmount}
+							salesDueAmount={salesTotalAmount - salesDiscountAmount}
 							eventName={eventName}
 							commonDrawer={commonDrawer}
 							setCommonDrawer={setCommonDrawer}

@@ -115,16 +115,7 @@ export default function SplitPayment({
 
 	const handleFormSubmit = () => {
 		if (saveDisabled) return;
-
-		// Calculate final remaining amount
-		const totalPaid = splitPayments.reduce(
-			(sum, payment) => sum + Number(payment.partial_amount),
-			0
-		);
-		const finalRemainingAmount = (salesDueAmount - totalPaid).toFixed(2);
-		setRemainingAmount(finalRemainingAmount);
-
-		// Pass split payment data back to parent
+		// =============== let getSplitPayment handle all calculations ================
 		getSplitPayment(splitPayments);
 		setFormSubmitted(true);
 	};
@@ -318,7 +309,7 @@ export default function SplitPayment({
 											size="sm"
 											color="red.6"
 											onClick={closeDrawer}
-											ml={"4"}
+											ml="4"
 										>
 											<IconX
 												style={{ width: "100%", height: "100%" }}

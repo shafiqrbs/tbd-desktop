@@ -16,7 +16,6 @@ import {
 	IconDeviceFloppy,
 	IconPrinter,
 	IconPlusMinus,
-	IconCurrency,
 	IconScissors,
 	IconX,
 	IconChevronLeft,
@@ -59,7 +58,6 @@ export default function ActionButtons({
 	currentTableKey,
 	isThisTableSplitPaymentActive,
 	clearTableSplitPayment,
-	isSplitPaymentActive,
 	currentPaymentInput,
 	setCurrentPaymentInput,
 	setTableReceiveAmounts,
@@ -704,8 +702,8 @@ export default function ActionButtons({
 							px={16}
 							py={2}
 							position="top-end"
-							bg={"#90e0ef"}
-							c={"white"}
+							bg="#90e0ef"
+							c="white"
 							withArrow
 							offset={2}
 							zIndex={999}
@@ -725,62 +723,6 @@ export default function ActionButtons({
 								error={form.errors.receive_amount}
 								size={"sm"}
 								disabled={isThisTableSplitPaymentActive}
-								rightSection={
-									<>
-										{form.values.receive_amount ? (
-											<Tooltip
-												label={t("Close")}
-												withArrow
-												bg={`red.1`}
-												c={"red.3"}
-											>
-												<IconX
-													size={16}
-													color={"red"}
-													opacity={1}
-													onClick={() => {
-														form.setFieldValue("receive_amount", "");
-														setCurrentPaymentInput("");
-														setTableReceiveAmounts((prev) => {
-															const updated = {
-																...prev,
-															};
-															delete updated[currentTableKey];
-															return updated;
-														});
-														if (isThisTableSplitPaymentActive) {
-															clearTableSplitPayment(currentTableKey);
-														}
-													}}
-												/>
-											</Tooltip>
-										) : isSplitPaymentActive ? (
-											<Tooltip
-												label={t("SplitPaymentActive")}
-												withArrow
-												position={"left"}
-											>
-												<IconScissors size={16} opacity={0.7} />
-											</Tooltip>
-										) : (
-											<Tooltip
-												px={16}
-												py={2}
-												withArrow
-												position={"left"}
-												c={"black"}
-												bg={`gray.1`}
-												transitionProps={{
-													transition: "pop-bottom-left",
-													duration: 500,
-												}}
-												label={t("ReceiveAmountValidateMessage")}
-											>
-												<IconCurrency size={16} opacity={0.5} />
-											</Tooltip>
-										)}
-									</>
-								}
 								leftSection={<IconPlusMinus size={16} opacity={0.5} />}
 								classNames={{ input: classes.input }}
 								onChange={handlePaymentChange}
