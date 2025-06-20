@@ -1,4 +1,4 @@
-const { contextBridge, ipcRenderer } = require("electron");
+const { contextBridge, ipcRenderer, webFrame } = require("electron");
 
 // Add more verbose logging
 console.info("Preload script starting...");
@@ -41,6 +41,21 @@ try {
 		},
 	});
 	console.info("deviceAPI exposed successfully");
+
+	contextBridge.exposeInMainWorld("zoomAPI", {
+		setZoomFactor: (factor) => {
+			webFrame.setZoomFactor(factor);
+		},
+		getZoomFactor: () => {
+			return webFrame.getZoomFactor();
+		},
+		onZoomChange: (callback) => {
+			ipcRenderer.on("zoom-changed", (event, zoomFactor) => {
+				callback(zoomFactor);
+			});
+		},
+	});
+	console.info("zoomAPI exposed successfully");
 } catch (error) {
 	console.error("Error in preload script:", error);
 }

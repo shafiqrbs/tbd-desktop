@@ -184,6 +184,11 @@ app.whenReady().then(() => {
 		mainWindow.maximize();
 		mainWindow.show();
 	});
+
+	mainWindow.webContents.on("zoom-changed", (event, zoomDirection) => {
+		const currentZoom = mainWindow.webContents.getZoomFactor();
+		mainWindow.webContents.send("zoom-changed", currentZoom);
+	});
 });
 
 // Quit app when all windows are closed (except macOS)
