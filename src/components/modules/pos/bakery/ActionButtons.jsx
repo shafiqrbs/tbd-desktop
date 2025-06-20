@@ -54,6 +54,7 @@ export default function ActionButtons({
 	setSalesDiscountAmount,
 	setDiscountType,
 	setReloadInvoiceData,
+	setInvoiceData,
 	tableId,
 	currentTableKey,
 	isThisTableSplitPaymentActive,
@@ -68,7 +69,6 @@ export default function ActionButtons({
 	handleCustomerAdd,
 	isDisabled,
 	handleSave,
-	setDisabledDiscountButton,
 }) {
 	const { configData } = getConfigData();
 	const { isOnline } = useOutletContext();
@@ -76,6 +76,7 @@ export default function ActionButtons({
 	const { scrollRef, showLeftArrow, showRightArrow, handleScroll, scroll } = useScroll();
 	const { t } = useTranslation();
 	const [enableCoupon, setEnableCoupon] = useState("Coupon");
+	const [disabledDiscountButton, setDisabledDiscountButton] = useState(false);
 
 	const handleDiscount = async () => {
 		setDisabledDiscountButton(true);
@@ -177,6 +178,8 @@ export default function ActionButtons({
 			setCurrentPaymentInput(newValue);
 			form.setFieldValue("receive_amount", newValue);
 
+			setInvoiceData((prev) => ({ ...prev, payment: newValue }));
+
 			// Only update table receive amounts, don't trigger immediate calculations
 			setTableReceiveAmounts((prev) => ({
 				...prev,
@@ -195,7 +198,7 @@ export default function ActionButtons({
 				await window.dbAPI.updateDataInTable("invoice_table", {
 					id: tableId,
 					data: {
-						payment: newValue,
+						payment: newValue === "" ? null : newValue,
 					},
 				});
 			}
@@ -233,7 +236,7 @@ export default function ActionButtons({
 					await window.dbAPI.updateDataInTable("invoice_table", {
 						id: tableId,
 						data: {
-							payment: newValue,
+							payment: newValue === "" ? null : newValue,
 						},
 					});
 				}
@@ -287,7 +290,7 @@ export default function ActionButtons({
 								</Text>
 								<Text fz={"sm"} fw={800} c={"black"}>
 									{calculateVATAmount(
-										salesTotalAmount,
+										salesTotalWithoutDiscountAmount,
 										configData?.inventory_config?.config_vat
 									)}
 								</Text>
@@ -315,7 +318,9 @@ export default function ActionButtons({
 					>
 						<Text fw={800} c={"white"} size={"lg"}>
 							{configData?.currency?.symbol}{" "}
-							{salesTotalWithoutDiscountAmount.toFixed(2)}
+							{salesTotalWithoutDiscountAmount
+								? salesTotalWithoutDiscountAmount.toFixed(2)
+								: 0}
 						</Text>
 						<Text fw={500} c={"white"} size={"md"}>
 							{t("Total")}
@@ -333,7 +338,8 @@ export default function ActionButtons({
 						pb={4}
 					>
 						<Text fw={800} c={"white"} size={"lg"}>
-							{configData?.currency?.symbol} {salesDueAmount.toFixed(2)}
+							{configData?.currency?.symbol}{" "}
+							{salesDueAmount ? salesDueAmount.toFixed(2) : 0}
 						</Text>
 						<Text fw={500} c={"white"} size={"md"}>
 							{returnOrDueText === "Due" ? t("Due") : t("Return")}
@@ -677,6 +683,7 @@ export default function ActionButtons({
 											bg={"red.5"}
 											variant="filled"
 											onClick={handleDiscount}
+											disabled={disabledDiscountButton}
 										>
 											{discountType === "Flat" ? (
 												<IconCurrencyTaka size={16} />
@@ -733,6 +740,7 @@ export default function ActionButtons({
 													opacity={1}
 													onClick={() => {
 														form.setFieldValue("receive_amount", "");
+														setCurrentPaymentInput("");
 														setTableReceiveAmounts((prev) => {
 															const updated = {
 																...prev,

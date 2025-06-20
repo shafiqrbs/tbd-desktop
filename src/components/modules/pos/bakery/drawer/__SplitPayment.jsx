@@ -83,14 +83,14 @@ export default function SplitPayment({
 
 		setSplitPayments(payments);
 		if (salesDueAmount !== 0) {
-			setRemainingAmount((salesDueAmount - totalPaidAmount).toFixed(2));
+			const newRemainingAmount = (salesDueAmount - totalPaidAmount).toFixed(2);
+			setRemainingAmount(newRemainingAmount);
 		} else {
 			setRemainingAmount(0);
 		}
-		console.log("splitPayments", splitPayments, payments);
 		// =============== enable save button if there are any payments ================
 		setSaveDisabled(payments.length === 0);
-	}, [splitPaymentForm.values, salesDueAmount]);
+	}, [splitPaymentForm.values, salesDueAmount, transactionModeData]);
 
 	useEffect(() => {
 		if (currentSplitPayments && currentSplitPayments.length > 0) {
@@ -115,6 +115,14 @@ export default function SplitPayment({
 
 	const handleFormSubmit = () => {
 		if (saveDisabled) return;
+
+		// Calculate final remaining amount
+		const totalPaid = splitPayments.reduce(
+			(sum, payment) => sum + Number(payment.partial_amount),
+			0
+		);
+		const finalRemainingAmount = (salesDueAmount - totalPaid).toFixed(2);
+		setRemainingAmount(finalRemainingAmount);
 
 		// Pass split payment data back to parent
 		getSplitPayment(splitPayments);

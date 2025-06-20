@@ -100,8 +100,6 @@ export default function Invoice({
 	const [discountType, setDiscountType] = useState("Percent");
 	const [defaultCustomerId, setDefaultCustomerId] = useState(null);
 
-	const [disabledDiscountButton, setDisabledDiscountButton] = useState(false);
-
 	const [tableReceiveAmounts, setTableReceiveAmounts] = useState({});
 
 	const [indexData, setIndexData] = useState(null);
@@ -265,6 +263,10 @@ export default function Invoice({
 	}, [currentTableKey, tableReceiveAmounts]);
 
 	useEffect(() => {
+		setCurrentPaymentInput(invoiceData?.payment || "");
+	}, [tableId]);
+
+	useEffect(() => {
 		if (invoiceData) {
 			setDiscountType(invoiceData.discount_type || "Percent");
 			setSalesTotalAmount(invoiceData.sub_total || 0);
@@ -272,21 +274,13 @@ export default function Invoice({
 				(invoiceData.sub_total || 0) - (invoiceData.discount || 0)
 			);
 
-			// Only update due amount if split payment is not active
-			// if (!isSplitPaymentActive) {
 			setSalesDueAmount(
 				(invoiceData.sub_total || 0) -
-					((invoiceData.payment || 0) + (invoiceData.discount || 0))
+					((Number(currentPaymentInput) || 0) + (invoiceData.discount || 0))
 			);
 			setReturnOrDueText(
-				(invoiceData.sub_total || 0) > (invoiceData.payment || 0) ? "Due" : "Return"
+				(invoiceData.sub_total || 0) > (Number(currentPaymentInput) || 0) ? "Due" : "Return"
 			);
-			// }
-
-			// Only set currentPaymentInput if it's empty or if we're initializing
-			if (!currentPaymentInput) {
-				setCurrentPaymentInput(invoiceData?.payment || "");
-			}
 
 			setTransactionModeId(invoiceData?.transaction_mode_id || "");
 			if (invoiceData.discount_type === "Flat") {
@@ -866,6 +860,7 @@ export default function Invoice({
 						salesDiscountAmount={salesDiscountAmount}
 						setSalesDiscountAmount={setSalesDiscountAmount}
 						setReloadInvoiceData={setReloadInvoiceData}
+						setInvoiceData={setInvoiceData}
 						currentTableKey={currentTableKey}
 						isThisTableSplitPaymentActive={isThisTableSplitPaymentActive}
 						clearTableSplitPayment={clearTableSplitPayment}
@@ -877,7 +872,6 @@ export default function Invoice({
 						handleCustomerAdd={handleCustomerAdd}
 						isDisabled={isDisabled}
 						handleSave={handleSave}
-						setDisabledDiscountButton={setDisabledDiscountButton}
 					/>
 
 					{printPos && (
