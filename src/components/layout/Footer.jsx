@@ -108,15 +108,6 @@ function Footer() {
 						</Flex>
 					</Group>
 					<Group>
-						<Group>
-							<ActionIcon variant="outline" onClick={zoomOut} size="sm">
-								<IconMinus style={{ width: "70%", height: "70%" }} />
-							</ActionIcon>
-							<Text size="sm">{zoomLevel}%</Text>
-							<ActionIcon variant="outline" onClick={zoomIn} size="sm">
-								<IconPlus style={{ width: "70%", height: "70%" }} />
-							</ActionIcon>
-						</Group>
 						<Group ml={50} gap={5} className={classes.links} visibleFrom="sm">
 							<Flex
 								gap="md"
@@ -128,6 +119,15 @@ function Footer() {
 							>
 								{items}
 							</Flex>
+						</Group>
+						<Group>
+							<ActionIcon variant="outline" onClick={zoomOut} size="sm">
+								<IconMinus style={{ width: "70%", height: "70%" }} />
+							</ActionIcon>
+							<Text size="sm">{zoomLevel}%</Text>
+							<ActionIcon variant="outline" onClick={zoomIn} size="sm">
+								<IconPlus style={{ width: "70%", height: "70%" }} />
+							</ActionIcon>
 						</Group>
 					</Group>
 				</div>

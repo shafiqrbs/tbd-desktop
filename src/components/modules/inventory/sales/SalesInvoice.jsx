@@ -12,6 +12,7 @@ function SalesInvoice() {
 	const insertType = useSelector((state) => state.crudSlice?.data?.sales?.insertType || "create");
 	const progress = getLoadingProgress();
 	const { configData } = getConfigData();
+
 	return (
 		<>
 			{progress !== 100 && (
@@ -31,28 +32,42 @@ function SalesInvoice() {
 							<_SalesPurchaseHeaderNavbar
 								pageTitle={t("SalesInvoice")}
 								roles={t("Roles")}
-								allowZeroPercentage={configData?.zero_stock}
-								currencySymbol={configData?.currency?.symbol}
+								allowZeroPercentage={configData?.inventory_config?.zero_stock}
+								currencySymbol={configData?.inventory_config?.currency?.symbol}
 							/>
 							<Box p={"8"}>
-								{insertType === "create" &&
-										<_GenericPosForm
-											allowZeroPercentage={configData?.zero_stock}
-											currencySymbol={configData?.currency?.symbol}
-											domainId={configData?.domain_id}
-											isSMSActive={configData?.is_active_sms}
-											isZeroReceiveAllow={configData?.is_zero_receive_allow}
-											isWarehouse={configData?.sku_warehouse}
-										/>
-								}
+								{insertType === "create" && (
+									<_GenericPosForm
+										allowZeroPercentage={
+											configData?.inventory_config?.zero_stock
+										}
+										currencySymbol={
+											configData?.inventory_config?.currency?.symbol
+										}
+										domainId={configData?.inventory_config?.domain_id}
+										isSMSActive={configData?.inventory_config?.is_active_sms}
+										isZeroReceiveAllow={
+											configData?.inventory_config?.is_zero_receive_allow
+										}
+										isWarehouse={configData?.inventory_config?.sku_warehouse}
+									/>
+								)}
 								{insertType === "create" &&
 									configData?.business_model?.slug === "distribution" && (
 										<_WholeSaleGenericInvoiceForm
-											allowZeroPercentage={configData?.zero_stock}
-											currencySymbol={configData?.currency?.symbol}
-											domainId={configData?.domain_id}
-											isSMSActive={configData?.is_active_sms}
-											isZeroReceiveAllow={configData?.is_zero_receive_allow}
+											allowZeroPercentage={
+												configData?.inventory_config?.zero_stock
+											}
+											currencySymbol={
+												configData?.inventory_config?.currency?.symbol
+											}
+											domainId={configData?.inventory_config?.domain_id}
+											isSMSActive={
+												configData?.inventory_config?.is_active_sms
+											}
+											isZeroReceiveAllow={
+												configData?.inventory_config?.is_zero_receive_allow
+											}
 										/>
 									)}
 							</Box>

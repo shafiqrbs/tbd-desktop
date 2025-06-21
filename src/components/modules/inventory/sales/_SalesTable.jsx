@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/rules-of-hooks */
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useOutletContext } from "react-router";
 import tableCss from "../../../../assets/css/Table.module.css";
@@ -45,7 +44,7 @@ import { notifications } from "@mantine/notifications";
 import { showNotificationComponent } from "../../../core-component/showNotificationComponent";
 import SalesPrintThermal from "./print-component/SalesPrintThermal.jsx";
 
-function _SalesTable() {
+function SalesTable() {
 	const navigate = useNavigate();
 	const printRef = useRef();
 	const dispatch = useDispatch();
@@ -1032,4 +1031,4 @@ function _SalesTable() {
 	);
 }
 
-export default _SalesTable;
+export default SalesTable;
