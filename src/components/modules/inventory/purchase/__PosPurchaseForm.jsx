@@ -16,7 +16,7 @@ import { rem } from "@mantine/core";
 import { storeEntityData } from "../../../../store/core/crudSlice.js";
 import { formatDate, generateInvoiceId } from "../../../../lib/index.js";
 
-export default function __PosPurchaseForm(props) {
+export default function PosPurchaseForm(props) {
 	const { isSMSActive, currencySymbol, tempCardProducts, setLoadCardProducts, isWarehouse } =
 		props;
 
@@ -66,7 +66,7 @@ export default function __PosPurchaseForm(props) {
 			mobile: "",
 			email: "",
 			warehouse_id: "",
-		}
+		},
 	});
 
 	//calculate subTotal amount
@@ -158,136 +158,133 @@ export default function __PosPurchaseForm(props) {
 		purchaseVatAmount,
 	]);
 
+	const handleSubmit = async () => {
+		const items = await window.dbAPI.getDataFromTable("temp_purchase_products");
+		const createdBy = await window.dbAPI.getDataFromTable("users");
+		let transformedArray = items.map((product) => {
+			return {
+				product_id: product.product_id,
+				warehouse_id: product.warehouse_id,
+				quantity: product.quantity,
+				purchase_price: product.purchase_price,
+				sales_price: product.sales_price,
+				bonus_quantity: product.bonus_quantity,
+				sub_total: product.sub_total,
+			};
+		});
+
+		const options = {
+			year: "numeric",
+			month: "2-digit",
+			day: "2-digit",
+		};
+		const formValue = {};
+		formValue["vendor_id"] = form.values.vendor_id ? form.values.vendor_id : defaultVendorId;
+
+		// Include manual customer input fields if no customer is selected
+		if (!form.values.vendor_id || form.values.vendor_id == defaultVendorId) {
+			formValue["vendor_name"] = form.values.name;
+			formValue["vendor_mobile"] = form.values.mobile;
+			formValue["vendor_email"] = form.values.email;
+		}
+
+		formValue["customer_id"] = form.values.customer_id
+			? form.values.customer_id
+			: defaultCustomerId;
+
+		// Include manual customer input fields if no customer is selected
+		if (!form.values.customer_id || form.values.customer_id == defaultCustomerId) {
+			formValue["customer_name"] = form.values.name;
+			formValue["customer_mobile"] = form.values.mobile;
+			formValue["customer_email"] = form.values.email;
+		}
+
+		formValue["vendor_id"] = form.values.vendor_id;
+		formValue["sub_total"] = purchaseSubTotalAmount;
+		formValue["transaction_mode_id"] = form.values.transaction_mode_id;
+		formValue["discount_type"] = discountType;
+		formValue["discount"] = purchaseDiscountAmount;
+		formValue["discount_calculation"] = discountType === "Percent" ? form.values.discount : 0;
+		formValue["vat"] = 0;
+		formValue["total"] = purchaseTotalAmount;
+		formValue["payment"] = form.values.receive_amount;
+		formValue["created_by_id"] = Number(createdBy["id"]);
+		formValue["process"] = form.values.order_process;
+		formValue["narration"] = form.values.narration;
+		formValue["invoice_date"] =
+			form.values.invoice_date &&
+			new Date(form.values.invoice_date).toLocaleDateString("en-CA", options);
+		formValue["items"] = transformedArray ? transformedArray : [];
+
+		const data = {
+			url: "inventory/purchase",
+			data: formValue,
+			module: "purchase",
+		};
+
+		if (!form.values.transaction_mode_id) {
+			form.setFieldError("transaction_mode_id", t("Please select a payment method"));
+
+			notifications.show({
+				color: "red",
+				title: t("Payment Required"),
+				message: t("Please select a payment method"),
+				loading: false,
+				autoClose: 1500,
+			});
+
+			return;
+		}
+
+		if (isOnline) {
+			dispatch(storeEntityData(data));
+		} else {
+			const paymentModes = await window.dbAPI.getDataFromTable(
+				"accounting_transaction_mode",
+				formValue.transaction_mode_id
+			);
+
+			const purchaseData = {
+				...formValue,
+				created: formatDate(new Date()),
+				invoice: generateInvoiceId(),
+				customerId: formValue.customer_id,
+				customerName: formValue.customer_name,
+				customerMobile: formValue.customer_mobile,
+				createdById: formValue.created_by_id,
+				salesById: formValue.sales_by_id,
+				items: undefined,
+				mode_name: paymentModes.name,
+				purchase_items: JSON.stringify(items),
+				createdByUser: user?.username,
+				createdByName: user?.name,
+			};
+
+			await window.dbAPI.upsertIntoTable("purchase", purchaseData);
+		}
+
+		notifications.show({
+			color: "teal",
+			title: t("CreateSuccessfully"),
+			icon: <IconCheck style={{ width: rem(18), height: rem(18) }} />,
+			loading: false,
+			autoClose: 700,
+			style: { backgroundColor: "lightgray" },
+		});
+
+		setTimeout(() => {
+			window.dbAPI.destroyTableData("temp_purchase_products");
+			form.reset();
+			setVendorData(null);
+			setOrderProcess(null);
+			setLoadCardProducts(true);
+			setVendorObject(null);
+		}, 700);
+	};
+
 	return (
 		<>
-			<form
-				onSubmit={form.onSubmit(async () => {
-					const items = await window.dbAPI.getDataFromTable("temp_purchase_products");
-					const createdBy = await window.dbAPI.getDataFromTable("users");
-					let transformedArray = items.map((product) => {
-						return {
-							product_id: product.product_id,
-							warehouse_id: product.warehouse_id,
-							quantity: product.quantity,
-							purchase_price: product.purchase_price,
-							sales_price: product.sales_price,
-							bonus_quantity: product.bonus_quantity,
-							sub_total: product.sub_total,
-						};
-					});
-
-					const options = {
-						year: "numeric",
-						month: "2-digit",
-						day: "2-digit",
-					};
-					const formValue = {};
-					formValue["vendor_id"] = form.values.vendor_id
-						? form.values.vendor_id
-						: defaultVendorId;
-
-					// Include manual customer input fields if no customer is selected
-					if (!form.values.vendor_id || form.values.vendor_id == defaultVendorId) {
-						formValue["vendor_name"] = form.values.name;
-						formValue["vendor_mobile"] = form.values.mobile;
-						formValue["vendor_email"] = form.values.email;
-					}
-
-					formValue["customer_id"] = form.values.customer_id
-						? form.values.customer_id
-						: defaultCustomerId;
-
-					// Include manual customer input fields if no customer is selected
-					if (!form.values.customer_id || form.values.customer_id == defaultCustomerId) {
-						formValue["customer_name"] = form.values.name;
-						formValue["customer_mobile"] = form.values.mobile;
-						formValue["customer_email"] = form.values.email;
-					}
-
-					formValue["vendor_id"] = form.values.vendor_id;
-					formValue["sub_total"] = purchaseSubTotalAmount;
-					formValue["transaction_mode_id"] = form.values.transaction_mode_id;
-					formValue["discount_type"] = discountType;
-					formValue["discount"] = purchaseDiscountAmount;
-					formValue["discount_calculation"] =
-						discountType === "Percent" ? form.values.discount : 0;
-					formValue["vat"] = 0;
-					formValue["total"] = purchaseTotalAmount;
-					formValue["payment"] = form.values.receive_amount;
-					formValue["created_by_id"] = Number(createdBy["id"]);
-					formValue["process"] = form.values.order_process;
-					formValue["narration"] = form.values.narration;
-					formValue["invoice_date"] =
-						form.values.invoice_date &&
-						new Date(form.values.invoice_date).toLocaleDateString("en-CA", options);
-					formValue["items"] = transformedArray ? transformedArray : [];
-
-					const data = {
-						url: "inventory/purchase",
-						data: formValue,
-						module: "purchase",
-					};
-
-					if (!form.values.transaction_mode_id) {
-						form.setFieldError(
-							"transaction_mode_id",
-							t("Please select a payment method")
-						);
-
-						notifications.show({
-							color: "red",
-							title: t("Payment Required"),
-							message: t("Please select a payment method"),
-							loading: false,
-							autoClose: 1500,
-						});
-
-						return;
-					}
-
-					if (isOnline) {
-						dispatch(storeEntityData(data));
-					} else {
-						const paymentModes = await window.dbAPI.getDataFromTable("accounting_transaction_mode", formValue.transaction_mode_id)
-
-						const purchaseData = {
-							...formValue,
-							created: formatDate(new Date()),
-							invoice: generateInvoiceId(),
-							customerId: formValue.customer_id,
-							customerName: formValue.customer_name,
-							customerMobile: formValue.customer_mobile,
-							createdById: formValue.created_by_id,
-							salesById: formValue.sales_by_id,
-							items: undefined,
-							mode_name: paymentModes.name,
-							purchase_items: JSON.stringify(items),
-							createdByUser: user?.username,
-							createdByName: user?.name
-						};
-
-						await window.dbAPI.upsertIntoTable("purchase", purchaseData);
-					}
-
-					notifications.show({
-						color: "teal",
-						title: t("CreateSuccessfully"),
-						icon: <IconCheck style={{ width: rem(18), height: rem(18) }} />,
-						loading: false,
-						autoClose: 700,
-						style: { backgroundColor: "lightgray" },
-					});
-
-					setTimeout(() => {
-						window.dbAPI.destroyTableData("temp_purchase_products");
-						form.reset();
-						setVendorData(null);
-						setOrderProcess(null);
-						setLoadCardProducts(true);
-						setVendorObject(null);
-					}, 700);
-				})}
-			>
+			<form onSubmit={form.onSubmit(handleSubmit)}>
 				<Box bg={"white"} p={"xs"} className={"borderRadiusAll"}>
 					<__PosVendorSection
 						form={form}
@@ -339,39 +336,27 @@ export default function __PosPurchaseForm(props) {
 									title: t("Quantity"),
 									width: "10%",
 									render: (item) => {
-										const [editedQuantity, setEditedQuantity] = useState(
-											item.quantity
-										);
-
 										const handleQuantityChange = async (e) => {
 											const editedQuantity = e.currentTarget.value;
-											setEditedQuantity(editedQuantity);
 
-											const cardProducts =
-												await window.dbAPI.getDataFromTable(
-													"temp_purchase_products"
-												);
+											// =============== validate input value ================
+											if (!editedQuantity || editedQuantity < 0) {
+												return;
+											}
 
-											const updatedProducts = cardProducts.map((product) => {
-												if (product.product_id === item.product_id) {
-													return {
-														...product,
-														quantity: e.currentTarget.value,
+											console.log(editedQuantity);
+
+											await window.dbAPI.updateDataInTable(
+												"temp_purchase_products",
+												{
+													id: item.product_id,
+													property: "product_id",
+													data: {
+														quantity: editedQuantity,
 														sub_total:
-															e.currentTarget.value *
-															item.sales_price,
-													};
+															editedQuantity * item.purchase_price,
+													},
 												}
-												return product;
-											});
-
-											await Promise.all(
-												updatedProducts.map((product) => {
-													window.dbAPI.upsertIntoTable(
-														"temp_purchase_products",
-														product
-													);
-												})
 											);
 
 											setLoadCardProducts(true);
@@ -383,7 +368,7 @@ export default function __PosPurchaseForm(props) {
 													type="number"
 													label=""
 													size="xs"
-													value={editedQuantity}
+													defaultValue={item.quantity}
 													onChange={handleQuantityChange}
 													onKeyDown={getHotkeyHandler([
 														[
@@ -414,49 +399,21 @@ export default function __PosPurchaseForm(props) {
 									title: t("Price"),
 									width: "10%",
 									render: (item) => {
-										const [editedPurchasePrice, setEditedPurchasePrice] =
-											useState(item.purchase_price);
-										const handlePurchasePriceChange = (e) => {
+										const handlePurchasePriceChange = async (e) => {
 											const newSalesPrice = e.currentTarget.value;
-											setEditedPurchasePrice(newSalesPrice);
+											await window.dbAPI.updateDataInTable(
+												"temp_purchase_products",
+												{
+													id: item.product_id,
+													property: "product_id",
+													data: {
+														purchase_price: newSalesPrice,
+														sub_total: newSalesPrice * item.quantity,
+													},
+												}
+											);
+											setLoadCardProducts(true);
 										};
-										useEffect(() => {
-											const timeoutId = setTimeout(async () => {
-												const cardProducts =
-													await window.dbAPI.getDataFromTable(
-														"temp_purchase_products"
-													);
-												const updatedProducts = cardProducts.map(
-													(product) => {
-														if (
-															product.product_id === item.product_id
-														) {
-															return {
-																...product,
-																purchase_price: editedPurchasePrice,
-																sub_total:
-																	editedPurchasePrice *
-																	item.quantity,
-															};
-														}
-														return product;
-													}
-												);
-
-												await Promise.all(
-													updatedProducts.map((product) => {
-														window.dbAPI.upsertIntoTable(
-															"temp_purchase_products",
-															product
-														);
-													})
-												);
-
-												setLoadCardProducts(true);
-											}, 1000);
-
-											return () => clearTimeout(timeoutId);
-										}, [editedPurchasePrice, item.product_id, item.quantity]);
 
 										return (
 											<>
@@ -465,7 +422,7 @@ export default function __PosPurchaseForm(props) {
 													label=""
 													size="xs"
 													id={"inline-update-quantity-" + item.product_id}
-													value={editedPurchasePrice}
+													defaultValue={item.purchase_price}
 													onChange={handlePurchasePriceChange}
 												/>
 											</>

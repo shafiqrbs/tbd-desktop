@@ -44,9 +44,9 @@ import { PurchasePrintPos } from "./print-component/PurchasePrintPos.jsx";
 import { notifications } from "@mantine/notifications";
 import getConfigData from "../../../global-hook/config-data/getConfigData.js";
 
-function _PurchaseTable() {
+function PurchaseTable() {
 	const { configData } = getConfigData();
-	let isWarehouse = configData?.sku_warehouse;
+	let isWarehouse = configData?.inventory_config?.sku_warehouse;
 
 	const printRef = useRef();
 	const dispatch = useDispatch();
@@ -146,7 +146,7 @@ function _PurchaseTable() {
 		};
 
 		try {
-			if(isOnline) {
+			if (isOnline) {
 				const resultAction = await dispatch(getIndexEntityData(value));
 
 				if (getIndexEntityData.rejected.match(resultAction)) {
@@ -157,7 +157,7 @@ function _PurchaseTable() {
 			} else {
 				const purchaseData = await window.dbAPI.getDataFromTable("purchase");
 				purchaseData.reverse();
-				setIndexData({ data: purchaseData, total: purchaseData.length});
+				setIndexData({ data: purchaseData, total: purchaseData.length });
 			}
 		} catch (err) {
 			console.error("Unexpected error:", err);
@@ -858,4 +858,4 @@ function _PurchaseTable() {
 	);
 }
 
-export default _PurchaseTable;
+export default PurchaseTable;

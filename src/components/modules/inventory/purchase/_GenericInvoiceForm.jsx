@@ -45,16 +45,14 @@ import __PosPurchaseForm from "./__PosPurchaseForm.jsx";
 import SettingDrawer from "../common/SettingDrawer.jsx";
 import { useHotkeys } from "@mantine/hooks";
 
-function _GenericInvoiceForm(props) {
-	const {
-		currencySymbol,
-		allowZeroPercentage,
-		domainId,
-		isSMSActive,
-		isWarehouse,
-		isPurchaseByPurchasePrice,
-	} = props;
-
+function GenericInvoiceForm({
+	currencySymbol,
+	allowZeroPercentage,
+	domainId,
+	isSMSActive,
+	isWarehouse,
+	isPurchaseByPurchasePrice,
+}) {
 	//common hooks and variables
 	const { t } = useTranslation();
 	const { mainAreaHeight } = useOutletContext();
@@ -405,6 +403,7 @@ function _GenericInvoiceForm(props) {
 			setLoadCardProducts(false);
 		})();
 	}, [loadCardProducts]);
+
 	useHotkeys(
 		[
 			[
@@ -413,24 +412,12 @@ function _GenericInvoiceForm(props) {
 					document.getElementById("product_id").focus();
 				},
 			],
-		],
-		[]
-	);
-
-	useHotkeys(
-		[
 			[
 				"alt+r",
 				() => {
 					form.reset();
 				},
 			],
-		],
-		[]
-	);
-
-	useHotkeys(
-		[
 			[
 				"alt+s",
 				() => {
@@ -440,6 +427,26 @@ function _GenericInvoiceForm(props) {
 		],
 		[]
 	);
+
+	const handleSubmit = async (values) => {
+		if (!values.barcode && !values.product_id) {
+			form.setFieldError("barcode", true);
+			form.setFieldError("product_id", true);
+			isWarehouse && form.setFieldError("warehouse_id", true);
+			setTimeout(() => {}, 1000);
+		} else {
+			const myCardProducts =
+				(await window.dbAPI.getDataFromTable("temp_purchase_products")) || [];
+			const localProducts = (await window.dbAPI.getDataFromTable("core-products")) || [];
+
+			if (values.product_id && !values.barcode) {
+				handleAddProductByProductId(values, myCardProducts, localProducts);
+			} else if (!values.product_id && values.barcode) {
+				handleAddProductByBarcode(values, myCardProducts, localProducts);
+			}
+		}
+	};
+
 	return (
 		<Box>
 			<Grid columns={24} gutter={{ base: 8 }}>
@@ -447,37 +454,7 @@ function _GenericInvoiceForm(props) {
 					<Navigation />
 				</Grid.Col>
 				<Grid.Col span={7}>
-					<form
-						onSubmit={form.onSubmit(async (values) => {
-							if (!values.barcode && !values.product_id) {
-								form.setFieldError("barcode", true);
-								form.setFieldError("product_id", true);
-								isWarehouse && form.setFieldError("warehouse_id", true);
-								setTimeout(() => {}, 1000);
-							} else {
-								const myCardProducts =
-									(await window.dbAPI.getDataFromTable(
-										"temp_purchase_products"
-									)) || [];
-								const localProducts =
-									(await window.dbAPI.getDataFromTable("core-products")) || [];
-
-								if (values.product_id && !values.barcode) {
-									handleAddProductByProductId(
-										values,
-										myCardProducts,
-										localProducts
-									);
-								} else if (!values.product_id && values.barcode) {
-									handleAddProductByBarcode(
-										values,
-										myCardProducts,
-										localProducts
-									);
-								}
-							}
-						})}
-					>
+					<form onSubmit={form.onSubmit(handleSubmit)}>
 						<Box bg={"white"} p={"md"} pb="0" className={"borderRadiusAll"}>
 							<Box>
 								<Box mb={"xs"}>
@@ -1255,4 +1232,4 @@ function _GenericInvoiceForm(props) {
 	);
 }
 
-export default _GenericInvoiceForm;
+export default GenericInvoiceForm;

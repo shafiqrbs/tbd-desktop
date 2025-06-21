@@ -31,18 +31,18 @@ function PurchaseInvoice() {
 							<_SalesPurchaseHeaderNavbar
 								pageTitle={t("PurchaseInvoice")}
 								roles={t("Roles")}
-								allowZeroPercentage={configData?.zero_stock}
-								currencySymbol={configData?.currency?.symbol}
+								allowZeroPercentage={configData?.inventory_config?.zero_stock}
+								currencySymbol={configData?.inventory_config?.currency?.symbol}
 							/>
 							<Box p="8">
 								<_GenericInvoiceForm
-									allowZeroPercentage={configData?.zero_stock}
-									currencySymbol={configData?.currency?.symbol}
+									allowZeroPercentage={configData?.inventory_config?.zero_stock}
+									currencySymbol={configData?.inventory_config?.currency?.symbol}
 									isPurchaseByPurchasePrice={
-										configData?.is_purchase_by_purchase_price
+										configData?.inventory_config?.is_purchase_by_purchase_price
 									}
-									isWarehouse={configData?.sku_warehouse}
-									isSMSActive={configData?.is_active_sms}
+									isWarehouse={configData?.inventory_config?.sku_warehouse}
+									isSMSActive={configData?.inventory_config?.is_active_sms}
 								/>
 							</Box>
 						</>

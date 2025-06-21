@@ -390,6 +390,11 @@ export default function PosSalesForm({
 									const handleQuantityChange = async (e) => {
 										const editedQuantity = e.currentTarget.value;
 
+										// =============== validate input value ================
+										if (!editedQuantity || editedQuantity < 0) {
+											return;
+										}
+
 										await window.dbAPI.updateDataInTable(
 											"temp_sales_products",
 											{
@@ -444,6 +449,12 @@ export default function PosSalesForm({
 								render: (item) => {
 									const handleSalesPriceChange = async (e) => {
 										const newSalesPrice = e.currentTarget.value;
+
+										// =============== validate input value ================
+										if (!newSalesPrice || newSalesPrice < 0) {
+											return;
+										}
+
 										await window.dbAPI.updateDataInTable(
 											"temp_sales_products",
 											{

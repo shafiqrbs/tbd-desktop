@@ -463,7 +463,8 @@ function SalesTable() {
 														</Menu.Target>
 														<Menu.Dropdown>
 															{data.customer_group == "Domain" &&
-																!data.is_domain_sales_completed && (
+																!data.is_domain_sales_completed &&
+																isOnline && (
 																	<Menu.Item
 																		onClick={() => {
 																			modals.openConfirmModal(
@@ -511,7 +512,8 @@ function SalesTable() {
 																)}
 
 															{data.customer_group != "Domain" &&
-																!data.approved_by_id && (
+																!data.approved_by_id &&
+																isOnline && (
 																	<Menu.Item
 																		onClick={() => {
 																			modals.openConfirmModal(

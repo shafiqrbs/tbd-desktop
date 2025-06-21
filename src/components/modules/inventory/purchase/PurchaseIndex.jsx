@@ -31,14 +31,14 @@ function PurchaseIndex() {
 							<_SalesPurchaseHeaderNavbar
 								pageTitle={t("ManagePurchase")}
 								roles={t("Roles")}
-								allowZeroPercentage={configData?.zero_stock}
-								currancySymbol={configData?.currency?.symbol}
+								allowZeroPercentage={configData?.inventory_config?.zero_stock}
+								currancySymbol={configData?.inventory_config?.currency?.symbol}
 							/>
 							<Box p="8">
 								<_PurchaseTable
-									allowZeroPercentage={configData?.zero_stock}
-									currancySymbol={configData?.currency?.symbol}
-									isWarehouse={configData?.sku_warehouse}
+									allowZeroPercentage={configData?.inventory_config?.zero_stock}
+									currancySymbol={configData?.inventory_config?.currency?.symbol}
+									isWarehouse={configData?.inventory_config?.sku_warehouse}
 								/>
 							</Box>
 						</>

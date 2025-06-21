@@ -30,13 +30,13 @@ function SalesIndex() {
 							<_SalesPurchaseHeaderNavbar
 								pageTitle={t("ManageSales")}
 								roles={t("Roles")}
-								allowZeroPercentage={configData?.zero_stock}
-								currencySymbol={configData?.currency?.symbol}
+								allowZeroPercentage={configData?.inventory_config?.zero_stock}
+								currencySymbol={configData?.inventory_config?.currency?.symbol}
 							/>
 							<Box p={"8"}>
 								<_SalesTable
-									allowZeroPercentage={configData?.zero_stock}
-									currencySymbol={configData?.currency?.symbol}
+									allowZeroPercentage={configData?.inventory_config?.zero_stock}
+									currencySymbol={configData?.inventory_config?.currency?.symbol}
 								/>
 							</Box>
 						</>
