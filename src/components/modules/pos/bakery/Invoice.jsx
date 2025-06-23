@@ -1,27 +1,15 @@
 import { useEffect, useState } from "react";
 import { useOutletContext } from "react-router";
-import {
-	Group,
-	Box,
-	Text,
-	Button,
-	Grid,
-	ScrollArea,
-	Tooltip,
-	Checkbox,
-	Paper,
-} from "@mantine/core";
+import { Group, Box, Text, Grid, ScrollArea, Tooltip, Checkbox, Paper } from "@mantine/core";
 import { useTranslation } from "react-i18next";
 import { IconSum, IconReceipt } from "@tabler/icons-react";
 import { useDispatch } from "react-redux";
 import classes from "./css/Invoice.module.css";
-import { IconChefHat } from "@tabler/icons-react";
 import getConfigData from "../../../global-hook/config-data/getConfigData";
 import { SalesPrintPos } from "../print/pos/SalesPrintPos";
 import { useForm } from "@mantine/form";
 import { notifications } from "@mantine/notifications";
 import { useCartOperations } from "./utils/CartOperations";
-import SelectForm from "../../../form-builders/SelectForm";
 import { storeEntityData, getIndexEntityData } from "../../../../store/core/crudSlice.js";
 import AddCustomerDrawer from "../../inventory/sales/drawer-form/AddCustomerDrawer.jsx";
 import _CommonDrawer from "./drawer/_CommonDrawer.jsx";
@@ -64,7 +52,6 @@ export default function Invoice({
 	// Sales by user state management
 	const [salesByUser, setSalesByUser] = useState(String(invoiceData?.sales_by_id || ""));
 	const [salesByUserName] = useState(null);
-	const [salesByDropdownData, setSalesByDropdownData] = useState([]);
 	const [isDisabled, setIsDisabled] = useState(false);
 	const [transactionModeData, setTransactionModeData] = useState([]);
 
@@ -155,24 +142,11 @@ export default function Invoice({
 	}, [tableId, enableTable, tableCustomerMap]);
 
 	useEffect(() => {
-		async function fetchData() {
-			let coreUsers = await window.dbAPI.getDataFromTable("core_users");
-			if (coreUsers && coreUsers.length > 0) {
-				const transformedData = coreUsers.map((type) => {
-					return {
-						label: type.username + " - " + type.email,
-						value: String(type.id),
-					};
-				});
-				setSalesByDropdownData(transformedData);
-			}
-		}
 		async function fetchTransactionData() {
 			const data = await window.dbAPI.getDataFromTable("accounting_transaction_mode");
 			setTransactionModeData(data);
 		}
 		fetchTransactionData();
-		fetchData();
 	}, []);
 
 	useEffect(() => {
@@ -660,75 +634,10 @@ export default function Invoice({
 		<ScrollArea h={enableTable ? height + 160 : height + 50}>
 			<Box
 				w="100%"
-				pl={10}
-				pr={10}
+				p={10}
 				className={classes["box-white"]}
 				style={{ display: "flex", flexDirection: "column" }}
 			>
-				<Group
-					gap={6}
-					mb={4}
-					preventGrowOverflow={false}
-					grow
-					align="flex-start"
-					wrap="nowrap"
-				>
-					<SelectForm
-						pt="8"
-						label=""
-						tooltip="SalesBy"
-						placeholder={enableTable ? t("OrderTakenBy") : t("SalesBy")}
-						name="sales_by_id"
-						form={form}
-						dropdownValue={salesByDropdownData}
-						id="sales_by_id"
-						searchable={true}
-						value={salesByUser}
-						changeValue={setSalesByUser}
-						color="orange.8"
-						position="top-start"
-						inlineUpdate={true}
-						updateDetails={{
-							url: "inventory/pos/inline-update",
-							data: {
-								invoice_id: tableId,
-								field_name: "sales_by_id",
-								value: salesByUser,
-							},
-							module: "pos",
-						}}
-					/>
-					{enableTable && (
-						<Tooltip
-							disabled={!(invoiceData?.invoice_items?.length === 0 || !salesByUser)}
-							color="red.6"
-							withArrow
-							px={16}
-							py={2}
-							offset={2}
-							zIndex={999}
-							position="top-end"
-							label={t("SelectProductandUser")}
-						>
-							<Button
-								disabled={invoiceData?.invoice_items?.length === 0 || !salesByUser}
-								radius="sm"
-								size="sm"
-								color="green"
-								name="kitchen"
-								mt={8}
-								miw={122}
-								maw={122}
-								leftSection={<IconChefHat height={14} width={14} stroke={2} />}
-								onClick={handleClick}
-							>
-								<Text fw={600} size="sm">
-									{t("Kitchen")}
-								</Text>
-							</Button>
-						</Tooltip>
-					)}
-				</Group>
 				<Box>
 					<Paper h={32} p="4" radius="4" bg={checked ? "green.8" : "green.0"}>
 						<Grid align="center">
@@ -847,6 +756,8 @@ export default function Invoice({
 					<ActionButtons
 						form={form}
 						tableId={tableId}
+						salesByUser={salesByUser}
+						setSalesByUser={setSalesByUser}
 						transactionModeData={transactionModeData}
 						transactionModeId={transactionModeId}
 						handleTransactionModel={handleTransactionModel}

@@ -24,6 +24,7 @@ import {
 	IconCurrencyTaka,
 	IconPercentage,
 	IconUserPlus,
+	IconChefHat,
 } from "@tabler/icons-react";
 import classes from "./css/Invoice.module.css";
 import { useDispatch } from "react-redux";
@@ -34,10 +35,13 @@ import { useTranslation } from "react-i18next";
 import getConfigData from "../../../global-hook/config-data/getConfigData.js";
 import { useOutletContext } from "react-router";
 import { calculateVATAmount } from "../../../../lib/index.js";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import SelectForm from "../../../form-builders/SelectForm";
 
 export default function ActionButtons({
 	form,
+	salesByUser,
+	setSalesByUser,
 	transactionModeData,
 	transactionModeId,
 	handleTransactionModel,
@@ -75,6 +79,23 @@ export default function ActionButtons({
 	const { t } = useTranslation();
 	const [enableCoupon, setEnableCoupon] = useState("Coupon");
 	const [disabledDiscountButton, setDisabledDiscountButton] = useState(false);
+	const [salesByDropdownData, setSalesByDropdownData] = useState([]);
+
+	useEffect(() => {
+		async function fetchData() {
+			let coreUsers = await window.dbAPI.getDataFromTable("core_users");
+			if (coreUsers && coreUsers.length > 0) {
+				const transformedData = coreUsers.map((type) => {
+					return {
+						label: type.username + " - " + type.email,
+						value: String(type.id),
+					};
+				});
+				setSalesByDropdownData(transformedData);
+			}
+		}
+		fetchData();
+	}, []);
 
 	// =============== utility function to determine kitchen products ================
 	const getKitchenProducts = (items) => {
@@ -296,7 +317,8 @@ export default function ActionButtons({
 										{t("DIS.")}
 									</Text>
 									<Text fz={"sm"} fw={800} c={"black"}>
-										{configData?.currency?.symbol} {invoiceData?.discount || 0}
+										{configData?.inventory_config?.currency?.symbol}{" "}
+										{invoiceData?.discount || 0}
 									</Text>
 								</Group>
 								<Group justify="space-between">
@@ -327,7 +349,7 @@ export default function ActionButtons({
 									{t("SD")}
 								</Text>
 								<Text fz={"sm"} fw={800} c={"black"}>
-									{configData?.currency?.symbol} 0
+									{configData?.inventory_config?.currency?.symbol} 0
 								</Text>
 							</Group>
 						</Grid.Col>
@@ -344,10 +366,10 @@ export default function ActionButtons({
 						pb={4}
 					>
 						<Text fw={800} c={"white"} size={"lg"}>
-							{configData?.currency?.symbol}{" "}
+							{configData?.inventory_config?.currency?.symbol}{" "}
 							{salesTotalWithoutDiscountAmount
 								? salesTotalWithoutDiscountAmount.toFixed(2)
-								: 0}
+								: 0.0}
 						</Text>
 						<Text fw={500} c={"white"} size={"md"}>
 							{t("Total")}
@@ -365,10 +387,10 @@ export default function ActionButtons({
 						pb={4}
 					>
 						<Text fw={800} c={"white"} size={"lg"}>
-							{configData?.currency?.symbol}{" "}
-							{salesDueAmount ? salesDueAmount.toFixed(2) : 0}
+							{configData?.inventory_config?.currency?.symbol}{" "}
+							{salesDueAmount ? salesDueAmount.toFixed(2) : 0.0}
 						</Text>
-						<Text fw={500} c={"white"} size={"md"}>
+						<Text fw={500} c="white" size="md">
 							{returnOrDueText === "Due" ? t("Due") : t("Return")}
 						</Text>
 					</Stack>
@@ -479,6 +501,7 @@ export default function ActionButtons({
 								</Group>
 							</Tooltip>
 						</ScrollArea>
+
 						{showLeftArrow && (
 							<ActionIcon
 								variant="filled"
@@ -561,6 +584,64 @@ export default function ActionButtons({
 					</Tooltip>
 				</Grid.Col>
 			</Grid>
+			<Group gap={6} mb={4} preventGrowOverflow={false} grow align="center" wrap="nowrap">
+				<SelectForm
+					pt="4"
+					label=""
+					tooltip="SalesBy"
+					placeholder={enableTable ? t("OrderTakenBy") : t("SalesBy")}
+					name="sales_by_id"
+					form={form}
+					dropdownValue={salesByDropdownData}
+					id="sales_by_id"
+					searchable={true}
+					value={salesByUser}
+					changeValue={setSalesByUser}
+					color="orange.8"
+					position="top-start"
+					inlineUpdate={true}
+					updateDetails={{
+						url: "inventory/pos/inline-update",
+						data: {
+							invoice_id: tableId,
+							field_name: "sales_by_id",
+							value: salesByUser,
+						},
+						module: "pos",
+					}}
+					style={{ width: "100%" }}
+				/>
+				{enableTable && (
+					<Tooltip
+						disabled={!(invoiceData?.invoice_items?.length === 0 || !salesByUser)}
+						color="red.6"
+						withArrow
+						px={16}
+						py={2}
+						offset={2}
+						zIndex={999}
+						position="top-end"
+						label={t("SelectProductandUser")}
+					>
+						<Button
+							disabled={invoiceData?.invoice_items?.length === 0 || !salesByUser}
+							radius="sm"
+							size="sm"
+							color="green"
+							name="kitchen"
+							mt={4}
+							miw={122}
+							maw={122}
+							leftSection={<IconChefHat height={14} width={14} stroke={2} />}
+							onClick={handleClick}
+						>
+							<Text fw={600} size="sm">
+								{t("Kitchen")}
+							</Text>
+						</Button>
+					</Tooltip>
+				)}
+			</Group>
 			<Box m={0} mb={"12"}>
 				<Grid columns={24} gutter={{ base: 8 }} pr={"2"} align="center" justify="center">
 					<Grid.Col span={6}>

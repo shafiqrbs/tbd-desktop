@@ -23,6 +23,7 @@ const SelectForm = forwardRef((props, ref) => {
 		searchable,
 		value,
 		changeValue,
+		style = {},
 		clearable = true,
 		allowDeselect = true,
 		inlineUpdate = false,
@@ -62,9 +63,9 @@ const SelectForm = forwardRef((props, ref) => {
 					await window.dbAPI.updateDataInTable("invoice_table", {
 						id: updateDetails.data.invoice_id,
 						data: {
-							"sales_by_id": e,
+							sales_by_id: e,
 						},
-					})
+					});
 				}
 			} catch (error) {
 				showNotificationComponent("Request failed. Please try again.", "red", "", "", true);
@@ -108,6 +109,7 @@ const SelectForm = forwardRef((props, ref) => {
 						withAsterisk={required}
 						comboboxProps={props.comboboxProps}
 						allowDeselect={allowDeselect}
+						style={style}
 					/>
 				</Tooltip>
 			)}

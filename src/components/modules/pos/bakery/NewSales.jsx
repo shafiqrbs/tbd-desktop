@@ -258,7 +258,7 @@ export default function NewSales({
 				label: { color: "white" },
 			}}
 			// default color
-			bg={"gray.8"}
+			bg="gray.8"
 			withItemsBorders={false}
 			fullWidth
 			color="red.6"
@@ -370,7 +370,7 @@ export default function NewSales({
 					<Grid.Col span={15}>
 						<Grid columns={12} gutter={{ base: 8 }}>
 							<Grid.Col span={2}>
-								<Box bg="white" w={"100%"} className="border-radius">
+								<Box bg="white" w="100%" className="border-radius">
 									<ScrollArea
 										h={enableTable ? height + 30 : height + 195}
 										type="never"
