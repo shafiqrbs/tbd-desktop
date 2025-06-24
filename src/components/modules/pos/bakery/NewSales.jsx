@@ -177,6 +177,31 @@ export default function NewSales({
 		fetchData();
 	}, [id]);
 
+	useEffect(() => {
+		setTables((prevTables) =>
+			prevTables?.map((table) => {
+				if (table.status !== "Free" && table.currentStatusStartTime) {
+					const elapsedSeconds = Math.floor(
+						(new Date() - new Date(table.currentStatusStartTime)) / 1000
+					);
+					const hours = Math.floor(elapsedSeconds / 3600)
+						.toString()
+						.padStart(2, "0");
+					const minutes = Math.floor((elapsedSeconds % 3600) / 60)
+						.toString()
+						.padStart(2, "0");
+					const seconds = (elapsedSeconds % 60).toString().padStart(2, "0");
+
+					return {
+						...table,
+						elapsedTime: `${hours}:${minutes}:${seconds}`,
+					};
+				}
+				return table;
+			})
+		);
+	}, []);
+
 	const { handleIncrement, handleDecrement } = useCartOperations({
 		enableTable,
 		tableId,
@@ -225,31 +250,6 @@ export default function NewSales({
 		});
 		setProducts(updatedList);
 	};
-
-	useEffect(() => {
-		setTables((prevTables) =>
-			prevTables?.map((table) => {
-				if (table.status !== "Free" && table.currentStatusStartTime) {
-					const elapsedSeconds = Math.floor(
-						(new Date() - new Date(table.currentStatusStartTime)) / 1000
-					);
-					const hours = Math.floor(elapsedSeconds / 3600)
-						.toString()
-						.padStart(2, "0");
-					const minutes = Math.floor((elapsedSeconds % 3600) / 60)
-						.toString()
-						.padStart(2, "0");
-					const seconds = (elapsedSeconds % 60).toString().padStart(2, "0");
-
-					return {
-						...table,
-						elapsedTime: `${hours}:${minutes}:${seconds}`,
-					};
-				}
-				return table;
-			})
-		);
-	}, []);
 
 	const renderStatusButtons = () => (
 		<SegmentedControl
@@ -338,7 +338,11 @@ export default function NewSales({
 		<>
 			<Grid columns={24} gutter={{ base: 8 }}>
 				<Grid.Col span={1}>
-					<__ShortcutPos FormSubmit={"EntityFormSubmit"} Name={"CompanyName"} />
+					<__ShortcutPos
+						FormSubmit={"EntityFormSubmit"}
+						Name={"CompanyName"}
+						invoiceMode={invoiceMode}
+					/>
 				</Grid.Col>
 
 				{leftSide ? (
@@ -376,7 +380,7 @@ export default function NewSales({
 										type="never"
 										scrollbars="y"
 									>
-										<Box pl={"8"} pr={"8"} pb={"4"}>
+										<Box pl="8" pr="8" pb="4">
 											{categoryDropdown.map((data) => (
 												<Box
 													style={{
@@ -450,7 +454,6 @@ export default function NewSales({
 														value={barcode}
 														onChange={(event) => {
 															setBarcode(event.target.value);
-															// handleBarcodeSearch(barcode);
 														}}
 														onKeyPress={(e) => {
 															if (e.key === "Enter" && barcode) {
@@ -598,7 +601,6 @@ export default function NewSales({
 																		width={"24"}
 																		stroke={1.5}
 																	/>
-																	{/* <span>Minimal</span> */}
 																</Center>
 															),
 															value: "minimal",

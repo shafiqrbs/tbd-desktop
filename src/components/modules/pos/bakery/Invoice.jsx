@@ -631,7 +631,7 @@ export default function Invoice({
 	};
 
 	return (
-		<ScrollArea h={enableTable ? height + 160 : height + 50}>
+		<ScrollArea h={enableTable ? height + 160 : height + 200}>
 			<Box
 				w="100%"
 				p={10}
@@ -744,15 +744,15 @@ export default function Invoice({
 						<Group gap="10" pr={"sm"} align="center">
 							<IconSum size="16" style={{ color: "black" }} />
 							<Text fw={"bold"} fz={"sm"} c={"black"}>
-								{configData?.currency?.symbol}{" "}
+								{configData?.inventory_config?.currency?.symbol}{" "}
 								{salesTotalAmount && salesTotalAmount
 									? salesTotalAmount.toFixed(2)
-									: 0}
+									: 0.0}
 							</Text>
 						</Group>
 					</Group>
 				</Box>
-				<Box pr={4} pb={4} pt={2} mt={6}>
+				<Box pr={4} pb={2}>
 					<ActionButtons
 						form={form}
 						tableId={tableId}

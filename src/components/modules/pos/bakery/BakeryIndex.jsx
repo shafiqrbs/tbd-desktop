@@ -13,6 +13,27 @@ import { getIndexEntityData } from "../../../../store/core/crudSlice.js";
 import getConfigData from "../../../global-hook/config-data/getConfigData.js";
 import useRefreshConfigData from "../../../global-hook/config-data/useRefreshConfigData.js";
 
+// =============== localStorage utility functions ================
+const INVOICE_MODE_KEY = "bakery_invoice_mode";
+
+const saveInvoiceModeToLocalStorage = (mode) => {
+	try {
+		localStorage.setItem(INVOICE_MODE_KEY, JSON.stringify(mode));
+	} catch (error) {
+		console.error("Error saving invoice mode to localStorage:", error);
+	}
+};
+
+const getInvoiceModeFromLocalStorage = () => {
+	try {
+		const savedMode = localStorage.getItem(INVOICE_MODE_KEY);
+		return savedMode ? JSON.parse(savedMode) : null;
+	} catch (error) {
+		console.error("Error reading invoice mode from localStorage:", error);
+		return null;
+	}
+};
+
 export default function BakeryIndex() {
 	useRefreshConfigData();
 	const [categories, setCategories] = useState([]);
@@ -78,7 +99,7 @@ export default function BakeryIndex() {
 			: [];
 	}, [categoryDropdownData]);
 
-	// ✅ Optimized Data Fetching
+	// ✅ Optimized Data Fetching with localStorage support
 	useEffect(() => {
 		const fetchData = async () => {
 			if (isOnline) {
@@ -91,8 +112,14 @@ export default function BakeryIndex() {
 						})
 					);
 					if (getIndexEntityData.fulfilled.match(resultAction)) {
-						setInvoiceMode(resultAction.payload?.data?.invoice_mode);
+						const newInvoiceMode = resultAction.payload?.data?.invoice_mode;
+						setInvoiceMode(newInvoiceMode);
 						setIndexData(resultAction.payload?.data?.data || []);
+
+						// =============== save invoice mode to localStorage when online ================
+						if (newInvoiceMode) {
+							saveInvoiceModeToLocalStorage(newInvoiceMode);
+						}
 					} else {
 						console.error("Error fetching data:", resultAction);
 					}
@@ -100,9 +127,14 @@ export default function BakeryIndex() {
 					console.error("Unexpected error:", err);
 				}
 			} else {
+				// =============== read invoice mode from localStorage when offline ================
+				const savedInvoiceMode = getInvoiceModeFromLocalStorage();
 				const result = await window.dbAPI.getDataFromTable("invoice_table");
 				setIndexData(result);
-				setInvoiceMode("table");
+
+				// use saved invoice mode or default to "table"
+				const offlineInvoiceMode = savedInvoiceMode || "table";
+				setInvoiceMode(offlineInvoiceMode);
 			}
 		};
 		fetchData();
@@ -254,7 +286,7 @@ export default function BakeryIndex() {
 				<Progress color="red" size="sm" striped animated value={progress} />
 			) : (
 				<>
-					{configData?.inventory_config?.is_pos ? (
+					{configData?.inventory_config?.is_pos && invoiceMode === "table" ? (
 						<HeaderNavbar
 							pageTitle={t("ManageCustomer")}
 							roles={t("Roles")}

@@ -8,7 +8,7 @@ import SalesModal from "./modals/SalesModal";
 import StockModal from "./modals/StockModal";
 import BakeryDashboardModal from "./modals/BakeryDashboardModal";
 
-function ShortcutPos() {
+function ShortcutPos({ invoiceMode }) {
 	const { t } = useTranslation();
 	const { mainAreaHeight } = useOutletContext();
 	const height = mainAreaHeight - 190;
@@ -41,7 +41,11 @@ function ShortcutPos() {
 	return (
 		<>
 			<ScrollArea
-				h={configData?.inventory_config?.is_pos ? height : height + 195}
+				h={
+					configData?.inventory_config?.is_pos && invoiceMode === "table"
+						? height
+						: height + 195
+				}
 				bg="white"
 				type="never"
 				className="border-radius"
