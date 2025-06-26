@@ -278,6 +278,16 @@ function ShortcutPos({ invoiceMode }) {
 				onClose={() => setModalOpened(false)}
 				title={modalTitle}
 				size="100%"
+				styles={{
+					inner: {
+						paddingTop: 20,
+						paddingBottom: 20,
+					},
+					content: {
+						maxHeight: "100vh",
+						height: "100%",
+					},
+				}}
 				centered
 			>
 				{renderModalContent()}
