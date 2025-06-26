@@ -21,7 +21,6 @@ import {
 	IconPrinter,
 	IconReceipt,
 	IconDotsVertical,
-	IconPencil,
 	IconEyeEdit,
 	IconTrashX,
 	IconCheck,
@@ -156,8 +155,63 @@ function PurchaseTable() {
 				}
 			} else {
 				const purchaseData = await window.dbAPI.getDataFromTable("purchase");
-				purchaseData.reverse();
-				setIndexData({ data: purchaseData, total: purchaseData.length });
+				let filteredData = [...purchaseData];
+
+				if (purchaseFilterData?.searchKeyword) {
+					const searchTerm =
+						purchaseFilterData.searchKeyword?.trim()?.toLowerCase() || "";
+					filteredData = filteredData.filter(
+						(item) =>
+							item.invoice?.toLowerCase().includes(searchTerm) ||
+							item.customerName?.toLowerCase().includes(searchTerm) ||
+							item.customerMobile?.toLowerCase().includes(searchTerm) ||
+							item.customer_address?.toLowerCase().includes(searchTerm)
+					);
+				}
+
+				if (purchaseFilterData?.vendor_id) {
+					filteredData = filteredData.filter(
+						(item) => item.customerId === Number(purchaseFilterData.vendor_id)
+					);
+				}
+
+				if (purchaseFilterData?.start_date) {
+					const startDate = new Date(purchaseFilterData.start_date);
+					startDate.setHours(0, 0, 0, 0);
+					filteredData = filteredData.filter((item) => {
+						if (!item.created) return false;
+						const dateOnly = item.created.split(",")[0];
+						const [day, month, year] = dateOnly.split("-");
+						const itemDate = new Date(Number(year), Number(month) - 1, Number(day));
+						itemDate.setHours(0, 0, 0, 0);
+						return itemDate >= startDate;
+					});
+				}
+
+				if (purchaseFilterData?.end_date) {
+					const endDate = new Date(purchaseFilterData.end_date);
+					endDate.setHours(23, 59, 59, 999);
+					filteredData = filteredData.filter((item) => {
+						if (!item.created) return false;
+						const dateOnly = item.created.split(",")[0];
+						const [day, month, year] = dateOnly.split("-");
+						const itemDate = new Date(Number(year), Number(month) - 1, Number(day));
+						itemDate.setHours(0, 0, 0, 0);
+						return itemDate <= endDate;
+					});
+				}
+
+				filteredData.reverse();
+
+				const totalRecords = filteredData.length;
+				const startIndex = (page - 1) * perPage;
+				const endIndex = startIndex + perPage;
+				const paginatedData = filteredData.slice(startIndex, endIndex);
+
+				setIndexData({
+					data: paginatedData,
+					total: totalRecords,
+				});
 			}
 		} catch (err) {
 			console.error("Unexpected error:", err);
@@ -166,7 +220,6 @@ function PurchaseTable() {
 		}
 	};
 
-	// useEffect now only calls fetchData based on dependencies
 	useEffect(() => {
 		fetchData();
 	}, [purchaseFilterData, page, isOnline]);
@@ -195,7 +248,6 @@ function PurchaseTable() {
 	}, [entityDataDelete]);
 
 	const handlePurchaseApprove = (id) => {
-		// Open confirmation modal
 		modals.openConfirmModal({
 			title: <Text size="md">{t("FormConfirmationTitle")}</Text>,
 			children: <Text size="sm">{t("FormConfirmationMessage")}</Text>,
@@ -206,7 +258,7 @@ function PurchaseTable() {
 			},
 			onConfirm: () => {
 				handleConfirmPurchaseApprove(id);
-			}, // Separate function for "onConfirm"
+			},
 		});
 	};
 
@@ -218,7 +270,6 @@ function PurchaseTable() {
 
 			if (showInstantEntityData.fulfilled.match(resultAction)) {
 				if (resultAction.payload.data.status === 200) {
-					// Show success notification
 					notifications.show({
 						color: "teal",
 						title: t("ApprovedSuccessfully"),
@@ -232,7 +283,6 @@ function PurchaseTable() {
 		} catch (error) {
 			console.error("Error updating entity:", error);
 
-			// Error notification
 			notifications.show({
 				color: "red",
 				title: t("UpdateFailed"),
@@ -370,27 +420,6 @@ function PurchaseTable() {
 																	>
 																		{t("Approve")}
 																	</Menu.Item>
-
-																	{/* <Menu.Item
-																		onClick={() => {
-																			navigate(
-																				`/inventory/purchase/edit/${data.id}`
-																			);
-																		}}
-																		target="_blank"
-																		component="a"
-																		w={"200"}
-																		leftSection={
-																			<IconPencil
-																				style={{
-																					width: rem(14),
-																					height: rem(14),
-																				}}
-																			/>
-																		}
-																	>
-																		{t("Edit")}
-																	</Menu.Item> */}
 																</>
 															)}
 

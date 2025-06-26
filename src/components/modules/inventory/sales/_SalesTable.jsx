@@ -45,7 +45,10 @@ import { showNotificationComponent } from "../../../core-component/showNotificat
 import SalesPrintThermal from "./print-component/SalesPrintThermal.jsx";
 
 function SalesTable() {
+	const salesFilterData = useSelector((state) => state.crudSlice.data?.sales?.filters?.sales);
+	const entityDataDelete = useSelector((state) => state.crudSlice.data?.sales?.deleteData);
 	const navigate = useNavigate();
+	const [checkList, setCheckList] = useState({});
 	const printRef = useRef();
 	const dispatch = useDispatch();
 	const { t } = useTranslation();
@@ -70,10 +73,6 @@ function SalesTable() {
 		);
 	}, []);
 
-	const salesFilterData = useSelector((state) => state.crudSlice.data?.sales?.filters?.sales);
-
-	const entityDataDelete = useSelector((state) => state.crudSlice.data?.sales?.deleteData);
-
 	const [loading, setLoading] = useState(true);
 	useEffect(() => {
 		setTimeout(() => {
@@ -86,6 +85,33 @@ function SalesTable() {
 		setSalesViewData(indexData?.data?.data[0]);
 		setSelectedRow(indexData?.data?.data[0]?.invoice);
 	}, [indexData?.data, isOnline]);
+
+	useEffect(() => {
+		dispatch(
+			setDeleteMessage({
+				module: "sales",
+				message: "",
+			})
+		);
+		if (entityDataDelete === "success") {
+			notifications.show({
+				color: "red",
+				title: t("DeleteSuccessfully"),
+				icon: <IconCheck style={{ width: rem(18), height: rem(18) }} />,
+				loading: false,
+				autoClose: 700,
+				style: { backgroundColor: "lightgray" },
+			});
+
+			setTimeout(() => {
+				dispatch(setFetching(true));
+			}, 700);
+		}
+	}, [entityDataDelete]);
+
+	useEffect(() => {
+		fetchData();
+	}, [salesFilterData, page, isOnline]);
 
 	useHotkeys(
 		[
@@ -130,29 +156,6 @@ function SalesTable() {
 			</Table.Tr>
 		));
 
-	useEffect(() => {
-		dispatch(
-			setDeleteMessage({
-				module: "sales",
-				message: "",
-			})
-		);
-		if (entityDataDelete === "success") {
-			notifications.show({
-				color: "red",
-				title: t("DeleteSuccessfully"),
-				icon: <IconCheck style={{ width: rem(18), height: rem(18) }} />,
-				loading: false,
-				autoClose: 700,
-				style: { backgroundColor: "lightgray" },
-			});
-
-			setTimeout(() => {
-				dispatch(setFetching(true));
-			}, 700);
-		}
-	}, [entityDataDelete]);
-
 	const fetchData = async () => {
 		setFetching(true);
 		const options = {
@@ -196,11 +199,64 @@ function SalesTable() {
 				}
 			} else {
 				const result = await window.dbAPI.getDataFromTable("sales");
-				result.reverse();
+				let filteredData = [...result];
+
+				if (salesFilterData?.searchKeyword) {
+					const searchTerm = salesFilterData.searchKeyword?.trim()?.toLowerCase() || "";
+					filteredData = filteredData.filter(
+						(item) =>
+							item.invoice?.toLowerCase().includes(searchTerm) ||
+							item.customerName?.toLowerCase().includes(searchTerm) ||
+							item.customerMobile?.toLowerCase().includes(searchTerm) ||
+							item.customer_address?.toLowerCase().includes(searchTerm)
+					);
+				}
+
+				if (salesFilterData?.customer_id) {
+					filteredData = filteredData.filter(
+						(item) => item.customerId === Number(salesFilterData.customer_id)
+					);
+				}
+
+				if (salesFilterData?.start_date) {
+					const startDate = new Date(salesFilterData.start_date);
+					startDate.setHours(0, 0, 0, 0);
+					filteredData = filteredData.filter((item) => {
+						if (!item.created) return false;
+						// strip out time portion if present and parse date from "DD-MM-YYYY" format
+						const dateOnly = item.created.split(",")[0]; // remove time portion if exists
+						const [day, month, year] = dateOnly.split("-");
+						const itemDate = new Date(Number(year), Number(month) - 1, Number(day));
+						itemDate.setHours(0, 0, 0, 0);
+						return itemDate >= startDate;
+					});
+				}
+
+				if (salesFilterData?.end_date) {
+					const endDate = new Date(salesFilterData.end_date);
+					endDate.setHours(23, 59, 59, 999);
+					filteredData = filteredData.filter((item) => {
+						if (!item.created) return false;
+						// strip out time portion if present and parse date from "DD-MM-YYYY" format
+						const dateOnly = item.created.split(",")[0]; // remove time portion if exists
+						const [day, month, year] = dateOnly.split("-");
+						const itemDate = new Date(Number(year), Number(month) - 1, Number(day));
+						itemDate.setHours(0, 0, 0, 0);
+						return itemDate <= endDate;
+					});
+				}
+
+				filteredData.reverse();
+
+				const totalRecords = filteredData.length;
+				const startIndex = (page - 1) * perPage;
+				const endIndex = startIndex + perPage;
+				const paginatedData = filteredData.slice(startIndex, endIndex);
+
 				setIndexData({
 					data: {
-						data: result,
-						total: result.length,
+						data: paginatedData,
+						total: totalRecords,
 					},
 				});
 			}
@@ -211,11 +267,6 @@ function SalesTable() {
 		}
 	};
 
-	useEffect(() => {
-		fetchData();
-	}, [salesFilterData, page, isOnline]);
-
-	const [checkList, setCheckList] = useState({});
 	const CheckItemsHandel = (e, item) => {
 		const value = e.currentTarget.value;
 		const isChecked = e.currentTarget.checked;
