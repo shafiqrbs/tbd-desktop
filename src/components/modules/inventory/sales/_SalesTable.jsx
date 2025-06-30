@@ -61,8 +61,10 @@ function SalesTable({ data, showDetails = true }) {
 	const [selectedRow, setSelectedRow] = useState("");
 	const [printA4, setPrintA4] = useState(false);
 	const [checked, setChecked] = useState(false);
-	const [indexData, setIndexData] = useState(data || []);
+	const [indexData, setIndexData] = useState([]);
 	const [fetching, setFetching] = useState(true);
+	const [salesViewData, setSalesViewData] = useState({});
+	const [loading, setLoading] = useState(true);
 
 	useEffect(() => {
 		dispatch(
@@ -73,13 +75,11 @@ function SalesTable({ data, showDetails = true }) {
 		);
 	}, []);
 
-	const [loading, setLoading] = useState(true);
 	useEffect(() => {
 		setTimeout(() => {
 			setLoading(false);
 		}, 500);
 	}, [loading]);
-	const [salesViewData, setSalesViewData] = useState({});
 
 	useEffect(() => {
 		setSalesViewData(indexData?.data?.data[0]);
@@ -111,7 +111,7 @@ function SalesTable({ data, showDetails = true }) {
 
 	useEffect(() => {
 		fetchData();
-	}, [salesFilterData, page, isOnline]);
+	}, [salesFilterData, page, isOnline, data]);
 
 	useHotkeys(
 		[
@@ -197,7 +197,7 @@ function SalesTable({ data, showDetails = true }) {
 				} else if (getIndexEntityData.fulfilled.match(resultAction)) {
 					setIndexData(resultAction?.payload);
 				}
-			} else {
+			} else if (!data) {
 				const result = await window.dbAPI.getDataFromTable("sales");
 				let filteredData = [...result];
 
@@ -257,6 +257,13 @@ function SalesTable({ data, showDetails = true }) {
 					data: {
 						data: paginatedData,
 						total: totalRecords,
+					},
+				});
+			} else {
+				console.log(data.data?.data);
+				setIndexData({
+					data: {
+						data: data.data?.data || [],
 					},
 				});
 			}
