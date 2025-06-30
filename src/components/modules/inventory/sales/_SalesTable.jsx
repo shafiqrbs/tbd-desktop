@@ -44,7 +44,7 @@ import { notifications } from "@mantine/notifications";
 import { showNotificationComponent } from "../../../core-component/showNotificationComponent";
 import SalesPrintThermal from "./print-component/SalesPrintThermal.jsx";
 
-function SalesTable() {
+function SalesTable({ data, showDetails = true }) {
 	const salesFilterData = useSelector((state) => state.crudSlice.data?.sales?.filters?.sales);
 	const entityDataDelete = useSelector((state) => state.crudSlice.data?.sales?.deleteData);
 	const navigate = useNavigate();
@@ -61,7 +61,7 @@ function SalesTable() {
 	const [selectedRow, setSelectedRow] = useState("");
 	const [printA4, setPrintA4] = useState(false);
 	const [checked, setChecked] = useState(false);
-	const [indexData, setIndexData] = useState([]);
+	const [indexData, setIndexData] = useState(data || []);
 	const [fetching, setFetching] = useState(true);
 
 	useEffect(() => {
@@ -378,7 +378,7 @@ function SalesTable() {
 			</Box>
 			<Box>
 				<Grid columns={24} gutter={{ base: 8 }}>
-					<Grid.Col span={15}>
+					<Grid.Col span={showDetails ? 15 : 24}>
 						<Box bg={"white"} p={"xs"} className={"borderRadiusAll"}>
 							<Box className={"borderRadiusAll"}>
 								<DataTable
@@ -735,340 +735,356 @@ function SalesTable() {
 						</Box>
 					</Grid.Col>
 
-					<Grid.Col span={8}>
-						<Box
-							bg={"white"}
-							p={"xs"}
-							className={"borderRadiusAll"}
-							ref={printRef}
-							pos="relative"
-						>
-							{loading && (
-								<LoadingOverlay
-									visible={loading}
-									zIndex={1000}
-									overlayProps={{ radius: "sm", blur: 2 }}
-									loaderProps={{ color: "red" }}
-								/>
-							)}
-							<Box
-								h={"36"}
-								pl={`xs`}
-								fz={"sm"}
-								fw={"600"}
-								pr={8}
-								pt={"6"}
-								mb={"4"}
-								className={"boxBackground textColor borderRadiusAll"}
-							>
-								{t("Invoice")}:{" "}
-								{salesViewData && salesViewData.invoice && salesViewData.invoice}
-							</Box>
-							<Box className={"borderRadiusAll"} fz={"sm"}>
-								<ScrollArea h={122} type="never">
+					{showDetails && (
+						<>
+							{" "}
+							<Grid.Col span={8}>
+								<Box
+									bg={"white"}
+									p={"xs"}
+									className={"borderRadiusAll"}
+									ref={printRef}
+									pos="relative"
+								>
+									{loading && (
+										<LoadingOverlay
+											visible={loading}
+											zIndex={1000}
+											overlayProps={{ radius: "sm", blur: 2 }}
+											loaderProps={{ color: "red" }}
+										/>
+									)}
 									<Box
+										h={"36"}
 										pl={`xs`}
 										fz={"sm"}
 										fw={"600"}
-										pr={"xs"}
+										pr={8}
 										pt={"6"}
-										pb={"xs"}
-										className={"boxBackground textColor"}
+										mb={"4"}
+										className={"boxBackground textColor borderRadiusAll"}
 									>
-										<Grid gutter={{ base: 4 }}>
-											<Grid.Col span={"6"}>
-												<Grid columns={15} gutter={{ base: 4 }}>
-													<Grid.Col span={6}>
-														<Text fz="sm" lh="xs">
-															{t("Customer")}
-														</Text>
-													</Grid.Col>
-													<Grid.Col span={9}>
-														<Text fz="sm" lh="xs">
-															{salesViewData &&
-																salesViewData.customerName &&
-																salesViewData.customerName}
-														</Text>
-													</Grid.Col>
-												</Grid>
-												<Grid columns={15} gutter={{ base: 4 }}>
-													<Grid.Col span={6}>
-														<Text fz="sm" lh="xs">
-															{t("Mobile")}
-														</Text>
-													</Grid.Col>
-													<Grid.Col span={9}>
-														<Text fz="sm" lh="xs">
-															{salesViewData &&
-																salesViewData.customerMobile &&
-																salesViewData.customerMobile}
-														</Text>
-													</Grid.Col>
-												</Grid>
-												<Grid columns={15} gutter={{ base: 4 }}>
-													<Grid.Col span={6}>
-														<Text fz="sm" lh="xs">
-															{t("Address")}
-														</Text>
-													</Grid.Col>
-													<Grid.Col span={9}>
-														<Text fz="sm" lh="xs">
-															{salesViewData &&
-																salesViewData.customer_address &&
-																salesViewData.customer_address}
-														</Text>
-													</Grid.Col>
-												</Grid>
-												<Grid columns={15} gutter={{ base: 4 }}>
-													<Grid.Col span={6}>
-														<Text fz="sm" lh="xs">
-															{t("Balance")}
-														</Text>
-													</Grid.Col>
-													<Grid.Col span={9}>
-														<Text fz="sm" lh="xs">
-															{salesViewData && salesViewData.balance
-																? Number(
-																		salesViewData.balance
-																  ).toFixed(2)
-																: 0.0}
-														</Text>
-													</Grid.Col>
-												</Grid>
-											</Grid.Col>
-											<Grid.Col span={"6"}>
-												<Grid columns={15} gutter={{ base: 4 }}>
-													<Grid.Col span={6}>
-														<Text fz="sm" lh="xs">
-															{t("Created")}
-														</Text>
-													</Grid.Col>
-													<Grid.Col span={9}>
-														<Text fz="sm" lh="xs">
-															{salesViewData &&
-																salesViewData.created &&
-																salesViewData.created}
-														</Text>
-													</Grid.Col>
-												</Grid>
-												<Grid columns={15} gutter={{ base: 4 }}>
-													<Grid.Col span={6}>
-														<Text fz="sm" lh="xs">
-															{t("CreatedBy")}
-														</Text>
-													</Grid.Col>
-													<Grid.Col span={9}>
-														<Text fz="sm" lh="xs">
-															{salesViewData &&
-																salesViewData.createdByName &&
-																salesViewData.createdByName}
-														</Text>
-													</Grid.Col>
-												</Grid>
-												<Grid columns={15} gutter={{ base: 4 }}>
-													<Grid.Col span={6}>
-														<Text fz="sm" lh="xs">
-															{t("SalesBy")}
-														</Text>
-													</Grid.Col>
-													<Grid.Col span={9}>
-														<Text fz="sm" lh="xs">
-															{salesViewData &&
-																salesViewData.salesByUser &&
-																salesViewData.salesByUser}
-														</Text>
-													</Grid.Col>
-												</Grid>
-												<Grid columns={15} gutter={{ base: 4 }}>
-													<Grid.Col span={6}>
-														<Text fz="sm" lh="xs">
-															{t("Mode")}
-														</Text>
-													</Grid.Col>
-													<Grid.Col span={9}>
-														<Text fz="sm" lh="xs">
-															{salesViewData &&
-																salesViewData.mode_name &&
-																salesViewData.mode_name}
-														</Text>
-													</Grid.Col>
-												</Grid>
-												<Grid columns={15} gutter={{ base: 4 }}>
-													<Grid.Col span={6}>
-														<Text fz="sm" lh="xs">
-															{t("Process")}
-														</Text>
-													</Grid.Col>
-													<Grid.Col span={9}>
-														<Text fz="sm" lh="xs">
-															{salesViewData &&
-																salesViewData.process &&
-																salesViewData.process}
-														</Text>
-													</Grid.Col>
-												</Grid>
-											</Grid.Col>
-										</Grid>
+										{t("Invoice")}:{" "}
+										{salesViewData &&
+											salesViewData.invoice &&
+											salesViewData.invoice}
 									</Box>
-								</ScrollArea>
-								<ScrollArea h={height} scrollbarSize={2} type="never">
-									<Box>
-										<Table stickyHeader>
-											<Table.Thead>
-												<Table.Tr>
-													<Table.Th fz="xs" w={"20"}>
-														{t("S/N")}
-													</Table.Th>
-													<Table.Th fz="xs" ta="left" w={"300"}>
-														{t("Name")}
-													</Table.Th>
-													<Table.Th fz="xs" ta="center" w={"60"}>
-														{t("QTY")}
-													</Table.Th>
-													<Table.Th ta="right" fz="xs" w={"80"}>
-														{t("UOM")}
-													</Table.Th>
-													<Table.Th ta="right" fz="xs" w={"80"}>
-														{t("Price")}
-													</Table.Th>
-													<Table.Th ta="right" fz="xs" w={"100"}>
-														{t("SubTotal")}
-													</Table.Th>
-												</Table.Tr>
-											</Table.Thead>
-											<Table.Tbody>{rows}</Table.Tbody>
-											<Table.Tfoot>
-												<Table.Tr>
-													<Table.Th
-														colSpan={"5"}
-														ta="right"
-														fz="xs"
-														w={"100"}
-													>
-														{t("SubTotal")}
-													</Table.Th>
-													<Table.Th ta="right" fz="xs" w={"100"}>
-														{salesViewData &&
-															salesViewData.sub_total &&
-															Number(salesViewData.sub_total).toFixed(
-																2
-															)}
-													</Table.Th>
-												</Table.Tr>
-												<Table.Tr>
-													<Table.Th
-														colSpan={"5"}
-														ta="right"
-														fz="xs"
-														w={"100"}
-													>
-														{t("Discount")}
-													</Table.Th>
-													<Table.Th ta="right" fz="xs" w={"100"}>
-														{salesViewData &&
-															salesViewData.discount &&
-															Number(salesViewData.discount).toFixed(
-																2
-															)}
-													</Table.Th>
-												</Table.Tr>
-												<Table.Tr>
-													<Table.Th
-														colSpan={"5"}
-														ta="right"
-														fz="xs"
-														w={"100"}
-													>
-														{t("Total")}
-													</Table.Th>
-													<Table.Th ta="right" fz="xs" w={"100"}>
-														{salesViewData &&
-															salesViewData.total &&
-															Number(salesViewData.total).toFixed(2)}
-													</Table.Th>
-												</Table.Tr>
-												<Table.Tr>
-													<Table.Th
-														colSpan={"5"}
-														ta="right"
-														fz="xs"
-														w={"100"}
-													>
-														{t("Receive")}
-													</Table.Th>
-													<Table.Th ta="right" fz="xs" w={"100"}>
-														{salesViewData &&
-															salesViewData.payment &&
-															Number(salesViewData.payment).toFixed(
-																2
-															)}
-													</Table.Th>
-												</Table.Tr>
-												<Table.Tr>
-													<Table.Th
-														colSpan={"5"}
-														ta="right"
-														fz="xs"
-														w={"100"}
-													>
-														{t("Due")}
-													</Table.Th>
-													<Table.Th ta="right" fz="xs" w={"100"}>
-														{salesViewData &&
-															salesViewData.total &&
-															(
-																Number(salesViewData.total) -
-																Number(salesViewData.payment)
-															).toFixed(2)}
-													</Table.Th>
-												</Table.Tr>
-											</Table.Tfoot>
-										</Table>
+									<Box className={"borderRadiusAll"} fz={"sm"}>
+										<ScrollArea h={122} type="never">
+											<Box
+												pl={`xs`}
+												fz={"sm"}
+												fw={"600"}
+												pr={"xs"}
+												pt={"6"}
+												pb={"xs"}
+												className={"boxBackground textColor"}
+											>
+												<Grid gutter={{ base: 4 }}>
+													<Grid.Col span={"6"}>
+														<Grid columns={15} gutter={{ base: 4 }}>
+															<Grid.Col span={6}>
+																<Text fz="sm" lh="xs">
+																	{t("Customer")}
+																</Text>
+															</Grid.Col>
+															<Grid.Col span={9}>
+																<Text fz="sm" lh="xs">
+																	{salesViewData &&
+																		salesViewData.customerName &&
+																		salesViewData.customerName}
+																</Text>
+															</Grid.Col>
+														</Grid>
+														<Grid columns={15} gutter={{ base: 4 }}>
+															<Grid.Col span={6}>
+																<Text fz="sm" lh="xs">
+																	{t("Mobile")}
+																</Text>
+															</Grid.Col>
+															<Grid.Col span={9}>
+																<Text fz="sm" lh="xs">
+																	{salesViewData &&
+																		salesViewData.customerMobile &&
+																		salesViewData.customerMobile}
+																</Text>
+															</Grid.Col>
+														</Grid>
+														<Grid columns={15} gutter={{ base: 4 }}>
+															<Grid.Col span={6}>
+																<Text fz="sm" lh="xs">
+																	{t("Address")}
+																</Text>
+															</Grid.Col>
+															<Grid.Col span={9}>
+																<Text fz="sm" lh="xs">
+																	{salesViewData &&
+																		salesViewData.customer_address &&
+																		salesViewData.customer_address}
+																</Text>
+															</Grid.Col>
+														</Grid>
+														<Grid columns={15} gutter={{ base: 4 }}>
+															<Grid.Col span={6}>
+																<Text fz="sm" lh="xs">
+																	{t("Balance")}
+																</Text>
+															</Grid.Col>
+															<Grid.Col span={9}>
+																<Text fz="sm" lh="xs">
+																	{salesViewData &&
+																	salesViewData.balance
+																		? Number(
+																				salesViewData.balance
+																		  ).toFixed(2)
+																		: 0.0}
+																</Text>
+															</Grid.Col>
+														</Grid>
+													</Grid.Col>
+													<Grid.Col span={"6"}>
+														<Grid columns={15} gutter={{ base: 4 }}>
+															<Grid.Col span={6}>
+																<Text fz="sm" lh="xs">
+																	{t("Created")}
+																</Text>
+															</Grid.Col>
+															<Grid.Col span={9}>
+																<Text fz="sm" lh="xs">
+																	{salesViewData &&
+																		salesViewData.created &&
+																		salesViewData.created}
+																</Text>
+															</Grid.Col>
+														</Grid>
+														<Grid columns={15} gutter={{ base: 4 }}>
+															<Grid.Col span={6}>
+																<Text fz="sm" lh="xs">
+																	{t("CreatedBy")}
+																</Text>
+															</Grid.Col>
+															<Grid.Col span={9}>
+																<Text fz="sm" lh="xs">
+																	{salesViewData &&
+																		salesViewData.createdByName &&
+																		salesViewData.createdByName}
+																</Text>
+															</Grid.Col>
+														</Grid>
+														<Grid columns={15} gutter={{ base: 4 }}>
+															<Grid.Col span={6}>
+																<Text fz="sm" lh="xs">
+																	{t("SalesBy")}
+																</Text>
+															</Grid.Col>
+															<Grid.Col span={9}>
+																<Text fz="sm" lh="xs">
+																	{salesViewData &&
+																		salesViewData.salesByUser &&
+																		salesViewData.salesByUser}
+																</Text>
+															</Grid.Col>
+														</Grid>
+														<Grid columns={15} gutter={{ base: 4 }}>
+															<Grid.Col span={6}>
+																<Text fz="sm" lh="xs">
+																	{t("Mode")}
+																</Text>
+															</Grid.Col>
+															<Grid.Col span={9}>
+																<Text fz="sm" lh="xs">
+																	{salesViewData &&
+																		salesViewData.mode_name &&
+																		salesViewData.mode_name}
+																</Text>
+															</Grid.Col>
+														</Grid>
+														<Grid columns={15} gutter={{ base: 4 }}>
+															<Grid.Col span={6}>
+																<Text fz="sm" lh="xs">
+																	{t("Process")}
+																</Text>
+															</Grid.Col>
+															<Grid.Col span={9}>
+																<Text fz="sm" lh="xs">
+																	{salesViewData &&
+																		salesViewData.process &&
+																		salesViewData.process}
+																</Text>
+															</Grid.Col>
+														</Grid>
+													</Grid.Col>
+												</Grid>
+											</Box>
+										</ScrollArea>
+										<ScrollArea h={height} scrollbarSize={2} type="never">
+											<Box>
+												<Table stickyHeader>
+													<Table.Thead>
+														<Table.Tr>
+															<Table.Th fz="xs" w={"20"}>
+																{t("S/N")}
+															</Table.Th>
+															<Table.Th fz="xs" ta="left" w={"300"}>
+																{t("Name")}
+															</Table.Th>
+															<Table.Th fz="xs" ta="center" w={"60"}>
+																{t("QTY")}
+															</Table.Th>
+															<Table.Th ta="right" fz="xs" w={"80"}>
+																{t("UOM")}
+															</Table.Th>
+															<Table.Th ta="right" fz="xs" w={"80"}>
+																{t("Price")}
+															</Table.Th>
+															<Table.Th ta="right" fz="xs" w={"100"}>
+																{t("SubTotal")}
+															</Table.Th>
+														</Table.Tr>
+													</Table.Thead>
+													<Table.Tbody>{rows}</Table.Tbody>
+													<Table.Tfoot>
+														<Table.Tr>
+															<Table.Th
+																colSpan={"5"}
+																ta="right"
+																fz="xs"
+																w={"100"}
+															>
+																{t("SubTotal")}
+															</Table.Th>
+															<Table.Th ta="right" fz="xs" w={"100"}>
+																{salesViewData &&
+																	salesViewData.sub_total &&
+																	Number(
+																		salesViewData.sub_total
+																	).toFixed(2)}
+															</Table.Th>
+														</Table.Tr>
+														<Table.Tr>
+															<Table.Th
+																colSpan={"5"}
+																ta="right"
+																fz="xs"
+																w={"100"}
+															>
+																{t("Discount")}
+															</Table.Th>
+															<Table.Th ta="right" fz="xs" w={"100"}>
+																{salesViewData &&
+																	salesViewData.discount &&
+																	Number(
+																		salesViewData.discount
+																	).toFixed(2)}
+															</Table.Th>
+														</Table.Tr>
+														<Table.Tr>
+															<Table.Th
+																colSpan={"5"}
+																ta="right"
+																fz="xs"
+																w={"100"}
+															>
+																{t("Total")}
+															</Table.Th>
+															<Table.Th ta="right" fz="xs" w={"100"}>
+																{salesViewData &&
+																	salesViewData.total &&
+																	Number(
+																		salesViewData.total
+																	).toFixed(2)}
+															</Table.Th>
+														</Table.Tr>
+														<Table.Tr>
+															<Table.Th
+																colSpan={"5"}
+																ta="right"
+																fz="xs"
+																w={"100"}
+															>
+																{t("Receive")}
+															</Table.Th>
+															<Table.Th ta="right" fz="xs" w={"100"}>
+																{salesViewData &&
+																	salesViewData.payment &&
+																	Number(
+																		salesViewData.payment
+																	).toFixed(2)}
+															</Table.Th>
+														</Table.Tr>
+														<Table.Tr>
+															<Table.Th
+																colSpan={"5"}
+																ta="right"
+																fz="xs"
+																w={"100"}
+															>
+																{t("Due")}
+															</Table.Th>
+															<Table.Th ta="right" fz="xs" w={"100"}>
+																{salesViewData &&
+																	salesViewData.total &&
+																	(
+																		Number(
+																			salesViewData.total
+																		) -
+																		Number(
+																			salesViewData.payment
+																		)
+																	).toFixed(2)}
+															</Table.Th>
+														</Table.Tr>
+													</Table.Tfoot>
+												</Table>
+											</Box>
+										</ScrollArea>
 									</Box>
-								</ScrollArea>
-							</Box>
-							<Button.Group mb={"1"}>
-								<Button
-									fullWidth={true}
-									variant="filled"
-									leftSection={<IconPrinter size={14} />}
-									color="green.5"
-									onClick={() => {
-										setPrintA4(true);
-									}}
-								>
-									{t("Print")}
-								</Button>
-								<SalesPrintThermal
-									salesViewData={salesViewData}
-									salesItems={salesItems}
-								/>
-								{!checked && isOnline && (
-									<Button
-										onClick={() =>
-											navigate(`/inventory/sales/edit/${salesViewData?.id}`)
-										}
-										component="a"
-										fullWidth={true}
-										variant="filled"
-										leftSection={<IconEdit size={14} />}
-										color="cyan.5"
-									>
-										{t("Edit")}
-									</Button>
-								)}
-							</Button.Group>
-						</Box>
-					</Grid.Col>
-					<Grid.Col span={1}>
-						<Box bg={"white"} className={"borderRadiusAll"} pt={"16"}>
-							<__ShortcutTable
-								form=""
-								FormSubmit={"EntityFormSubmit"}
-								Name={"CompanyName"}
-							/>
-						</Box>
-					</Grid.Col>
+									<Button.Group mb={"1"}>
+										<Button
+											fullWidth={true}
+											variant="filled"
+											leftSection={<IconPrinter size={14} />}
+											color="green.5"
+											onClick={() => {
+												setPrintA4(true);
+											}}
+										>
+											{t("Print")}
+										</Button>
+										<SalesPrintThermal
+											salesViewData={salesViewData}
+											salesItems={salesItems}
+										/>
+										{!checked && isOnline && (
+											<Button
+												onClick={() =>
+													navigate(
+														`/inventory/sales/edit/${salesViewData?.id}`
+													)
+												}
+												component="a"
+												fullWidth={true}
+												variant="filled"
+												leftSection={<IconEdit size={14} />}
+												color="cyan.5"
+											>
+												{t("Edit")}
+											</Button>
+										)}
+									</Button.Group>
+								</Box>
+							</Grid.Col>
+							<Grid.Col span={1}>
+								<Box bg={"white"} className={"borderRadiusAll"} pt={"16"}>
+									<__ShortcutTable
+										form=""
+										FormSubmit={"EntityFormSubmit"}
+										Name={"CompanyName"}
+									/>
+								</Box>
+							</Grid.Col>
+						</>
+					)}
 				</Grid>
 			</Box>
 			{printA4 && (
