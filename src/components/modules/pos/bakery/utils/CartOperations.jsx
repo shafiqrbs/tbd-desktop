@@ -30,9 +30,7 @@ export const useCartOperations = ({
 
 	const getCartProducts = async () => {
 		try {
-			const cartProducts = await window.dbAPI.getDataFromTable("invoice_table_item", {
-				invoice_id: tableId,
-			});
+			const cartProducts = await window.dbAPI.getDataFromTable("invoice_table_item");
 
 			return cartProducts;
 		} catch (error) {
@@ -50,11 +48,7 @@ export const useCartOperations = ({
 				// Update both table status and tables state
 				updateTableStatus("Free");
 				if (tables && setTables) {
-					setTables(
-						tables.map((table) =>
-							table.id === tableId ? { ...table, status: "Free" } : table
-						)
-					);
+					setTables(tables.map((table) => (table.id === tableId ? { ...table, status: "Free" } : table)));
 				}
 			}
 		},
@@ -64,6 +58,7 @@ export const useCartOperations = ({
 	const handleIncrement = useCallback(
 		async (productId) => {
 			let product = products?.find((p) => p.id == productId);
+
 			if (!products) {
 				const allProducts = await window.dbAPI.getDataFromTable("core_products");
 				product = allProducts.find((p) => p.id == productId);
@@ -101,11 +96,13 @@ export const useCartOperations = ({
 					let newSubTotal = 0;
 					const [invoiceTableItem, invoiceTable] = await Promise.all([
 						window.dbAPI.getDataFromTable("invoice_table_item", {
-							invoice_id: tableId,
+							// invoice_id: tableId ? tableId : undefined,
 							stock_item_id: product.id,
 						}),
 						window.dbAPI.getDataFromTable("invoice_table", tableId),
 					]);
+
+					console.log("InvoiceTableItem: ", invoiceTableItem);
 
 					if (invoiceTableItem?.length) {
 						const updatedQuantity = invoiceTableItem[0].quantity + 1;
@@ -117,7 +114,10 @@ export const useCartOperations = ({
 						const deltaSubTotal = updatedSubTotal - invoiceTableItem[0].sub_total;
 
 						await window.dbAPI.updateDataInTable("invoice_table_item", {
-							condition: { invoice_id: tableId, stock_item_id: product.id },
+							condition: {
+								// invoice_id: tableId ? tableId : undefined,
+								stock_item_id: product.id,
+							},
 							data: {
 								stock_item_id: product.id,
 								invoice_id: tableId,
@@ -130,14 +130,10 @@ export const useCartOperations = ({
 						});
 						newSubTotal = deltaSubTotal;
 					} else {
-						const subTotal = calculateSubTotalWithVAT(
-							product.sales_price,
-							1,
-							vatConfig
-						);
+						const subTotal = calculateSubTotalWithVAT(product.sales_price, 1, vatConfig);
 						await window.dbAPI.upsertIntoTable("invoice_table_item", {
 							stock_item_id: product.id,
-							invoice_id: tableId,
+							// invoice_id: tableId ? tableId : undefined,
 							quantity: 1,
 							purchase_price: 0,
 							sales_price: product.sales_price,
@@ -161,6 +157,7 @@ export const useCartOperations = ({
 				console.error("Error updating invoice:", error);
 			} finally {
 				setReloadInvoiceData(true);
+				setLoadCartProducts((prev) => !prev);
 			}
 		},
 		[products, tableId, dispatch, setReloadInvoiceData, isOnline]
@@ -206,7 +203,7 @@ export const useCartOperations = ({
 					let newSubTotal = 0;
 					const [invoiceTableItem, invoiceTable] = await Promise.all([
 						window.dbAPI.getDataFromTable("invoice_table_item", {
-							invoice_id: tableId,
+							// invoice_id: tableId ? tableId : undefined,
 							stock_item_id: product.id,
 						}),
 						window.dbAPI.getDataFromTable("invoice_table", tableId),
@@ -226,10 +223,13 @@ export const useCartOperations = ({
 						const deltaSubTotal = updatedSubTotal - invoiceTableItem[0].sub_total;
 
 						await window.dbAPI.updateDataInTable("invoice_table_item", {
-							condition: { invoice_id: tableId, stock_item_id: product.id },
+							condition: {
+								// invoice_id: tableId ? tableId : undefined,
+								stock_item_id: product.id,
+							},
 							data: {
 								stock_item_id: product.id,
-								invoice_id: tableId,
+								// invoice_id: tableId ? tableId : undefined,
 								quantity: updatedQuantity,
 								purchase_price: product.purchase_price,
 								sales_price: product.sales_price,
@@ -253,22 +253,24 @@ export const useCartOperations = ({
 				console.error("Error updating invoice:", error);
 			} finally {
 				setReloadInvoiceData(true);
+				setLoadCartProducts((prev) => !prev);
 			}
 		},
 		[products, tableId, dispatch, setReloadInvoiceData, isOnline]
 	);
 
 	const handleDelete = async (productId) => {
+		console.log("I am here");
 		const myCartProducts = await getCartProducts();
 
 		if (!myCartProducts.length) return;
-
+		console.log(productId, myCartProducts);
 		if (isOnline) {
 			try {
 				const data = {
 					url: "inventory/pos/inline-update",
 					data: {
-						invoice_id: tableId,
+						// invoice_id: tableId ? tableId : undefined,
 						field_name: "items",
 						value: [],
 					},
@@ -292,15 +294,17 @@ export const useCartOperations = ({
 		} else {
 			const [invoiceTableItem, invoiceTable] = await Promise.all([
 				window.dbAPI.getDataFromTable("invoice_table_item", {
-					invoice_id: tableId,
+					// invoice_id: tableId,
 					stock_item_id: productId,
 				}),
 				window.dbAPI.getDataFromTable("invoice_table", tableId),
 			]);
 
+			console.log("stock_item_id: ", productId);
+
 			await Promise.all([
 				window.dbAPI.deleteDataFromTable("invoice_table_item", {
-					invoice_id: tableId,
+					// invoice_id: tableId ? tableId : undefined,
 					stock_item_id: productId,
 				}),
 				window.dbAPI.updateDataInTable("invoice_table", {
@@ -322,7 +326,7 @@ export const useCartOperations = ({
 		});
 
 		updateTableStatusIfNeeded(myCartProducts.length - 1);
-		setLoadCartProducts(true);
+		setLoadCartProducts((prev) => !prev);
 		setReloadInvoiceData(true);
 	};
 
@@ -331,23 +335,11 @@ export const useCartOperations = ({
 		if (enableTable && tableId) {
 			updateTableStatus("Free");
 			if (tables && setTables) {
-				setTables(
-					tables.map((table) =>
-						table.id === tableId ? { ...table, status: "Free" } : table
-					)
-				);
+				setTables(tables.map((table) => (table.id === tableId ? { ...table, status: "Free" } : table)));
 			}
 		}
 		setLoadCartProducts(true);
-	}, [
-		getStorageKey,
-		enableTable,
-		tableId,
-		updateTableStatus,
-		tables,
-		setTables,
-		setLoadCartProducts,
-	]);
+	}, [getStorageKey, enableTable, tableId, updateTableStatus, tables, setTables, setLoadCartProducts]);
 
 	return {
 		handleIncrement,

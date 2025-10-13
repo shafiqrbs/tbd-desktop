@@ -22,7 +22,7 @@ export default function SalesModal() {
 		},
 	});
 
-	// indexData.data.data // i am getting sales data here in an array of objects
+	// indexData.data.data
 
 	// 	{
 	//     "id": 15,
@@ -94,17 +94,11 @@ export default function SalesModal() {
 				customer_id: salesFilterData?.customer_id || "",
 				start_date:
 					(salesFilterData?.start_date &&
-						new Date(salesFilterData?.start_date).toLocaleDateString(
-							"en-CA",
-							options
-						)) ||
+						new Date(salesFilterData?.start_date).toLocaleDateString("en-CA", options)) ||
 					"",
 				end_date:
 					(salesFilterData?.end_date &&
-						new Date(salesFilterData?.end_date || Date.now()).toLocaleDateString(
-							"en-CA",
-							options
-						)) ||
+						new Date(salesFilterData?.end_date || Date.now()).toLocaleDateString("en-CA", options)) ||
 					"",
 				page: page,
 				offset: perPage,

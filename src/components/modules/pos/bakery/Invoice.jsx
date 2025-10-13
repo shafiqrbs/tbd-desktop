@@ -72,9 +72,7 @@ export default function Invoice({
 	const [additionalTableSelections, setAdditionalTableSelections] = useState({});
 	const [checked, setChecked] = useState(false);
 
-	const [transactionModeId, setTransactionModeId] = useState(
-		invoiceData?.transaction_mode_id || ""
-	);
+	const [transactionModeId, setTransactionModeId] = useState(invoiceData?.transaction_mode_id || "");
 	const [transactionModeName, setTransactionModeName] = useState(null);
 	const currentTableKey = tableId || "general";
 	const currentTableSplitPayments = tableSplitPaymentMap[currentTableKey] || [];
@@ -184,7 +182,34 @@ export default function Invoice({
 				[tableId]: new Set(),
 			}));
 		}
+		setCurrentPaymentInput(invoiceData?.payment || "");
 	}, [tableId]);
+
+	useEffect(() => {
+		const loadAllItemsWhenNoTableSelected = async () => {
+			if (tableId) return;
+			try {
+				const allItems = await window.dbAPI.getDataFromTable("invoice_table_item");
+				const aggregatedSubTotal = Array.isArray(allItems)
+					? allItems.reduce((sum, item) => sum + Number(item?.sub_total || 0), 0)
+					: 0;
+
+				setInvoiceData({
+					id: null,
+					invoice_items: Array.isArray(allItems) ? allItems : [],
+					sub_total: aggregatedSubTotal,
+					payment: 0,
+					discount: 0,
+					discount_type: "Percent",
+					transaction_mode_id: "",
+				});
+			} catch (error) {
+				console.error("Failed to load invoice items without table:", error);
+			}
+		};
+
+		loadAllItemsWhenNoTableSelected();
+	}, [tableId, loadCartProducts, setInvoiceData]);
 
 	useEffect(() => {
 		const fetchCustomers = async () => {
@@ -211,13 +236,7 @@ export default function Invoice({
 	}, [refreshCustomerDropdown]);
 
 	useEffect(() => {
-		if (
-			enableTable &&
-			tableId &&
-			customerId &&
-			customerObject &&
-			Object.keys(customerObject).length > 0
-		) {
+		if (enableTable && tableId && customerId && customerObject && Object.keys(customerObject).length > 0) {
 			updateTableCustomer(tableId, customerId, customerObject);
 			// Update invoiceData with the new customer ID
 			setInvoiceData((prev) => ({
@@ -233,24 +252,15 @@ export default function Invoice({
 	}, [currentTableKey, tableReceiveAmounts]);
 
 	useEffect(() => {
-		setCurrentPaymentInput(invoiceData?.payment || "");
-	}, [tableId]);
-
-	useEffect(() => {
 		if (invoiceData) {
 			setDiscountType(invoiceData.discount_type || "Percent");
 			setSalesTotalAmount(invoiceData.sub_total || 0);
-			setSalesTotalWithoutDiscountAmount(
-				(invoiceData.sub_total || 0) - (invoiceData.discount || 0)
-			);
+			setSalesTotalWithoutDiscountAmount((invoiceData.sub_total || 0) - (invoiceData.discount || 0));
 
 			setSalesDueAmount(
-				(invoiceData.sub_total || 0) -
-					((Number(currentPaymentInput) || 0) + (invoiceData.discount || 0))
+				(invoiceData.sub_total || 0) - ((Number(currentPaymentInput) || 0) + (invoiceData.discount || 0))
 			);
-			setReturnOrDueText(
-				(invoiceData.sub_total || 0) > (Number(currentPaymentInput) || 0) ? "Due" : "Return"
-			);
+			setReturnOrDueText((invoiceData.sub_total || 0) > (Number(currentPaymentInput) || 0) ? "Due" : "Return");
 
 			setTransactionModeId(invoiceData?.transaction_mode_id || "");
 			// =============== set form value for transaction mode id ================
@@ -287,10 +297,7 @@ export default function Invoice({
 		updateTableSplitPayment(currentTableKey, splitPayments);
 
 		// =============== calculate total paid amount from split payments ================
-		const totalPaidAmount = splitPayments.reduce(
-			(sum, payment) => sum + Number(payment.partial_amount),
-			0
-		);
+		const totalPaidAmount = splitPayments.reduce((sum, payment) => sum + Number(payment.partial_amount), 0);
 
 		// =============== update due amount and return text ================
 		// =============== calculate based on total amount minus discount minus split payments ================
@@ -347,9 +354,7 @@ export default function Invoice({
 		if (!tableId) return;
 
 		setTables((prevTables) =>
-			prevTables.map((table) =>
-				table.id === tableId ? { ...table, status: newStatus } : table
-			)
+			prevTables.map((table) => (table.id === tableId ? { ...table, status: newStatus } : table))
 		);
 	};
 
@@ -545,6 +550,7 @@ export default function Invoice({
 	const handleTransactionModel = async (id, name) => {
 		setTransactionModeId(id);
 		setTransactionModeName(name);
+		setInvoiceData((prev) => ({ ...prev, transaction_mode_id: id }));
 		form.setFieldValue("transaction_mode_id", id);
 		// =============== clear form errors for transaction mode ================
 		form.setErrors({ ...form.errors, transaction_mode_id: null });
@@ -632,12 +638,7 @@ export default function Invoice({
 
 	return (
 		<ScrollArea h={enableTable ? height + 160 : height + 200}>
-			<Box
-				w="100%"
-				p={10}
-				className={classes["box-white"]}
-				style={{ display: "flex", flexDirection: "column" }}
-			>
+			<Box w="100%" p={10} className={classes["box-white"]} style={{ display: "flex", flexDirection: "column" }}>
 				<Box>
 					<Paper h={32} p="4" radius="4" bg={checked ? "green.8" : "green.0"}>
 						<Grid align="center">
@@ -664,9 +665,7 @@ export default function Invoice({
 											checked={checked}
 											color="green.9"
 											iconColor="dark.8"
-											onChange={(event) =>
-												setChecked(event.currentTarget.checked)
-											}
+											onChange={(event) => setChecked(event.currentTarget.checked)}
 											styles={() => ({
 												input: {
 													borderColor: "green",
@@ -683,11 +682,7 @@ export default function Invoice({
 					</Paper>
 
 					{checked && (
-						<ScrollArea
-							h={{ base: "auto", sm: enableTable ? 50 : "auto" }}
-							type="never"
-							bg={"green.0"}
-						>
+						<ScrollArea h={{ base: "auto", sm: enableTable ? 50 : "auto" }} type="never" bg={"green.0"}>
 							<Paper p="md" radius="md" bg={"green.0"}>
 								<Grid columns={15} gutter="md">
 									{tables.map((item) => (
@@ -695,9 +690,7 @@ export default function Invoice({
 											<Checkbox
 												label={`Table ${item.id}`}
 												color="green.8"
-												checked={additionalTableSelections[tableId]?.has(
-													item.id
-												)}
+												checked={additionalTableSelections[tableId]?.has(item.id)}
 												onChange={() => handleAdditionalTableCheck(item.id)}
 												disabled={item.id === tableId}
 												styles={() => ({
@@ -745,9 +738,7 @@ export default function Invoice({
 							<IconSum size="16" style={{ color: "black" }} />
 							<Text fw={"bold"} fz={"sm"} c={"black"}>
 								{configData?.inventory_config?.currency?.symbol}{" "}
-								{salesTotalAmount && salesTotalAmount
-									? salesTotalAmount.toFixed(2)
-									: 0.0}
+								{salesTotalAmount && salesTotalAmount ? salesTotalAmount.toFixed(2) : 0.0}
 							</Text>
 						</Group>
 					</Group>

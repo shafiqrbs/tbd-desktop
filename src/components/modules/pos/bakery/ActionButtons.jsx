@@ -317,8 +317,7 @@ export default function ActionButtons({
 										{t("DIS.")}
 									</Text>
 									<Text fz={"sm"} fw={800} c={"black"}>
-										{configData?.inventory_config?.currency?.symbol}{" "}
-										{invoiceData?.discount || 0}
+										{configData?.inventory_config?.currency?.symbol} {invoiceData?.discount || 0}
 									</Text>
 								</Group>
 								<Group justify="space-between">
@@ -334,8 +333,7 @@ export default function ActionButtons({
 						<Grid.Col span={6}>
 							<Group justify="space-between">
 								<Text fz={"sm"} fw={500} c={"black"}>
-									{t("VAT")}{" "}
-									{configData?.inventory_config?.config_vat?.vat_percent}%
+									{t("VAT")} {configData?.inventory_config?.config_vat?.vat_percent}%
 								</Text>
 								<Text fz={"sm"} fw={800} c={"black"}>
 									{calculateVATAmount(
@@ -367,9 +365,7 @@ export default function ActionButtons({
 					>
 						<Text fw={800} c={"white"} size={"lg"}>
 							{configData?.inventory_config?.currency?.symbol}{" "}
-							{salesTotalWithoutDiscountAmount
-								? salesTotalWithoutDiscountAmount.toFixed(2)
-								: 0.0}
+							{salesTotalWithoutDiscountAmount ? salesTotalWithoutDiscountAmount.toFixed(2) : 0.0}
 						</Text>
 						<Text fw={500} c={"white"} size={"md"}>
 							{t("Total")}
@@ -405,10 +401,7 @@ export default function ActionButtons({
 				mb={4}
 				style={{
 					borderRadius: 4,
-					border:
-						form.errors.transaction_mode_id && !transactionModeId
-							? "1px solid red"
-							: "none",
+					border: form.errors.transaction_mode_id && !transactionModeId ? "1px solid red" : "none",
 				}}
 			>
 				<Grid.Col span={21} className={classes["box-border"]}>
@@ -416,9 +409,11 @@ export default function ActionButtons({
 						<ScrollArea
 							type="never"
 							pl={"1"}
+							scrollbars="x"
 							pr={"2"}
 							viewportRef={scrollRef}
 							onScrollPositionChange={handleScroll}
+							w={450}
 						>
 							<Tooltip
 								label={t("TransactionMode")}
@@ -435,15 +430,7 @@ export default function ActionButtons({
 									duration: 500,
 								}}
 							>
-								<Group
-									m={0}
-									pt={8}
-									pb={8}
-									justify="flex-start"
-									align="flex-start"
-									gap="0"
-									wrap="nowrap"
-								>
+								<Group m={0} py={8} justify="flex-start" align="flex-start" gap="0" wrap="nowrap">
 									{transactionModeData.map((mode, index) => (
 										<Box
 											onClick={() => {
@@ -457,11 +444,7 @@ export default function ActionButtons({
 											}}
 										>
 											<Flex
-												bg={
-													mode.id === transactionModeId
-														? "green.8"
-														: "white"
-												}
+												bg={mode.id === transactionModeId ? "green.8" : "white"}
 												direction="column"
 												align="center"
 												justify="center"
@@ -487,11 +470,7 @@ export default function ActionButtons({
 														h={48}
 														fit="fit"
 														alt={mode.name}
-														src={
-															isOnline
-																? mode.path
-																: `./transactions/${mode.name}.jpg`
-														}
+														src={isOnline ? mode.path : `./transactions/${mode.name}.jpg`}
 														fallbackSrc={`https://placehold.co/120x80/FFFFFF/2f9e44`}
 													/>
 												</Tooltip>
@@ -557,9 +536,7 @@ export default function ActionButtons({
 						}}
 					>
 						<ActionIcon
-							name={
-								isThisTableSplitPaymentActive ? "clearSplitPayment" : "splitPayment"
-							}
+							name={isThisTableSplitPaymentActive ? "clearSplitPayment" : "splitPayment"}
 							size="xl"
 							bg={isThisTableSplitPaymentActive ? "red.6" : "gray.8"}
 							variant="filled"
@@ -575,10 +552,7 @@ export default function ActionButtons({
 							{isThisTableSplitPaymentActive ? (
 								<IconX style={{ width: "70%", height: "70%" }} stroke={1.5} />
 							) : (
-								<IconScissors
-									style={{ width: "70%", height: "70%" }}
-									stroke={1.5}
-								/>
+								<IconScissors style={{ width: "70%", height: "70%" }} stroke={1.5} />
 							)}
 						</ActionIcon>
 					</Tooltip>
@@ -676,9 +650,7 @@ export default function ActionButtons({
 							>
 								<Stack gap={0}>
 									<Text fw={600} size="xs">
-										{customerObject && customerObject.name
-											? customerObject.name
-											: t("Customer")}
+										{customerObject && customerObject.name ? customerObject.name : t("Customer")}
 									</Text>
 									<Text size="xs">{customerObject && customerObject.mobile}</Text>
 								</Stack>
@@ -704,18 +676,12 @@ export default function ActionButtons({
 							<Button
 								fullWidth={true}
 								onClick={() =>
-									enableCoupon === "Coupon"
-										? setEnableCoupon("Discount")
-										: setEnableCoupon("Coupon")
+									enableCoupon === "Coupon" ? setEnableCoupon("Discount") : setEnableCoupon("Coupon")
 								}
 								variant="filled"
 								fz={"xs"}
 								leftSection={
-									enableCoupon === "Coupon" ? (
-										<IconTicket size={14} />
-									) : (
-										<IconPercentage size={14} />
-									)
+									enableCoupon === "Coupon" ? <IconTicket size={14} /> : <IconPercentage size={14} />
 								}
 								color="gray"
 							>
@@ -824,11 +790,7 @@ export default function ActionButtons({
 						>
 							<TextInput
 								type="number"
-								placeholder={
-									isThisTableSplitPaymentActive
-										? t("SplitPaymentActive")
-										: t("Amount")
-								}
+								placeholder={isThisTableSplitPaymentActive ? t("SplitPaymentActive") : t("Amount")}
 								value={currentPaymentInput}
 								error={form.errors.receive_amount}
 								size={"sm"}
@@ -857,14 +819,7 @@ export default function ActionButtons({
 							duration: 2000,
 						}}
 					>
-						<Button
-							bg={"white"}
-							variant="outline"
-							c={"black"}
-							color="gray"
-							size={"lg"}
-							fullWidth={true}
-						>
+						<Button bg={"white"} variant="outline" c={"black"} color="gray" size={"lg"} fullWidth={true}>
 							<Text size="md">{t("Hold")}</Text>
 						</Button>
 					</Tooltip>

@@ -64,6 +64,7 @@ export default function NewSales({
 	const [id, setId] = useState(null);
 	const { configData } = getConfigData();
 	const enableTable = !!(configData?.inventory_config?.is_pos && invoiceMode === "table");
+
 	const [loadCartProducts, setLoadCartProducts] = useState(false);
 
 	const [originalProducts, setOriginalProducts] = useState([]);
@@ -75,6 +76,7 @@ export default function NewSales({
 	const [barcode, setBarcode] = useState("");
 
 	const [isValidBarcode, setIsValidBarcode] = useState(true);
+	const [leftSide] = useState(false);
 
 	const handleBarcodeSearch = (code) => {
 		const product = products.find((p) => p.barcode === code || p.id.toString() === code);
@@ -181,9 +183,7 @@ export default function NewSales({
 		setTables((prevTables) =>
 			prevTables?.map((table) => {
 				if (table.status !== "Free" && table.currentStatusStartTime) {
-					const elapsedSeconds = Math.floor(
-						(new Date() - new Date(table.currentStatusStartTime)) / 1000
-					);
+					const elapsedSeconds = Math.floor((new Date() - new Date(table.currentStatusStartTime)) / 1000);
 					const hours = Math.floor(elapsedSeconds / 3600)
 						.toString()
 						.padStart(2, "0");
@@ -213,22 +213,22 @@ export default function NewSales({
 	});
 
 	const handleSelect = (productId) => {
-		if (!tableId) {
-			return notifications.show({
-				title: "Table not selected",
-				message: "Please select a table first",
-				color: "red",
-				autoClose: 2000,
-			});
-		}
+		// if (!tableId) {
+		// 	return notifications.show({
+		// 		title: "Table not selected",
+		// 		message: "Please select a table first",
+		// 		color: "red",
+		// 		autoClose: 2000,
+		// 	});
+		// }
 		setSelected((prevSelected) =>
 			prevSelected.includes(productId)
 				? prevSelected.filter((id) => id !== productId)
 				: [...prevSelected, productId]
 		);
-		setTimeout(() => {
-			setSelected([]);
-		}, 50);
+		// setTimeout(() => {
+		// 	setSelected([]);
+		// }, 50);
 	};
 
 	const filterProductsbyCategory = (id) => {
@@ -268,10 +268,7 @@ export default function NewSales({
 				{
 					label: (
 						<Center style={{ gap: 10 }}>
-							<Text
-								c={tableStatuses[tableId] === "Order" ? "black" : "white"}
-								fw={600}
-							>
+							<Text c={tableStatuses[tableId] === "Order" ? "black" : "white"} fw={600}>
 								{t("Order")}
 							</Text>
 						</Center>
@@ -281,10 +278,7 @@ export default function NewSales({
 				{
 					label: (
 						<Center style={{ gap: 10 }}>
-							<Text
-								c={tableStatuses[tableId] === "Kitchen" ? "black" : "white"}
-								fw={600}
-							>
+							<Text c={tableStatuses[tableId] === "Kitchen" ? "black" : "white"} fw={600}>
 								{t("Kitchen")}
 							</Text>
 						</Center>
@@ -294,10 +288,7 @@ export default function NewSales({
 				{
 					label: (
 						<Center style={{ gap: 10 }}>
-							<Text
-								c={tableStatuses[tableId] === "Hold" ? "black" : "white"}
-								fw={600}
-							>
+							<Text c={tableStatuses[tableId] === "Hold" ? "black" : "white"} fw={600}>
 								{t("Hold")}
 							</Text>
 						</Center>
@@ -307,10 +298,7 @@ export default function NewSales({
 				{
 					label: (
 						<Center style={{ gap: 10 }}>
-							<Text
-								c={tableStatuses[tableId] === "Reserved" ? "black" : "white"}
-								fw={600}
-							>
+							<Text c={tableStatuses[tableId] === "Reserved" ? "black" : "white"} fw={600}>
 								{t("Reserved")}
 							</Text>
 						</Center>
@@ -320,10 +308,7 @@ export default function NewSales({
 				{
 					label: (
 						<Center style={{ gap: 10 }}>
-							<Text
-								c={tableStatuses[tableId] === "Free" ? "black" : "white"}
-								fw={600}
-							>
+							<Text c={tableStatuses[tableId] === "Free" ? "black" : "white"} fw={600}>
 								{t("Free")}
 							</Text>
 						</Center>
@@ -333,16 +318,12 @@ export default function NewSales({
 			]}
 		/>
 	);
-	const [leftSide] = useState(false);
+
 	return (
 		<>
 			<Grid columns={24} gutter={{ base: 8 }}>
 				<Grid.Col span={1}>
-					<__ShortcutPos
-						FormSubmit={"EntityFormSubmit"}
-						Name={"CompanyName"}
-						invoiceMode={invoiceMode}
-					/>
+					<__ShortcutPos FormSubmit={"EntityFormSubmit"} Name={"CompanyName"} invoiceMode={invoiceMode} />
 				</Grid.Col>
 
 				{leftSide ? (
@@ -413,20 +394,8 @@ export default function NewSales({
 							</Grid.Col>
 							<Grid.Col span={10}>
 								<Stack gap={0}>
-									<Box
-										bg={"gray.8"}
-										pt={0}
-										pr={4}
-										pl={4}
-										pb={4}
-										className="border-radius"
-									>
-										<Grid
-											columns={12}
-											gutter={{ base: 4 }}
-											align="center"
-											mt={4}
-										>
+									<Box bg={"gray.8"} pt={0} px={4} pb={4} className="border-radius">
+										<Grid columns={12} gutter={{ base: 4 }} align="center" mt={4}>
 											<Grid.Col span={3}>
 												<Tooltip
 													label={t("BarcodeValidateMessage")}
@@ -434,8 +403,8 @@ export default function NewSales({
 													px={16}
 													py={2}
 													position="top-end"
-													bg={`red.4`}
-													c={"white"}
+													bg="red.4"
+													c="white"
 													withArrow
 													offset={2}
 													zIndex={999}
@@ -461,16 +430,14 @@ export default function NewSales({
 															}
 														}}
 														autoComplete="off"
-														leftSection={
-															<IconBarcode size={16} opacity={0.5} />
-														}
+														leftSection={<IconBarcode size={16} opacity={0.5} />}
 														rightSection={
 															barcode ? (
 																<Tooltip
 																	label={t("Clear")}
 																	withArrow
-																	bg={`gray.1`}
-																	c={`gray.7`}
+																	bg="gray.1"
+																	c="gray.7"
 																>
 																	<ActionIcon
 																		size="sm"
@@ -480,10 +447,7 @@ export default function NewSales({
 																			setIsValidBarcode(true);
 																		}}
 																	>
-																		<IconX
-																			color="red"
-																			size={16}
-																		/>
+																		<IconX color="red" size={16} />
 																	</ActionIcon>
 																</Tooltip>
 															) : (
@@ -493,18 +457,14 @@ export default function NewSales({
 																	py={2}
 																	withArrow
 																	position="left"
-																	c="black"
+																	c="gray.7"
 																	bg="gray.1"
 																	transitionProps={{
-																		transition:
-																			"pop-bottom-left",
+																		transition: "pop-bottom-left",
 																		duration: 500,
 																	}}
 																>
-																	<IconInfoCircle
-																		size={16}
-																		opacity={0.5}
-																	/>
+																	<IconInfoCircle size={16} opacity={0.5} />
 																</Tooltip>
 															)
 														}
@@ -514,18 +474,12 @@ export default function NewSales({
 											<Grid.Col span={6}>
 												<TextInput
 													radius="sm"
-													leftSection={
-														<IconSearch size={16} opacity={0.5} />
-													}
+													leftSection={<IconSearch size={16} opacity={0.5} />}
 													size="md"
 													placeholder={t("SearchFood")}
 													rightSection={
 														searchValue ? (
-															<Tooltip
-																label="Clear"
-																withArrow
-																position="top"
-															>
+															<Tooltip label="Clear" withArrow position="top">
 																<IconX
 																	color="red"
 																	size={16}
@@ -544,10 +498,7 @@ export default function NewSales({
 																position="top"
 																color="red"
 															>
-																<IconInfoCircle
-																	size={16}
-																	opacity={0.5}
-																/>
+																<IconInfoCircle size={16} opacity={0.5} />
 															</Tooltip>
 														)
 													}
@@ -562,7 +513,7 @@ export default function NewSales({
 													styles={{
 														label: { color: "white" },
 													}}
-													bg={"green.6"}
+													bg="green.6"
 													withItemsBorders={false}
 													fullWidth
 													color="green.4"
@@ -611,8 +562,8 @@ export default function NewSales({
 										</Grid>
 									</Box>
 									<Box
-										bg="white"
-										w={"100%"}
+										bg="gray.8"
+										w="100%"
 										h={enableTable ? height - 22 : height + 141}
 										mt={4}
 										className="border-radius"
@@ -620,10 +571,9 @@ export default function NewSales({
 										<ScrollArea
 											h={enableTable ? height - 22 : height + 141}
 											type="never"
-											pt={"8"}
-											pl={"xs"}
-											pr={"xs"}
-											pb={"6"}
+											pt="8"
+											px="xs"
+											pb="6"
 											scrollbars="y"
 										>
 											{/* 1  */}
@@ -639,17 +589,11 @@ export default function NewSales({
 																	styles={() => ({
 																		root: {
 																			cursor: "pointer",
-																			transition:
-																				"transform 0.5s ease-in-out",
-																			transform:
-																				selected.includes(
-																					product.id
-																				)
-																					? "scale(0.97)"
-																					: undefined,
-																			border: selected.includes(
-																				product.id
-																			)
+																			transition: "transform 0.5s ease-in-out",
+																			transform: selected.includes(product.id)
+																				? "scale(0.97)"
+																				: undefined,
+																			border: selected.includes(product.id)
 																				? "3px solid green.8"
 																				: "3px solid white",
 																		},
@@ -666,8 +610,7 @@ export default function NewSales({
 																		w="auto"
 																		fit="cover"
 																		src={`${
-																			import.meta.env
-																				.VITE_IMAGE_GATEWAY_URL
+																			import.meta.env.VITE_IMAGE_GATEWAY_URL
 																		}/uploads/inventory/product/feature_image/${
 																			product.feature_image
 																		}`}
@@ -697,10 +640,7 @@ export default function NewSales({
 																		size="md"
 																		c={"green.9"}
 																	>
-																		{
-																			configData?.currency
-																				?.symbol
-																		}{" "}
+																		{configData?.currency?.symbol}{" "}
 																		{product.sales_price}
 																	</Text>
 																</Card>
@@ -715,14 +655,8 @@ export default function NewSales({
 																justify="center"
 																align="center"
 															>
-																<Text
-																	ta={"center"}
-																	fw={"normal"}
-																	fz={"md"}
-																	c={"black"}
-																>
-																	No product found in this
-																	category
+																<Text ta={"center"} fw={"normal"} fz={"md"} c={"black"}>
+																	No product found in this category
 																</Text>
 															</Flex>
 														</>
@@ -741,15 +675,10 @@ export default function NewSales({
 																	styles={() => ({
 																		root: {
 																			cursor: "pointer",
-																			transform:
-																				selected.includes(
-																					product.id
-																				)
-																					? "scale(0.97)"
-																					: undefined,
-																			border: selected.includes(
-																				product.id
-																			)
+																			transform: selected.includes(product.id)
+																				? "scale(0.97)"
+																				: undefined,
+																			border: selected.includes(product.id)
 																				? "3px solid #00542b"
 																				: "3px solid #eaeced",
 																		},
@@ -770,8 +699,7 @@ export default function NewSales({
 																					fit="cover"
 																					// src={product.img}
 																					src={`${
-																						import.meta
-																							.env
+																						import.meta.env
 																							.VITE_IMAGE_GATEWAY_URL
 																					}/uploads/inventory/product/feature_image/${
 																						product.feature_image
@@ -797,9 +725,7 @@ export default function NewSales({
 																					fz={"13"}
 																					mt={"4"}
 																				>
-																					{
-																						product.display_name
-																					}
+																					{product.display_name}
 																				</Text>
 																				<Flex
 																					gap="md"
@@ -813,18 +739,10 @@ export default function NewSales({
 																						fw={900}
 																						fz={"18"}
 																						size="md"
-																						c={
-																							"green.9"
-																						}
+																						c={"green.9"}
 																					>
-																						{
-																							configData
-																								?.currency
-																								?.symbol
-																						}{" "}
-																						{
-																							product.sales_price
-																						}
+																						{configData?.currency?.symbol}{" "}
+																						{product.sales_price}
 																					</Text>
 																				</Flex>
 																			</Stack>
@@ -842,14 +760,8 @@ export default function NewSales({
 																justify="center"
 																align="center"
 															>
-																<Text
-																	ta={"center"}
-																	fw={"normal"}
-																	fz={"md"}
-																	c={"black"}
-																>
-																	No product found in this
-																	category
+																<Text ta={"center"} fw={"normal"} fz={"md"} c={"black"}>
+																	No product found in this category
 																</Text>
 															</Flex>
 														</>
@@ -884,10 +796,7 @@ export default function NewSales({
 																textAlign: "center",
 																render: (data) => (
 																	<>
-																		{
-																			configData?.currency
-																				?.symbol
-																		}{" "}
+																		{configData?.currency?.symbol}{" "}
 																		{data.sales_price}
 																	</>
 																),
@@ -898,31 +807,21 @@ export default function NewSales({
 																textAlign: "center",
 																backgroundColor: "blue",
 																render: (data) => (
-																	<Group
-																		gap={8}
-																		justify="center"
-																		align="center"
-																	>
+																	<Group gap={8} justify="center" align="center">
 																		<ActionIcon
 																			size={"sm"}
 																			bg={"gray.7"}
 																			onClick={async () => {
-																				handleDecrement(
-																					data.id
-																				);
+																				handleDecrement(data.id);
 																			}}
 																			disabled={
 																				invoiceData?.invoice_items?.find(
 																					(item) =>
-																						item.product_id ===
-																						data.id
+																						item.product_id === data.id
 																				)?.quantity == 1
 																			}
 																		>
-																			<IconMinus
-																				height={"12"}
-																				width={"12"}
-																			/>
+																			<IconMinus height={"12"} width={"12"} />
 																		</ActionIcon>
 																		<Text
 																			size="sm"
@@ -932,24 +831,15 @@ export default function NewSales({
 																			miw={30}
 																		>
 																			{invoiceData?.invoice_items?.find(
-																				(item) =>
-																					item.product_id ===
-																					data.id
+																				(item) => item.product_id === data.id
 																			)?.quantity ?? 0}
 																		</Text>
 																		<ActionIcon
 																			size={"sm"}
 																			bg={"gray.7"}
-																			onClick={() =>
-																				handleIncrement(
-																					data.id
-																				)
-																			}
+																			onClick={() => handleIncrement(data.id)}
 																		>
-																			<IconPlus
-																				height={"12"}
-																				width={"12"}
-																			/>
+																			<IconPlus height={"12"} width={"12"} />
 																		</ActionIcon>
 																	</Group>
 																),
@@ -1013,14 +903,7 @@ export default function NewSales({
 							</Grid.Col>
 							<Grid.Col span={10}>
 								<Stack gap={0}>
-									<Box
-										bg={"gray.8"}
-										pt={0}
-										pr={4}
-										pl={4}
-										pb={4}
-										className="border-radius"
-									>
+									<Box bg={"gray.8"} pt={0} pr={4} pl={4} pb={4} className="border-radius">
 										<Grid gutter={{ base: 4 }} align="center" mt={4}>
 											<Grid.Col span={3}>
 												<Tooltip
@@ -1056,9 +939,7 @@ export default function NewSales({
 															}
 														}}
 														autoComplete="off"
-														leftSection={
-															<IconBarcode size={16} opacity={0.5} />
-														}
+														leftSection={<IconBarcode size={16} opacity={0.5} />}
 														rightSection={
 															barcode ? (
 																<Tooltip
@@ -1075,10 +956,7 @@ export default function NewSales({
 																			setIsValidBarcode(true);
 																		}}
 																	>
-																		<IconX
-																			color="red"
-																			size={16}
-																		/>
+																		<IconX color="red" size={16} />
 																	</ActionIcon>
 																</Tooltip>
 															) : (
@@ -1091,15 +969,11 @@ export default function NewSales({
 																	c={"black"}
 																	bg={`gray.1`}
 																	transitionProps={{
-																		transition:
-																			"pop-bottom-left",
+																		transition: "pop-bottom-left",
 																		duration: 500,
 																	}}
 																>
-																	<IconInfoCircle
-																		size={16}
-																		opacity={0.5}
-																	/>
+																	<IconInfoCircle size={16} opacity={0.5} />
 																</Tooltip>
 															)
 														}
@@ -1109,18 +983,12 @@ export default function NewSales({
 											<Grid.Col span={7}>
 												<TextInput
 													radius="sm"
-													leftSection={
-														<IconSearch size={16} opacity={0.5} />
-													}
+													leftSection={<IconSearch size={16} opacity={0.5} />}
 													size="md"
 													placeholder={t("SearchFood")}
 													rightSection={
 														searchValue ? (
-															<Tooltip
-																label="Clear"
-																withArrow
-																position="top"
-															>
+															<Tooltip label="Clear" withArrow position="top">
 																<IconX
 																	color="red"
 																	size={16}
@@ -1139,10 +1007,7 @@ export default function NewSales({
 																position="top"
 																color="red"
 															>
-																<IconInfoCircle
-																	size={16}
-																	opacity={0.5}
-																/>
+																<IconInfoCircle size={16} opacity={0.5} />
 															</Tooltip>
 														)
 													}
@@ -1233,17 +1098,11 @@ export default function NewSales({
 																	styles={() => ({
 																		root: {
 																			cursor: "pointer",
-																			transition:
-																				"transform 0.5s ease-in-out",
-																			transform:
-																				selected.includes(
-																					product.id
-																				)
-																					? "scale(0.97)"
-																					: undefined,
-																			border: selected.includes(
-																				product.id
-																			)
+																			transition: "transform 0.5s ease-in-out",
+																			transform: selected.includes(product.id)
+																				? "scale(0.97)"
+																				: undefined,
+																			border: selected.includes(product.id)
 																				? "3px solid green.8"
 																				: "3px solid white",
 																		},
@@ -1262,8 +1121,7 @@ export default function NewSales({
 																		w="auto"
 																		fit="cover"
 																		src={`${
-																			import.meta.env
-																				.VITE_IMAGE_GATEWAY_URL
+																			import.meta.env.VITE_IMAGE_GATEWAY_URL
 																		}/uploads/inventory/product/feature_image/${
 																			product.feature_image
 																		}`}
@@ -1293,10 +1151,7 @@ export default function NewSales({
 																		size="md"
 																		c={"green.9"}
 																	>
-																		{
-																			configData?.currency
-																				?.symbol
-																		}{" "}
+																		{configData?.currency?.symbol}{" "}
 																		{product.sales_price}
 																	</Text>
 																</Card>
@@ -1311,14 +1166,8 @@ export default function NewSales({
 																justify="center"
 																align="center"
 															>
-																<Text
-																	ta={"center"}
-																	fw={"normal"}
-																	fz={"md"}
-																	c={"black"}
-																>
-																	No product found in this
-																	category
+																<Text ta={"center"} fw={"normal"} fz={"md"} c={"black"}>
+																	No product found in this category
 																</Text>
 															</Flex>
 														</>
@@ -1336,15 +1185,10 @@ export default function NewSales({
 																	styles={() => ({
 																		root: {
 																			cursor: "pointer",
-																			transform:
-																				selected.includes(
-																					product.id
-																				)
-																					? "scale(0.97)"
-																					: undefined,
-																			border: selected.includes(
-																				product.id
-																			)
+																			transform: selected.includes(product.id)
+																				? "scale(0.97)"
+																				: undefined,
+																			border: selected.includes(product.id)
 																				? "3px solid #00542b"
 																				: "3px solid #eaeced",
 																		},
@@ -1364,8 +1208,7 @@ export default function NewSales({
 																					miw={70}
 																					fit="cover"
 																					src={`${
-																						import.meta
-																							.env
+																						import.meta.env
 																							.VITE_IMAGE_GATEWAY_URL
 																					}/uploads/inventory/product/feature_image/${
 																						product.feature_image
@@ -1391,9 +1234,7 @@ export default function NewSales({
 																					fz={"13"}
 																					mt={"4"}
 																				>
-																					{
-																						product.display_name
-																					}
+																					{product.display_name}
 																				</Text>
 																				<Flex
 																					gap="md"
@@ -1407,18 +1248,10 @@ export default function NewSales({
 																						fw={900}
 																						fz={"18"}
 																						size="md"
-																						c={
-																							"green.9"
-																						}
+																						c={"green.9"}
 																					>
-																						{
-																							configData
-																								?.currency
-																								?.symbol
-																						}{" "}
-																						{
-																							product.sales_price
-																						}
+																						{configData?.currency?.symbol}{" "}
+																						{product.sales_price}
 																					</Text>
 																				</Flex>
 																			</Stack>
@@ -1436,14 +1269,8 @@ export default function NewSales({
 																justify="center"
 																align="center"
 															>
-																<Text
-																	ta={"center"}
-																	fw={"normal"}
-																	fz={"md"}
-																	c={"black"}
-																>
-																	No product found in this
-																	category
+																<Text ta={"center"} fw={"normal"} fz={"md"} c={"black"}>
+																	No product found in this category
 																</Text>
 															</Flex>
 														</>
@@ -1477,10 +1304,7 @@ export default function NewSales({
 																textAlign: "center",
 																render: (data) => (
 																	<>
-																		{
-																			configData?.currency
-																				?.symbol
-																		}{" "}
+																		{configData?.currency?.symbol}{" "}
 																		{data.sales_price}
 																	</>
 																),
@@ -1491,24 +1315,13 @@ export default function NewSales({
 																textAlign: "center",
 																backgroundColor: "blue",
 																render: (data) => (
-																	<Group
-																		gap={8}
-																		justify="center"
-																		align="center"
-																	>
+																	<Group gap={8} justify="center" align="center">
 																		<ActionIcon
 																			size={"sm"}
 																			bg={"gray.7"}
-																			onClick={() =>
-																				handleDecrement(
-																					data.id
-																				)
-																			}
+																			onClick={() => handleDecrement(data.id)}
 																		>
-																			<IconMinus
-																				height={"12"}
-																				width={"12"}
-																			/>
+																			<IconMinus height={"12"} width={"12"} />
 																		</ActionIcon>
 																		<Text
 																			size="sm"
@@ -1523,15 +1336,10 @@ export default function NewSales({
 																			size={"sm"}
 																			bg={"gray.7"}
 																			onClick={() => {
-																				handleIncrement(
-																					data.id
-																				);
+																				handleIncrement(data.id);
 																			}}
 																		>
-																			<IconPlus
-																				height={"12"}
-																				width={"12"}
-																			/>
+																			<IconPlus height={"12"} width={"12"} />
 																		</ActionIcon>
 																	</Group>
 																),

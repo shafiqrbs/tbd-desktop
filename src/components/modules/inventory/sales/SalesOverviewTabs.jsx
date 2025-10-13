@@ -19,7 +19,7 @@ const TAB_OPTIONS = [
 export default function SalesOverviewTabs({ fetching: parentFetching }) {
 	// =============== state for selected tab ================
 	const [activeTab, setActiveTab] = useState("all");
-	const [data, setData] = useState({});
+	const [salesData, setSalesData] = useState({});
 	const { isOnline } = useOutletContext();
 	const dispatch = useDispatch();
 
@@ -46,11 +46,11 @@ export default function SalesOverviewTabs({ fetching: parentFetching }) {
 			if (getIndexEntityData.rejected.match(resultAction)) {
 				console.error("Error:", resultAction);
 			} else if (getIndexEntityData.fulfilled.match(resultAction)) {
-				setData(resultAction?.payload);
+				setSalesData(resultAction?.payload);
 			}
 		} else {
 			const result = await window.dbAPI.getDataFromTable("sales");
-			setData({
+			setSalesData({
 				data: {
 					data: result,
 				},
@@ -60,14 +60,14 @@ export default function SalesOverviewTabs({ fetching: parentFetching }) {
 
 	// =============== filter logic for each tab ================
 	const filteredData = useMemo(() => {
-		if (!data?.data?.data) return { ...data, data: { ...data?.data, data: [] } };
-		const sales = data.data.data;
+		if (!salesData?.data?.data) return { ...salesData, data: { ...salesData?.data, data: [] } };
+		const sales = salesData.data.data;
 		const now = new Date();
 		if (activeTab === "today") {
 			const result = {
-				...data,
+				...salesData,
 				data: {
-					...data.data,
+					...salesData.data,
 					data: sales.filter((item) => {
 						if (!item.created) return false;
 						const [day, month, year] = item.created.split("-");
@@ -91,9 +91,9 @@ export default function SalesOverviewTabs({ fetching: parentFetching }) {
 			endOfWeek.setDate(startOfWeek.getDate() + 6);
 			endOfWeek.setHours(23, 59, 59, 999);
 			const result = {
-				...data,
+				...salesData,
 				data: {
-					...data.data,
+					...salesData.data,
 					data: sales.filter((item) => {
 						if (!item.created) return false;
 						const [day, month, year] = item.created.split("-");
@@ -107,17 +107,14 @@ export default function SalesOverviewTabs({ fetching: parentFetching }) {
 		}
 		if (activeTab === "month") {
 			const result = {
-				...data,
+				...salesData,
 				data: {
-					...data.data,
+					...salesData.data,
 					data: sales.filter((item) => {
 						if (!item.created) return false;
 						const [day, month, year] = item.created.split("-");
 						const itemDate = new Date(Number(year), Number(month) - 1, Number(day));
-						return (
-							itemDate.getMonth() === now.getMonth() &&
-							itemDate.getFullYear() === now.getFullYear()
-						);
+						return itemDate.getMonth() === now.getMonth() && itemDate.getFullYear() === now.getFullYear();
 					}),
 				},
 			};
@@ -127,9 +124,9 @@ export default function SalesOverviewTabs({ fetching: parentFetching }) {
 		if (activeTab === "cash") {
 			console.log(sales);
 			const result = {
-				...data,
+				...salesData,
 				data: {
-					...data.data,
+					...salesData.data,
 					data: sales.filter((item) => item.mode_name?.toLowerCase() === "cash"),
 				},
 			};
@@ -138,9 +135,9 @@ export default function SalesOverviewTabs({ fetching: parentFetching }) {
 		}
 		if (activeTab === "discount_type") {
 			const result = {
-				...data,
+				...salesData,
 				data: {
-					...data.data,
+					...salesData.data,
 					data: sales.filter((item) => item.discount_type?.toLowerCase() === "flat"),
 				},
 			};
@@ -148,8 +145,8 @@ export default function SalesOverviewTabs({ fetching: parentFetching }) {
 			return result;
 		}
 		// default: all
-		return data;
-	}, [activeTab, data]);
+		return salesData;
+	}, [activeTab, salesData]);
 
 	return (
 		<Grid columns={24} gutter={{ base: 8 }}>

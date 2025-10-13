@@ -46,9 +46,7 @@ export default function BakeryIndex() {
 
 	// ✅ Redux Store Data
 	const dropdownLoad = useSelector((state) => state.utilitySlice.dropdowns?.core?.dropdownLoad);
-	const categoryDropdownData = useSelector(
-		(state) => state.utilitySlice.dropdowns?.inventory?.categories
-	);
+	const categoryDropdownData = useSelector((state) => state.utilitySlice.dropdowns?.inventory?.categories);
 
 	// ✅ Local State
 	const [tables, setTables] = useState([]);
@@ -113,6 +111,7 @@ export default function BakeryIndex() {
 					);
 					if (getIndexEntityData.fulfilled.match(resultAction)) {
 						const newInvoiceMode = resultAction.payload?.data?.invoice_mode;
+						console.log(newInvoiceMode);
 						setInvoiceMode(newInvoiceMode);
 						setIndexData(resultAction.payload?.data?.data || []);
 
@@ -133,7 +132,7 @@ export default function BakeryIndex() {
 				setIndexData(result);
 
 				// use saved invoice mode or default to "table"
-				const offlineInvoiceMode = savedInvoiceMode || "table";
+				const offlineInvoiceMode = savedInvoiceMode;
 				setInvoiceMode(offlineInvoiceMode);
 			}
 		};
@@ -164,9 +163,7 @@ export default function BakeryIndex() {
 						window.dbAPI.getDataFromTable("invoice_table", tableId),
 						window.dbAPI.getDataFromTable("invoice_table_item"),
 					]);
-					const filteredItems = invoiceItems.filter(
-						(data) => Number(data.invoice_id) === tableId
-					);
+					const filteredItems = invoiceItems.filter((data) => Number(data.invoice_id) === tableId);
 					setInvoiceData({ ...invoiceTable, invoice_items: filteredItems });
 				}
 			} catch (err) {
@@ -190,16 +187,7 @@ export default function BakeryIndex() {
 	// ✅ Memoized Transformed Table Data
 	const transformedTables = useMemo(() => {
 		return indexData?.map(
-			({
-				id,
-				particular_name,
-				username,
-				customer_name,
-				customer_id,
-				is_active,
-				table_id,
-				user_id,
-			}) => {
+			({ id, particular_name, username, customer_name, customer_id, is_active, table_id, user_id }) => {
 				let particularName =
 					invoiceMode === "table"
 						? `${particular_name}`
@@ -230,18 +218,11 @@ export default function BakeryIndex() {
 	}, [transformedTables]);
 
 	// ✅ Memoized Selected Customer Object
-	const selectedCustomer = useMemo(
-		() => tableCustomerMap[tableId] || {},
-		[tableId, tableCustomerMap]
-	);
+	const selectedCustomer = useMemo(() => tableCustomerMap[tableId] || {}, [tableId, tableCustomerMap]);
 
 	// ✅ Optimized Customer Object State Update
 	useEffect(() => {
-		if (
-			tableId &&
-			selectedCustomer &&
-			JSON.stringify(customerObject || {}) !== JSON.stringify(selectedCustomer)
-		) {
+		if (tableId && selectedCustomer && JSON.stringify(customerObject || {}) !== JSON.stringify(selectedCustomer)) {
 			setCustomerObject(selectedCustomer);
 		} else if (!tableId && customerObject && Object.keys(customerObject).length > 0) {
 			setCustomerObject({});
@@ -311,9 +292,7 @@ export default function BakeryIndex() {
 						<Box pl="4">
 							<NewSales
 								setInvoiceData={setInvoiceData}
-								categoryDropdown={
-									categoryDropdown.length ? categoryDropdown : categories
-								}
+								categoryDropdown={categoryDropdown.length ? categoryDropdown : categories}
 								tableId={tableId}
 								setTableId={setTableId}
 								tables={tables}

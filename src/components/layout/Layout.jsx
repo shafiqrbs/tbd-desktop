@@ -113,11 +113,11 @@ const Layout = () => {
 	return (
 		<AppShell padding="0">
 			<AppShell.Header height={headerHeight} bg="gray.0">
-				<Header isOnline={isOnline} toggleNetwork={toggleNetwork} configData={configData} />
+				<Header isOnline={false} toggleNetwork={toggleNetwork} configData={configData} />
 			</AppShell.Header>
 			<AppShell.Main>
 				{paramPath !== "/" ? (
-					<Outlet context={{ isOnline, toggleNetwork, mainAreaHeight, user }} />
+					<Outlet context={{ isOnline: false, toggleNetwork, mainAreaHeight, user }} />
 				) : (
 					<MainDashboard height={mainAreaHeight} configData={configData} />
 				)}

@@ -7,14 +7,7 @@ import { showNotificationComponent } from "../../core-component/showNotification
 import { useOutletContext } from "react-router";
 import { formatDate } from "../../../lib";
 
-function HeaderNavbar({
-	tables,
-	tableId,
-	setTableId,
-	tableCustomerMap,
-	setCustomerObject,
-	invoiceMode,
-}) {
+function HeaderNavbar({ tables, tableId, setTableId, tableCustomerMap, setCustomerObject, invoiceMode }) {
 	const { isOnline } = useOutletContext();
 	const dispatch = useDispatch();
 	const { scrollRef, showLeftArrow, showRightArrow, handleScroll, scroll } = useScroll();
@@ -75,14 +68,7 @@ function HeaderNavbar({
 	return (
 		<Box style={{ position: "relative" }}>
 			{/* ✅ Scrollable Area Wrapper */}
-			<ScrollArea
-				type="never"
-				mt={"4"}
-				pl={"sm"}
-				pr={"sm"}
-				viewportRef={scrollRef}
-				onScrollPositionChange={handleScroll}
-			>
+			<ScrollArea type="never" mt="4" px="sm" viewportRef={scrollRef} onScrollPositionChange={handleScroll}>
 				<Group justify="flex-start" gap="xs" wrap="nowrap">
 					{tables?.map((table) => {
 						const customer = tableCustomerMap[table.id] || {};
@@ -94,7 +80,7 @@ function HeaderNavbar({
 							>
 								{/* ✅ Badge for Status (Same Styling) */}
 								<Badge
-									mt={"14"}
+									mt="14"
 									size="xs"
 									w={104}
 									h={22}
@@ -108,7 +94,7 @@ function HeaderNavbar({
 										borderRadius: "100px",
 									}}
 								>
-									<Text c={"#FFFFFF"} fw={600} fz={"sm"}>
+									<Text c="#FFFFFF" fw={600} fz="sm">
 										{tableId == table.id ? "Reserved" : "Free"}
 									</Text>
 								</Badge>
@@ -116,7 +102,7 @@ function HeaderNavbar({
 								{/* ✅ Table Component (Same Design, Optimized for Performance) */}
 								<Flex
 									bg={table.id === tableId ? "gray.8" : "white"}
-									mt={"9"}
+									mt="9"
 									direction="column"
 									align="center"
 									justify="center"
@@ -129,12 +115,7 @@ function HeaderNavbar({
 								>
 									{/* ✅ Table Name */}
 									<Center>
-										<Text
-											mt={"-20"}
-											fz="md"
-											fw={900}
-											c={table.id === tableId ? "white" : "black"}
-										>
+										<Text mt="-20" fz="md" fw={900} c={table.id === tableId ? "white" : "black"}>
 											{table.value}
 										</Text>
 									</Center>
@@ -156,7 +137,7 @@ function HeaderNavbar({
 
 									{/* ✅ Customer Name or Mobile (Same Styling) */}
 									<Center>
-										<Text mt={8} mb={-28} fz="sm" fw={800} c={"red.6"}>
+										<Text mt={8} mb={-28} fz="sm" fw={800} c="red.6">
 											{customer.mobile || customer.name || ""}
 										</Text>
 									</Center>

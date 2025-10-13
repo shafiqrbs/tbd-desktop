@@ -43,9 +43,7 @@ export default function InvoiceTable({
 							label={
 								indexData
 									? Array.isArray(indexData)
-										? indexData
-												.map((item) => `${item.display_name} (${item.qty})`)
-												.join(", ")
+										? indexData.map((item) => `${item.display_name} (${item.qty})`).join(", ")
 										: `${indexData.display_name} (${indexData.qty})`
 									: data.display_name
 							}
@@ -124,17 +122,17 @@ export default function InvoiceTable({
 					title: t(""),
 					textAlign: "right",
 					render: (data) => (
-						<Group justify="right" wrap="nowrap">
-							<ActionIcon
-								size="sm"
-								variant="white"
-								color="red.8"
-								aria-label="Settings"
-								onClick={() => handleDelete(data.stock_item_id)}
-							>
-								<IconTrash height={20} width={20} stroke={1.5} />
-							</ActionIcon>
-						</Group>
+						<ActionIcon
+							size="sm"
+							variant="white"
+							color="red.8"
+							aria-label="delete"
+							onClick={() => {
+								handleDelete(data.stock_item_id);
+							}}
+						>
+							<IconTrash height={20} width={20} stroke={1.5} />
+						</ActionIcon>
 					),
 				},
 			]}
