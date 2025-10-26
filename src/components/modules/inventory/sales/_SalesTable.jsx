@@ -18,13 +18,7 @@ import {
 	LoadingOverlay,
 } from "@mantine/core";
 import { useTranslation } from "react-i18next";
-import {
-	IconEdit,
-	IconPrinter,
-	IconDotsVertical,
-	IconTrashX,
-	IconCheck,
-} from "@tabler/icons-react";
+import { IconEdit, IconPrinter, IconDotsVertical, IconTrashX, IconCheck } from "@tabler/icons-react";
 import { DataTable } from "mantine-datatable";
 import { useDispatch, useSelector } from "react-redux";
 import { useHotkeys } from "@mantine/hooks";
@@ -44,7 +38,8 @@ import { notifications } from "@mantine/notifications";
 import { showNotificationComponent } from "../../../core-component/showNotificationComponent";
 import SalesPrintThermal from "./print-component/SalesPrintThermal.jsx";
 
-function SalesTable({ data, showDetails = true }) {
+function SalesTable({ data }) {
+	const [showDetails, setShowDetails] = useState(false);
 	const salesFilterData = useSelector((state) => state.crudSlice.data?.sales?.filters?.sales);
 	const entityDataDelete = useSelector((state) => state.crudSlice.data?.sales?.deleteData);
 	const navigate = useNavigate();
@@ -170,17 +165,11 @@ function SalesTable({ data, showDetails = true }) {
 				customer_id: salesFilterData?.customer_id || "",
 				start_date:
 					(salesFilterData?.start_date &&
-						new Date(salesFilterData?.start_date).toLocaleDateString(
-							"en-CA",
-							options
-						)) ||
+						new Date(salesFilterData?.start_date).toLocaleDateString("en-CA", options)) ||
 					"",
 				end_date:
 					(salesFilterData?.end_date &&
-						new Date(salesFilterData?.end_date || Date.now()).toLocaleDateString(
-							"en-CA",
-							options
-						)) ||
+						new Date(salesFilterData?.end_date || Date.now()).toLocaleDateString("en-CA", options)) ||
 					"",
 				page: page,
 				offset: perPage,
@@ -197,7 +186,7 @@ function SalesTable({ data, showDetails = true }) {
 				} else if (getIndexEntityData.fulfilled.match(resultAction)) {
 					setIndexData(resultAction?.payload);
 				}
-			} else if (!data) {
+			} else if (data) {
 				const result = await window.dbAPI.getDataFromTable("sales");
 				let filteredData = [...result];
 
@@ -246,12 +235,12 @@ function SalesTable({ data, showDetails = true }) {
 					});
 				}
 
-				filteredData.reverse();
-
 				const totalRecords = filteredData.length;
 				const startIndex = (page - 1) * perPage;
 				const endIndex = startIndex + perPage;
 				const paginatedData = filteredData.slice(startIndex, endIndex);
+
+				paginatedData.reverse();
 
 				setIndexData({
 					data: {
@@ -287,10 +276,7 @@ function SalesTable({ data, showDetails = true }) {
 			});
 		}
 
-		if (
-			(isChecked && !Object.keys(checkList).length) ||
-			(!isChecked && !Object.keys(checkList).length)
-		) {
+		if ((isChecked && !Object.keys(checkList).length) || (!isChecked && !Object.keys(checkList).length)) {
 			dispatch(
 				setFilter({
 					module: "sales",
@@ -307,50 +293,22 @@ function SalesTable({ data, showDetails = true }) {
 		try {
 			let resultAction;
 			if (type == "NotDomain") {
-				resultAction = await dispatch(
-					showInstantEntityData(`inventory/sales/not-domain-customer/${id}`)
-				);
+				resultAction = await dispatch(showInstantEntityData(`inventory/sales/not-domain-customer/${id}`));
 			}
 			if (type == "Domain") {
-				resultAction = await dispatch(
-					showInstantEntityData(`inventory/sales/domain-customer/${id}`)
-				);
+				resultAction = await dispatch(showInstantEntityData(`inventory/sales/domain-customer/${id}`));
 			}
 			if (showInstantEntityData.fulfilled.match(resultAction)) {
 				if (resultAction.payload.data.status === 200) {
 					// Show success notification
-					showNotificationComponent(
-						t("SalesComplete"),
-						"teal",
-						"lightgray",
-						null,
-						false,
-						1000,
-						true
-					);
+					showNotificationComponent(t("SalesComplete"), "teal", "lightgray", null, false, 1000, true);
 				} else {
-					showNotificationComponent(
-						"Failed to process",
-						"red",
-						"lightgray",
-						null,
-						false,
-						1000,
-						true
-					);
+					showNotificationComponent("Failed to process", "red", "lightgray", null, false, 1000, true);
 				}
 			}
 		} catch (error) {
 			console.error("Error updating entity:", error);
-			showNotificationComponent(
-				"Failed to process",
-				"red",
-				"lightgray",
-				null,
-				false,
-				1000,
-				true
-			);
+			showNotificationComponent("Failed to process", "red", "lightgray", null, false, 1000, true);
 		} finally {
 			fetchData();
 		}
@@ -361,21 +319,11 @@ function SalesTable({ data, showDetails = true }) {
 			<Box>
 				<Grid columns={24} gutter={{ base: 8 }}>
 					<Grid.Col span={24}>
-						<Box
-							pl={`xs`}
-							pb={"4"}
-							pr={"xs"}
-							pt={"4"}
-							mb={"4"}
-							className={"boxBackground borderRadiusAll"}
-						>
+						<Box px="xs" py="4" mb="4" className="boxBackground borderRadiusAll">
 							<Grid>
 								<Grid.Col>
 									<Stack>
-										<_SalesSearch
-											checkList={checkList}
-											customerId={salesFilterData?.customer_id}
-										/>
+										<_SalesSearch checkList={checkList} customerId={salesFilterData?.customer_id} />
 									</Stack>
 								</Grid.Col>
 							</Grid>
@@ -419,14 +367,20 @@ function SalesTable({ data, showDetails = true }) {
 														size="md"
 														color="green"
 														onChange={(e) => CheckItemsHandel(e, item)}
-														disabled={
-															item?.invoice_batch_id ? true : false
-														}
+														disabled={item?.invoice_batch_id ? true : false}
 													/>
 												</Tooltip>
 											),
 										},
-										{ accessor: "created", title: t("Created") },
+										{
+											accessor: "created",
+											title: t("Created"),
+											render: (item) => (
+												<Text component="a" size="sm" variant="subtle" c="red.6">
+													{item.created.split(",")[0]}
+												</Text>
+											),
+										},
 										{
 											accessor: "invoice",
 											title: t("Invoice"),
@@ -441,9 +395,7 @@ function SalesTable({ data, showDetails = true }) {
 														setLoading(true);
 														setSalesViewData(item);
 														setSelectedRow(item.invoice);
-														item?.invoice_batch_id
-															? setChecked(true)
-															: setChecked(false);
+														item?.invoice_batch_id ? setChecked(true) : setChecked(false);
 													}}
 													style={{ cursor: "pointer" }}
 												>
@@ -457,11 +409,7 @@ function SalesTable({ data, showDetails = true }) {
 											title: t("Total"),
 											textAlign: "right",
 											render: (data) => (
-												<>
-													{data.total
-														? Number(data.total).toFixed(2)
-														: "0.00"}
-												</>
+												<>{data.total ? Number(data.total).toFixed(2) : "0.00"}</>
 											),
 										},
 										{
@@ -469,11 +417,7 @@ function SalesTable({ data, showDetails = true }) {
 											title: t("Receive"),
 											textAlign: "right",
 											render: (data) => (
-												<>
-													{data.payment
-														? Number(data.payment).toFixed(2)
-														: "0.00"}
-												</>
+												<>{data.payment ? Number(data.payment).toFixed(2) : "0.00"}</>
 											),
 										},
 										{
@@ -525,42 +469,31 @@ function SalesTable({ data, showDetails = true }) {
 																isOnline && (
 																	<Menu.Item
 																		onClick={() => {
-																			modals.openConfirmModal(
-																				{
-																					title: (
-																						<Text size="md">
-																							{" "}
-																							{t(
-																								"SalesConformation"
-																							)}
-																						</Text>
-																					),
-																					children: (
-																						<Text size="sm">
-																							{" "}
-																							{t(
-																								"FormConfirmationMessage"
-																							)}
-																						</Text>
-																					),
-																					labels: {
-																						confirm:
-																							"Confirm",
-																						cancel: "Cancel",
-																					},
-																					onCancel: () =>
-																						console.log(
-																							"Cancel"
-																						),
-																					onConfirm:
-																						() => {
-																							handleCustomerSalesProcess(
-																								data.id,
-																								"Domain"
-																							);
-																						},
-																				}
-																			);
+																			modals.openConfirmModal({
+																				title: (
+																					<Text size="md">
+																						{" "}
+																						{t("SalesConformation")}
+																					</Text>
+																				),
+																				children: (
+																					<Text size="sm">
+																						{" "}
+																						{t("FormConfirmationMessage")}
+																					</Text>
+																				),
+																				labels: {
+																					confirm: "Confirm",
+																					cancel: "Cancel",
+																				},
+																				onCancel: () => console.log("Cancel"),
+																				onConfirm: () => {
+																					handleCustomerSalesProcess(
+																						data.id,
+																						"Domain"
+																					);
+																				},
+																			});
 																		}}
 																		component="a"
 																		w={"200"}
@@ -574,42 +507,31 @@ function SalesTable({ data, showDetails = true }) {
 																isOnline && (
 																	<Menu.Item
 																		onClick={() => {
-																			modals.openConfirmModal(
-																				{
-																					title: (
-																						<Text size="md">
-																							{" "}
-																							{t(
-																								"SalesConformation"
-																							)}
-																						</Text>
-																					),
-																					children: (
-																						<Text size="sm">
-																							{" "}
-																							{t(
-																								"FormConfirmationMessage"
-																							)}
-																						</Text>
-																					),
-																					labels: {
-																						confirm:
-																							"Confirm",
-																						cancel: "Cancel",
-																					},
-																					onCancel: () =>
-																						console.log(
-																							"Cancel"
-																						),
-																					onConfirm:
-																						() => {
-																							handleCustomerSalesProcess(
-																								data.id,
-																								"NotDomain"
-																							);
-																						},
-																				}
-																			);
+																			modals.openConfirmModal({
+																				title: (
+																					<Text size="md">
+																						{" "}
+																						{t("SalesConformation")}
+																					</Text>
+																				),
+																				children: (
+																					<Text size="sm">
+																						{" "}
+																						{t("FormConfirmationMessage")}
+																					</Text>
+																				),
+																				labels: {
+																					confirm: "Confirm",
+																					cancel: "Cancel",
+																				},
+																				onCancel: () => console.log("Cancel"),
+																				onConfirm: () => {
+																					handleCustomerSalesProcess(
+																						data.id,
+																						"NotDomain"
+																					);
+																				},
+																			});
 																		}}
 																		component="a"
 																		w={"200"}
@@ -637,6 +559,7 @@ function SalesTable({ data, showDetails = true }) {
 																	e.preventDefault();
 																	setLoading(true);
 																	setSalesViewData(data);
+																	setShowDetails(true);
 																	setSelectedRow(data.invoice);
 																	data?.invoice_batch_id
 																		? setChecked(true)
@@ -652,50 +575,39 @@ function SalesTable({ data, showDetails = true }) {
 																isOnline && (
 																	<Menu.Item
 																		onClick={() => {
-																			modals.openConfirmModal(
-																				{
-																					title: (
-																						<Text size="md">
-																							{" "}
-																							{t(
-																								"FormConfirmationTitle"
-																							)}
-																						</Text>
-																					),
-																					children: (
-																						<Text size="sm">
-																							{" "}
-																							{t(
-																								"FormConfirmationMessage"
-																							)}
-																						</Text>
-																					),
-																					labels: {
-																						confirm:
-																							"Confirm",
-																						cancel: "Cancel",
-																					},
-																					confirmProps: {
-																						color: "red.6",
-																					},
-																					onCancel: () =>
-																						console.log(
-																							"Cancel"
-																						),
-																					onConfirm:
-																						() => {
-																							dispatch(
-																								deleteEntityData(
-																									`inventory/sales/${data.id}`
-																								)
-																							);
-																							window.dbAPI.deleteDataFromTable(
-																								"sales",
-																								data.id
-																							);
-																						},
-																				}
-																			);
+																			modals.openConfirmModal({
+																				title: (
+																					<Text size="md">
+																						{" "}
+																						{t("FormConfirmationTitle")}
+																					</Text>
+																				),
+																				children: (
+																					<Text size="sm">
+																						{" "}
+																						{t("FormConfirmationMessage")}
+																					</Text>
+																				),
+																				labels: {
+																					confirm: "Confirm",
+																					cancel: "Cancel",
+																				},
+																				confirmProps: {
+																					color: "red.6",
+																				},
+																				onCancel: () => console.log("Cancel"),
+																				onConfirm: () => {
+																					dispatch(
+																						deleteEntityData(
+																							`inventory/sales/${data.id}`
+																						)
+																					);
+																					window.dbAPI.deleteDataFromTable(
+																						"sales",
+																						data.id
+																					);
+																				},
+																			});
 																		}}
 																		component="a"
 																		w={"200"}
@@ -746,13 +658,7 @@ function SalesTable({ data, showDetails = true }) {
 						<>
 							{" "}
 							<Grid.Col span={8}>
-								<Box
-									bg={"white"}
-									p={"xs"}
-									className={"borderRadiusAll"}
-									ref={printRef}
-									pos="relative"
-								>
+								<Box bg={"white"} p={"xs"} className={"borderRadiusAll"} ref={printRef} pos="relative">
 									{loading && (
 										<LoadingOverlay
 											visible={loading}
@@ -772,9 +678,7 @@ function SalesTable({ data, showDetails = true }) {
 										className={"boxBackground textColor borderRadiusAll"}
 									>
 										{t("Invoice")}:{" "}
-										{salesViewData &&
-											salesViewData.invoice &&
-											salesViewData.invoice}
+										{salesViewData && salesViewData.invoice && salesViewData.invoice}
 									</Box>
 									<Box className={"borderRadiusAll"} fz={"sm"}>
 										<ScrollArea h={122} type="never">
@@ -839,11 +743,8 @@ function SalesTable({ data, showDetails = true }) {
 															</Grid.Col>
 															<Grid.Col span={9}>
 																<Text fz="sm" lh="xs">
-																	{salesViewData &&
-																	salesViewData.balance
-																		? Number(
-																				salesViewData.balance
-																		  ).toFixed(2)
+																	{salesViewData && salesViewData.balance
+																		? Number(salesViewData.balance).toFixed(2)
 																		: 0.0}
 																</Text>
 															</Grid.Col>
@@ -952,92 +853,55 @@ function SalesTable({ data, showDetails = true }) {
 													<Table.Tbody>{rows}</Table.Tbody>
 													<Table.Tfoot>
 														<Table.Tr>
-															<Table.Th
-																colSpan={"5"}
-																ta="right"
-																fz="xs"
-																w={"100"}
-															>
+															<Table.Th colSpan={"5"} ta="right" fz="xs" w={"100"}>
 																{t("SubTotal")}
 															</Table.Th>
 															<Table.Th ta="right" fz="xs" w={"100"}>
 																{salesViewData &&
 																	salesViewData.sub_total &&
-																	Number(
-																		salesViewData.sub_total
-																	).toFixed(2)}
+																	Number(salesViewData.sub_total).toFixed(2)}
 															</Table.Th>
 														</Table.Tr>
 														<Table.Tr>
-															<Table.Th
-																colSpan={"5"}
-																ta="right"
-																fz="xs"
-																w={"100"}
-															>
+															<Table.Th colSpan={"5"} ta="right" fz="xs" w={"100"}>
 																{t("Discount")}
 															</Table.Th>
 															<Table.Th ta="right" fz="xs" w={"100"}>
 																{salesViewData &&
 																	salesViewData.discount &&
-																	Number(
-																		salesViewData.discount
-																	).toFixed(2)}
+																	Number(salesViewData.discount).toFixed(2)}
 															</Table.Th>
 														</Table.Tr>
 														<Table.Tr>
-															<Table.Th
-																colSpan={"5"}
-																ta="right"
-																fz="xs"
-																w={"100"}
-															>
+															<Table.Th colSpan={"5"} ta="right" fz="xs" w={"100"}>
 																{t("Total")}
 															</Table.Th>
 															<Table.Th ta="right" fz="xs" w={"100"}>
 																{salesViewData &&
 																	salesViewData.total &&
-																	Number(
-																		salesViewData.total
-																	).toFixed(2)}
+																	Number(salesViewData.total).toFixed(2)}
 															</Table.Th>
 														</Table.Tr>
 														<Table.Tr>
-															<Table.Th
-																colSpan={"5"}
-																ta="right"
-																fz="xs"
-																w={"100"}
-															>
+															<Table.Th colSpan={"5"} ta="right" fz="xs" w={"100"}>
 																{t("Receive")}
 															</Table.Th>
 															<Table.Th ta="right" fz="xs" w={"100"}>
 																{salesViewData &&
 																	salesViewData.payment &&
-																	Number(
-																		salesViewData.payment
-																	).toFixed(2)}
+																	Number(salesViewData.payment).toFixed(2)}
 															</Table.Th>
 														</Table.Tr>
 														<Table.Tr>
-															<Table.Th
-																colSpan={"5"}
-																ta="right"
-																fz="xs"
-																w={"100"}
-															>
+															<Table.Th colSpan={"5"} ta="right" fz="xs" w={"100"}>
 																{t("Due")}
 															</Table.Th>
 															<Table.Th ta="right" fz="xs" w={"100"}>
 																{salesViewData &&
 																	salesViewData.total &&
 																	(
-																		Number(
-																			salesViewData.total
-																		) -
-																		Number(
-																			salesViewData.payment
-																		)
+																		Number(salesViewData.total) -
+																		Number(salesViewData.payment)
 																	).toFixed(2)}
 															</Table.Th>
 														</Table.Tr>
@@ -1058,17 +922,10 @@ function SalesTable({ data, showDetails = true }) {
 										>
 											{t("Print")}
 										</Button>
-										<SalesPrintThermal
-											salesViewData={salesViewData}
-											salesItems={salesItems}
-										/>
+										<SalesPrintThermal salesViewData={salesViewData} salesItems={salesItems} />
 										{!checked && isOnline && (
 											<Button
-												onClick={() =>
-													navigate(
-														`/inventory/sales/edit/${salesViewData?.id}`
-													)
-												}
+												onClick={() => navigate(`/inventory/sales/edit/${salesViewData?.id}`)}
 												component="a"
 												fullWidth={true}
 												variant="filled"
@@ -1083,11 +940,7 @@ function SalesTable({ data, showDetails = true }) {
 							</Grid.Col>
 							<Grid.Col span={1}>
 								<Box bg={"white"} className={"borderRadiusAll"} pt={"16"}>
-									<__ShortcutTable
-										form=""
-										FormSubmit={"EntityFormSubmit"}
-										Name={"CompanyName"}
-									/>
+									<__ShortcutTable form="" FormSubmit={"EntityFormSubmit"} Name={"CompanyName"} />
 								</Box>
 							</Grid.Col>
 						</>
@@ -1096,11 +949,7 @@ function SalesTable({ data, showDetails = true }) {
 			</Box>
 			{printA4 && (
 				<div style={{ display: "none" }}>
-					<SalesPrintA4
-						salesViewData={salesViewData}
-						setPrintA4={setPrintA4}
-						salesItems={salesItems}
-					/>
+					<SalesPrintA4 salesViewData={salesViewData} setPrintA4={setPrintA4} salesItems={salesItems} />
 				</div>
 			)}
 		</>

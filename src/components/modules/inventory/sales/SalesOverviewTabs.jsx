@@ -182,7 +182,7 @@ export default function SalesOverviewTabs({ fetching: parentFetching }) {
 				{/* =============== sales table for selected tab ================ */}
 			</Grid.Col>
 			<Grid.Col span={20}>
-				<_SalesTable data={filteredData} fetching={parentFetching} showDetails={false} />
+				<_SalesTable data={filteredData} fetching={parentFetching} />
 			</Grid.Col>
 		</Grid>
 	);
