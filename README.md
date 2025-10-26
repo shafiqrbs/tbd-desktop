@@ -25,10 +25,26 @@ The repository [example-buildable-electronjs](https://github.com/Sharif-Minhaz/e
 
 This template serves as a solid foundation for developers looking to create robust, offline-capable desktop applications with modern web technologies, streamlined for efficient development and distribution.
 
-
 ```
 sudo chown root /media/user-name/D/desktop_app_development/rms/node_modules/electron/dist/chrome-sandbox
 sudo chmod 4755 /media/user-name/D/desktop_app_development/rms/node_modules/electron/dist/chrome-sandbox
 ```
 
 Execute to provide permission if folder is denying build
+
+## TLDR;
+
+### Run local development version
+
+1. git pull
+2. npm i
+3. npm run build
+4. npm start
+
+### Build windows version
+
+1. git pull
+2. npm i
+3. npm run build
+4. npm run make
+5. check /out/make/windowssquirrel/x64 directory and install it
