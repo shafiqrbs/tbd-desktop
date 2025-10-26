@@ -63,6 +63,7 @@ export default function SalesOverviewTabs({ fetching: parentFetching }) {
 		if (!salesData?.data?.data) return { ...salesData, data: { ...salesData?.data, data: [] } };
 		const sales = salesData.data.data;
 		const now = new Date();
+
 		if (activeTab === "today") {
 			const result = {
 				...salesData,
@@ -80,16 +81,17 @@ export default function SalesOverviewTabs({ fetching: parentFetching }) {
 					}),
 				},
 			};
-			console.log(result);
 			return result;
 		}
 		if (activeTab === "week") {
 			const startOfWeek = new Date(now);
 			startOfWeek.setDate(now.getDate() - now.getDay());
 			startOfWeek.setHours(0, 0, 0, 0);
+
 			const endOfWeek = new Date(startOfWeek);
 			endOfWeek.setDate(startOfWeek.getDate() + 6);
 			endOfWeek.setHours(23, 59, 59, 999);
+
 			const result = {
 				...salesData,
 				data: {
@@ -102,7 +104,6 @@ export default function SalesOverviewTabs({ fetching: parentFetching }) {
 					}),
 				},
 			};
-			console.log(result);
 			return result;
 		}
 		if (activeTab === "month") {
@@ -118,11 +119,9 @@ export default function SalesOverviewTabs({ fetching: parentFetching }) {
 					}),
 				},
 			};
-			console.log(result);
 			return result;
 		}
 		if (activeTab === "cash") {
-			console.log(sales);
 			const result = {
 				...salesData,
 				data: {
@@ -130,7 +129,6 @@ export default function SalesOverviewTabs({ fetching: parentFetching }) {
 					data: sales.filter((item) => item.mode_name?.toLowerCase() === "cash"),
 				},
 			};
-			console.log(result);
 			return result;
 		}
 		if (activeTab === "discount_type") {

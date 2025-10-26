@@ -14,7 +14,7 @@ import useRefreshConfigData from "../global-hook/config-data/useRefreshConfigDat
 
 const Layout = () => {
 	const networkStatus = useNetwork();
-	const [isOnline, setIsOnline] = useState(networkStatus.online);
+	const [isOnline, setIsOnline] = useState(false);
 	const { height } = useViewportSize();
 	const location = useLocation();
 	const paramPath = location.pathname;
@@ -105,6 +105,11 @@ const Layout = () => {
 		return <Navigate replace to="/login" />;
 	}
 
+	// =============== redirect to bakery pos when at root and user is authenticated and activated ================
+	if (paramPath === "/") {
+		return <Navigate replace to="/pos/bakery" />;
+	}
+
 	const headerHeight = 42;
 	const footerHeight = 58;
 	const padding = 0;
@@ -113,11 +118,11 @@ const Layout = () => {
 	return (
 		<AppShell padding="0">
 			<AppShell.Header height={headerHeight} bg="gray.0">
-				<Header isOnline={false} toggleNetwork={toggleNetwork} configData={configData} />
+				<Header isOnline={isOnline} toggleNetwork={toggleNetwork} configData={configData} />
 			</AppShell.Header>
 			<AppShell.Main>
 				{paramPath !== "/" ? (
-					<Outlet context={{ isOnline: false, toggleNetwork, mainAreaHeight, user }} />
+					<Outlet context={{ isOnline, toggleNetwork, mainAreaHeight, user }} />
 				) : (
 					<MainDashboard height={mainAreaHeight} configData={configData} />
 				)}

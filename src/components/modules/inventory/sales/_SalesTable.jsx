@@ -939,8 +939,8 @@ function SalesTable({ data }) {
 								</Box>
 							</Grid.Col>
 							<Grid.Col span={1}>
-								<Box bg={"white"} className={"borderRadiusAll"} pt={"16"}>
-									<__ShortcutTable form="" FormSubmit={"EntityFormSubmit"} Name={"CompanyName"} />
+								<Box bg="white" className="borderRadiusAll" pt={"16"}>
+									<__ShortcutTable form="" FormSubmit="EntityFormSubmit" Name="CompanyName" />
 								</Box>
 							</Grid.Col>
 						</>

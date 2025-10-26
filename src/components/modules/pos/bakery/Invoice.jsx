@@ -365,15 +365,15 @@ export default function Invoice({
 			return;
 		}
 
-		if (!salesByUser || salesByUser === "undefined") {
-			showNotificationComponent(t("ChooseUser"), "red", "", "", true, 1000, true);
-			return;
-		}
+		// if (!salesByUser || salesByUser === "undefined") {
+		// 	showNotificationComponent(t("ChooseUser"), "red", "", "", true, 1000, true);
+		// 	return;
+		// }
 
-		if (!invoiceData.transaction_mode_id && !isSplitPaymentActive) {
-			showNotificationComponent(t("ChooseTransactionMode"), "red", "", "", true, 1000, true);
-			return;
-		}
+		// if (!invoiceData.transaction_mode_id && !isSplitPaymentActive) {
+		// 	showNotificationComponent(t("ChooseTransactionMode"), "red", "", "", true, 1000, true);
+		// 	return;
+		// }
 
 		if (!invoiceData.payment && !isSplitPaymentActive) {
 			showNotificationComponent(t("PaymentAmount"), "red", "", "", true, 1000, true);
