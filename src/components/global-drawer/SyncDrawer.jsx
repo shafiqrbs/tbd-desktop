@@ -1,14 +1,16 @@
 import { Drawer, Divider, Stack, Paper, Group, Text, ActionIcon, rem } from "@mantine/core";
 import { IconRefresh } from "@tabler/icons-react";
 import { SYNC_DATA } from "../../constants";
-import { useNetwork } from "@mantine/hooks";
+import { storeEntityData } from "../../store/core/crudSlice";
+import { useDispatch } from "react-redux";
+import { showNotificationComponent } from "../core-component/showNotificationComponent";
 
 export default function SyncDrawer({ syncPanelOpen, setSyncPanelOpen }) {
-	const networkStatus = useNetwork();
+	const dispatch = useDispatch();
 
 	const handleSync = async (syncOption) => {
 		try {
-			let salesData, salesWithTransactions, output;
+			let salesData, salesWithTransactions, output, value, resultAction;
 
 			switch (syncOption) {
 				case "sales":
@@ -26,12 +28,36 @@ export default function SyncDrawer({ syncPanelOpen, setSyncPanelOpen }) {
 					);
 
 					output = {
-						user: await window.dbAPI.getDataFromTable("users"),
+						created_by: await window.dbAPI.getDataFromTable("users"),
 						content: salesWithTransactions,
-						status: networkStatus.online ? "online" : "offline",
 					};
 
-					console.log(output);
+					value = {
+						url: `inventory/pos/data-process`,
+						data: output,
+						module: "pos",
+					};
+
+					resultAction = await dispatch(storeEntityData(value));
+
+					if (resultAction.payload?.status !== 200) {
+						showNotificationComponent(
+							resultAction.payload?.message || "Error syncing sales data",
+							"red",
+							"",
+							"",
+							true
+						);
+					} else {
+						showNotificationComponent(
+							resultAction.payload?.message || "Sales data synced successfully",
+							"teal",
+							"lightgray",
+							"",
+							"",
+							true
+						);
+					}
 
 					break;
 
@@ -88,7 +114,7 @@ export default function SyncDrawer({ syncPanelOpen, setSyncPanelOpen }) {
 			</Stack>
 
 			<Text size="xs" c="dimmed" mt="xl" ta="center">
-				Last synchronized: Today at 14:35
+				Last synchronized: Today at {new Date().toLocaleTimeString()}
 			</Text>
 		</Drawer>
 	);
